@@ -1,18 +1,12 @@
 import { Router } from 'express';
+import usersRouter from '../modules/users/users.routes.js';
 
 const router = Router();
 
-// Health check - pentru test inițial
 router.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// aici vom monta ulterior routerele:
-// import authRouter from '../modules/auth/auth.routes.js';
-// router.use('/auth', authRouter);
-// etc.
+router.use('/users', usersRouter);
 
 export default router;
