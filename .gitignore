@@ -39,3 +39,7 @@ coverage/
 
 # Firebase emulator
 firebase-debug.log
+
+# Firebase service account keys
+SERVER/firebase-service-account.json
+*.service-account.json
