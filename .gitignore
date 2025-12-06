@@ -1,0 +1,41 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+*.log
+
+# Vite / Vue
+CLIENT/.vite/
+CLIENT/dist/
+
+# TypeScript
+*.tsbuildinfo
+
+# Env files
+.env
+.env.local
+.env.*.local
+SERVER/.env
+CLIENT/.env
+
+# MacOS
+.DS_Store
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.iml
+
+# Coverage
+coverage/
+
+# Firebase emulator
+firebase-debug.log
