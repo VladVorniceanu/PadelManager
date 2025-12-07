@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import AdminDashboardView from '../modules/admin/views/AdminDashboardView.vue';
-import AdminLocationsView from '../modules/admin/views/AdminLocationsView.vue';
 import LoginView from '../modules/auth/views/LoginView.vue';
 import RegisterView from '../modules/auth/views/RegisterView.vue';
 import FriendlyListView from '../modules/friendlyMatches/views/FriendlyListView.vue';
@@ -92,15 +91,8 @@ const router = createRouter({
     // admin
     {
       path: '/admin',
-      name: 'admin-dashboard',
+      name: 'AdminDashboard',
       component: AdminDashboardView,
-      meta: { requiresAuth: true, requiresAdmin: true },
-    },
-    {
-      path: '/admin/locations',
-      name: 'admin-locations',
-      component: AdminLocationsView,
-      meta: { requiresAuth: true, requiresAdmin: true },
     },
 
     // default redirect

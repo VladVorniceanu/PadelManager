@@ -1,18 +1,13 @@
 import express from 'express';
+import { getUsers, changeUserRole } from './users.controller.js';
 import authMiddleware from '../../middleware/authMiddleware.js';
 import { requireRole } from '../../middleware/roleMiddleware.js';
-import {
-  listUsersHandler,
-  promoteUserToAdminHandler,
-
-} from './users.controller.js';
 
 const router = express.Router();
 
-// GET /api/users  -> doar admin
-router.get('/', authMiddleware, requireRole('admin'), listUsersHandler);
+router.use(authMiddleware, requireRole('admin'));
 
-// POST /api/users/:uid/promote -> doar admin, promovează la admin
-router.post('/:uid/promote', authMiddleware, requireRole('admin'), promoteUserToAdminHandler);
+router.get('/', getUsers);                 // GET /api/users
+router.patch('/:id/role', changeUserRole); // PATCH /api/users/:id/role
 
 export default router;
