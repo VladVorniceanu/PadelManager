@@ -1,46 +1,20 @@
-// SERVER/src/config/firebase.js
 import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
-import { env } from './env.js';
-import { logger } from './logger.js';
+import fs from 'fs';
+import path from 'path';
 
-let app;
-let db;
+const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH
+  ? path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT_PATH)
+  : path.resolve(process.cwd(), 'firebase-service-account.json');
 
-function initFirebase() {
-  if (app && db) {
-    return { app, db };
-  }
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
 
-  try {
-    // Path către fișierul JSON, relativ la folderul SERVER
-    const serviceAccountPath = resolve(
-      process.cwd(),
-      process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './firebase-service-account.json'
-    );
-
-    const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
-
-    app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: process.env.FIREBASE_DATABASE_URL
-    });
-
-    db = admin.firestore();
-
-    logger.info('✅ Firebase initialized successfully');
-
-    return { app, db };
-  } catch (err) {
-    logger.error('❌ Failed to initialize Firebase:', err.message);
-    throw err;
-  }
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  });
 }
 
-export function getFirestore() {
-  if (!db) {
-    initFirebase();
-  }
-  return db;
-}
+export const db = admin.firestore();
+export const auth = admin.auth();
+export { admin };

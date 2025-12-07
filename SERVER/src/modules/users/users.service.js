@@ -1,21 +1,37 @@
-import { getFirestore } from '../../config/firebase.js';
-
-const db = getFirestore();
-const USERS_COLLECTION = 'users';
+import * as usersModel from './users.model.js';
 
 export async function listUsers() {
-  const snapshot = await db.collection(USERS_COLLECTION).get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return usersModel.list();
 }
 
 export async function createTestUser() {
-  const ref = await db.collection(USERS_COLLECTION).add({
+  const user = {
+    uid: 'test-' + Date.now(),
+    email: `test-${Date.now()}@example.com`,
     displayName: 'Test User',
-    email: 'test@example.com',
     role: 'player',
-    createdAt: new Date()
-  });
+    createdAt: new Date().toISOString(),
+  };
 
-  const doc = await ref.get();
-  return { id: doc.id, ...doc.data() };
+  return usersModel.create(user);
+}
+
+export async function bootstrapUserFromToken(tokenUser) {
+  let user = await usersModel.getByUid(tokenUser.uid);
+
+  if (!user) {
+    user = await usersModel.create({
+      uid: tokenUser.uid,
+      email: tokenUser.email,
+      displayName: tokenUser.name || '',
+      role: 'player', // implicit jucător
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  return user;
+}
+
+export async function promoteToAdmin(uid) {
+  return usersModel.update(uid, { role: 'admin' });
 }

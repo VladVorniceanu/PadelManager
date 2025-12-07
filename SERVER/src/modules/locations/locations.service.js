@@ -1,8 +1,5 @@
-import admin from 'firebase-admin';
-import { getFirestore } from '../../config/firebase.js';
+import { admin, db } from '../../config/firebase.js';
 import { LOCATIONS_COLLECTION, mapLocation } from './locations.model.js';
-
-const db = getFirestore();
 
 export async function listLocations() {
   const snapshot = await db.collection(LOCATIONS_COLLECTION).get();
@@ -24,7 +21,7 @@ export async function createLocation({ name, address, city, courts }) {
     courts: courts || [],
     createdAt: now,
     updatedAt: now,
-    isActive: true
+    isActive: true,
   });
 
   const doc = await ref.get();
@@ -36,7 +33,7 @@ export async function updateLocation(id, data) {
 
   await db.collection(LOCATIONS_COLLECTION).doc(id).update({
     ...data,
-    updatedAt: now
+    updatedAt: now,
   });
 
   const doc = await db.collection(LOCATIONS_COLLECTION).doc(id).get();

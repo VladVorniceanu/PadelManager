@@ -13,6 +13,7 @@ import LiveRefereeView from '../modules/live/views/LiveRefereeView.vue';
 import LiveSpectatorView from '../modules/live/views/LiveSpectatorView.vue';
 import LocationsListView from '../modules/locations/views/LocationsListView.vue';
 import LocationDetailsView from '../modules/locations/views/LocationDetailsView.vue';
+import { useAuthStore } from '../modules/auth/store/useAuthStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +35,7 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true },
     },
 
     // friendly matches
@@ -92,11 +94,13 @@ const router = createRouter({
       path: '/admin',
       name: 'admin-dashboard',
       component: AdminDashboardView,
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
       path: '/admin/locations',
       name: 'admin-locations',
       component: AdminLocationsView,
+      meta: { requiresAuth: true, requiresAdmin: true },
     },
 
     // default redirect
@@ -105,6 +109,28 @@ const router = createRouter({
       redirect: '/admin',
     },
   ],
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+
+  if (authStore.loading) {
+    // init-ul a fost deja chemat în main.js, dar ca fallback:
+    await authStore.init();
+  }
+
+  const requiresAuth = to.meta.requiresAuth;
+  const requiresAdmin = to.meta.requiresAdmin;
+
+  if (requiresAuth && !authStore.isAuthenticated) {
+    return next({ name: 'login', query: { redirect: to.fullPath } });
+  }
+
+  if (requiresAdmin && !authStore.isAdmin) {
+    return next({ name: 'profile' });
+  }
+
+  next();
 });
 
 export default router;
