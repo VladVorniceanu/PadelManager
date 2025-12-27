@@ -1,33 +1,32 @@
 <template>
-  <div class="app-layout">
-    <header class="app-header">
-      <h1>Padel Manager</h1>
-    </header>
+  <div class="page">
+    <AppToolbar @toggle-drawer="drawerOpen = true">
+      <template #title>Padel Manager</template>
+    </AppToolbar>
 
-    <main class="app-main">
+    <SideDrawer :open="drawerOpen" @close="drawerOpen = false" />
+
+    <main class="content">
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-// layout foarte simplu; îl rafinăm mai târziu
+import { ref } from 'vue';
+import AppToolbar from '../components/common/AppToolbar.vue';
+import SideDrawer from '../components/common/SideDrawer.vue';
+
+const drawerOpen = ref(false);
 </script>
 
 <style scoped>
-.app-layout {
+.page {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: #f7f7f7;
 }
 
-.app-header {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.app-main {
-  flex: 1;
-  padding: 1rem;
+.content {
+  padding: 16px;
 }
 </style>
