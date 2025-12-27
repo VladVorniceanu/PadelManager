@@ -1,7 +1,6 @@
 export const LOCATIONS_COLLECTION = 'locations';
 
 export function mapLocation(doc) {
-  if (!doc.exists) return null;
   const data = doc.data();
 
   return {
@@ -10,8 +9,7 @@ export function mapLocation(doc) {
     address: data.address,
     city: data.city,
     courts: data.courts || [],
-    createdAt: data.createdAt,
-    updatedAt: data.updatedAt,
-    isActive: data.isActive ?? true
+    createdAt: data.createdAt?.toDate?.() ?? null,
+    updatedAt: data.updatedAt?.toDate?.() ?? null,
   };
 }

@@ -1,46 +1,106 @@
-import { admin, db } from '../../config/firebase.js';
+import { db, admin } from '../../config/firebase.js';
 import { LOCATIONS_COLLECTION, mapLocation } from './locations.model.js';
+import { randomUUID } from 'crypto';
 
 export async function listLocations() {
-  const snapshot = await db.collection(LOCATIONS_COLLECTION).get();
-  return snapshot.docs.map(mapLocation);
+  const snap = await db.collection(LOCATIONS_COLLECTION).get();
+  return snap.docs.map(mapLocation);
 }
 
-export async function getLocation(id) {
+export async function getLocationById(id) {
   const doc = await db.collection(LOCATIONS_COLLECTION).doc(id).get();
-  return mapLocation(doc);
+  return doc.exists ? mapLocation(doc) : null;
 }
 
-export async function createLocation({ name, address, city, courts }) {
+export async function createLocation(data) {
+  const ref = db.collection(LOCATIONS_COLLECTION).doc();
   const now = admin.firestore.FieldValue.serverTimestamp();
 
-  const ref = await db.collection(LOCATIONS_COLLECTION).add({
-    name,
-    address,
-    city,
-    courts: courts || [],
+  await ref.set({
+    name: data.name,
+    address: data.address,
+    city: data.city,
+    courts: [],
     createdAt: now,
     updatedAt: now,
-    isActive: true,
   });
 
-  const doc = await ref.get();
-  return mapLocation(doc);
+  return mapLocation(await ref.get());
 }
 
 export async function updateLocation(id, data) {
-  const now = admin.firestore.FieldValue.serverTimestamp();
+  const ref = db.collection(LOCATIONS_COLLECTION).doc(id);
 
-  await db.collection(LOCATIONS_COLLECTION).doc(id).update({
+  await ref.update({
     ...data,
-    updatedAt: now,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  const doc = await db.collection(LOCATIONS_COLLECTION).doc(id).get();
-  return mapLocation(doc);
+  return mapLocation(await ref.get());
 }
 
 export async function deleteLocation(id) {
   await db.collection(LOCATIONS_COLLECTION).doc(id).delete();
-  return { success: true };
+}
+
+/**
+ * Courts
+ */
+export async function addCourt(locationId, courtData) {
+  const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
+  const snap = await ref.get();
+
+  if (!snap.exists) throw new Error('Location not found');
+
+  const location = snap.data();
+  const courts = location.courts || [];
+
+  courts.push({
+    id: randomUUID(),
+    name: courtData.name,
+    isIndoor: !!courtData.isIndoor,
+  });
+
+  await ref.update({
+    courts,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return mapLocation(await ref.get());
+}
+
+export async function updateCourt(locationId, courtId, data) {
+  const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
+  const snap = await ref.get();
+
+  if (!snap.exists) throw new Error('Location not found');
+
+  const courts = (snap.data().courts || []).map((court) =>
+    court.id === courtId ? { ...court, ...data } : court
+  );
+
+  await ref.update({
+    courts,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return mapLocation(await ref.get());
+}
+
+export async function deleteCourt(locationId, courtId) {
+  const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
+  const snap = await ref.get();
+
+  if (!snap.exists) throw new Error('Location not found');
+
+  const courts = (snap.data().courts || []).filter(
+    (court) => court.id !== courtId
+  );
+
+  await ref.update({
+    courts,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return mapLocation(await ref.get());
 }

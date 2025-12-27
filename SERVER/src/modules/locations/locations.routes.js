@@ -1,27 +1,72 @@
 import { Router } from 'express';
+import authMiddleware from '../../middleware/authMiddleware.js';
+import { requireRole } from '../../middleware/roleMiddleware.js';
+
 import {
   listLocationsHandler,
   getLocationHandler,
   createLocationHandler,
   updateLocationHandler,
-  deleteLocationHandler
+  deleteLocationHandler,
+  // addCourtHandler,
+  // updateCourtHandler,
+  // deleteCourtHandler,
 } from './locations.controller.js';
 
 const router = Router();
 
-// GET /api/locations
+/**
+ * PUBLIC (read-only)
+ */
 router.get('/', listLocationsHandler);
-
-// GET /api/locations/:id
 router.get('/:id', getLocationHandler);
 
-// POST /api/locations
-router.post('/', createLocationHandler);
+/**
+ * ADMIN (write)
+ */
+router.post(
+  '/',
+  authMiddleware,
+  requireRole('admin'),
+  createLocationHandler
+);
 
-// PUT /api/locations/:id
-router.put('/:id', updateLocationHandler);
+router.put(
+  '/:id',
+  authMiddleware,
+  requireRole('admin'),
+  updateLocationHandler
+);
 
-// DELETE /api/locations/:id
-router.delete('/:id', deleteLocationHandler);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requireRole('admin'),
+  deleteLocationHandler
+);
+
+// /**
+//  * COURTS (nested resource, admin only)
+//  */
+// router.post(
+//   '/:id/courts',
+//   authMiddleware,
+//   requireRole('admin'),
+//   addCourtHandler
+// );
+
+// router.patch(
+//   '/:id/courts/:courtId',
+//   authMiddleware,
+//   requireRole('admin'),
+//   updateCourtHandler
+// );
+
+// router.delete(
+//   '/:id/courts/:courtId',
+//   authMiddleware,
+//   requireRole('admin'),
+//   deleteCourtHandler
+// );
 
 export default router;
