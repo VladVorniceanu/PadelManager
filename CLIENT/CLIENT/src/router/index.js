@@ -12,117 +12,144 @@ import LiveRefereeView from '../modules/live/views/LiveRefereeView.vue';
 import LiveSpectatorView from '../modules/live/views/LiveSpectatorView.vue';
 import LocationsListView from '../modules/locations/views/LocationsListView.vue';
 import LocationDetailsView from '../modules/locations/views/LocationDetailsView.vue';
+
 import { useAuthStore } from '../modules/auth/store/useAuthStore';
+
+const routes = [
+  // Auth (public)
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
+    meta: { guestOnly: true },
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView,
+    meta: { guestOnly: true },
+  },
+
+  // Home (decide din guard unde merge)
+  {
+    path: '/',
+    name: 'home',
+    redirect: '/locations',
+  },
+
+  // Locations (public)
+  {
+    path: '/locations',
+    name: 'locations-list',
+    component: LocationsListView,
+  },
+  {
+    path: '/locations/:id',
+    name: 'location-details',
+    component: LocationDetailsView,
+    props: true,
+  },
+
+  // Profile (auth)
+  {
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView,
+    meta: { requiresAuth: true },
+  },
+
+  // Friendly matches (auth)
+  {
+    path: '/friendly',
+    name: 'friendly-list',
+    component: FriendlyListView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/friendly/create',
+    name: 'friendly-create',
+    component: FriendlyCreateView,
+    meta: { requiresAuth: true },
+  },
+
+  // Tournaments (auth)
+  {
+    path: '/tournaments',
+    name: 'tournaments-list',
+    component: TournamentListView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/tournaments/create',
+    name: 'tournaments-create',
+    component: TournamentCreateWizard,
+    meta: { requiresAuth: true },
+  },
+
+  // Live (referee needs admin; spectator can be public or auth - alegi tu)
+  {
+    path: '/live/referee/:matchId',
+    name: 'live-referee',
+    component: LiveRefereeView,
+    props: true,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+  {
+    path: '/live/spectator/:matchId',
+    name: 'live-spectator',
+    component: LiveSpectatorView,
+    props: true,
+    // dacă vrei doar logați: meta: { requiresAuth: true }
+  },
+
+  // Admin (admin only)
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminDashboardView,
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
+
+  // 404 fallback
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/locations',
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    // public / auth
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
-    },
-
-    // profile
-    {
-      path: '/profile',
-      name: 'profile',
-      component: ProfileView,
-      meta: { requiresAuth: true },
-    },
-
-    // friendly matches
-    {
-      path: '/friendly',
-      name: 'friendly-list',
-      component: FriendlyListView,
-    },
-    {
-      path: '/friendly/create',
-      name: 'friendly-create',
-      component: FriendlyCreateView,
-    },
-
-    // tournaments
-    {
-      path: '/tournaments',
-      name: 'tournaments-list',
-      component: TournamentListView,
-    },
-    {
-      path: '/tournaments/create',
-      name: 'tournaments-create',
-      component: TournamentCreateWizard,
-    },
-
-    // live
-    {
-      path: '/live/referee/:matchId',
-      name: 'live-referee',
-      component: LiveRefereeView,
-      props: true,
-    },
-    {
-      path: '/live/spectator/:matchId',
-      name: 'live-spectator',
-      component: LiveSpectatorView,
-      props: true,
-    },
-
-    // locations (public / player)
-    {
-      path: '/locations',
-      name: 'locations-list',
-      component: LocationsListView,
-    },
-      {
-      path: '/locations/:id',
-      name: 'location-details',
-      component: LocationDetailsView,
-      props: true,
-    },
-
-    // admin
-    {
-      path: '/admin',
-      name: 'AdminDashboard',
-      component: AdminDashboardView,
-    },
-
-    // default redirect
-    {
-      path: '/',
-      redirect: '/admin',
-    },
-  ],
+  routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to) => {
   const authStore = useAuthStore();
 
   if (authStore.loading) {
-    // init-ul a fost deja chemat în main.js, dar ca fallback:
     await authStore.init();
   }
 
-  const requiresAuth = to.meta.requiresAuth;
-  const requiresAdmin = to.meta.requiresAdmin;
-
-  if (requiresAuth && !authStore.isAuthenticated) {
-    return next({ name: 'login', query: { redirect: to.fullPath } });
+  // Guest-only pages (login/register)
+  if (to.meta.guestOnly && authStore.isAuthenticated) {
+    return authStore.isAdmin ? { name: 'admin' } : { name: 'locations-list' };
   }
 
-  if (requiresAdmin && !authStore.isAdmin) {
-    return next({ name: 'profile' });
+  // Auth required
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } };
   }
 
-  next();
+  // Admin required
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    return { name: 'profile' };
+  }
+
+  // Optional: dacă un admin intră pe "home", îl ducem în admin
+  if (to.name === 'home' && authStore.isAuthenticated && authStore.isAdmin) {
+    return { name: 'admin' };
+  }
+
+  return true;
 });
 
 export default router;
