@@ -31,11 +31,16 @@ export async function createLocation(data) {
 export async function updateLocation(id, data) {
   const ref = db.collection(LOCATIONS_COLLECTION).doc(id);
 
-  await ref.update({
-    ...data,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  const patch = {};
+  if (typeof data.name === 'string') patch.name = data.name;
+  if (typeof data.address === 'string') patch.address = data.address;
+  if (typeof data.city === 'string') patch.city = data.city;
 
+  if ('courts' in data && Array.isArray(data.courts)) patch.courts = data.courts;
+
+  patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+  await ref.update(patch);
   return mapLocation(await ref.get());
 }
 

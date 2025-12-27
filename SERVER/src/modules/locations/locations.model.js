@@ -14,33 +14,26 @@ export function mapLocation(doc) {
   };
 }
 
-export function validateLocationPayload(payload) {
+export function validateLocationPayload(payload, opts = { partial: false }) {
   const errors = [];
+  const partial = !!opts.partial;
 
-  if (!payload || typeof payload !== 'object') {
-    return { ok: false, errors: ['Payload invalid'] };
+  const has = (k) => payload && Object.prototype.hasOwnProperty.call(payload, k);
+
+  if (!partial || has('name')) {
+    if (!payload?.name || String(payload.name).trim().length < 2) errors.push({ field: 'name', message: 'Name is required' });
   }
 
-  const { name, city, address, courts } = payload;
-
-  if (!name || typeof name !== 'string' || name.trim().length < 2) {
-    errors.push('name is required (min 2 chars)');
-  }
-  if (!city || typeof city !== 'string' || city.trim().length < 2) {
-    errors.push('city is required (min 2 chars)');
-  }
-  if (!address || typeof address !== 'string' || address.trim().length < 3) {
-    errors.push('address is required (min 3 chars)');
+  if (!partial || has('city')) {
+    if (!payload?.city || String(payload.city).trim().length < 2) errors.push({ field: 'city', message: 'City is required' });
   }
 
-  if (!Array.isArray(courts) || courts.length < 1) {
-    errors.push('courts must be a non-empty array');
-  } else {
-    courts.forEach((c, idx) => {
-      if (!c || typeof c !== 'object') errors.push(`courts[${idx}] invalid`);
-      if (!c.id || typeof c.id !== 'string') errors.push(`courts[${idx}].id required`);
-      if (!c.name || typeof c.name !== 'string') errors.push(`courts[${idx}].name required`);
-    });
+  if (!partial || has('address')) {
+    if (!payload?.address || String(payload.address).trim().length < 2) errors.push({ field: 'address', message: 'Address is required' });
+  }
+
+  if (has('courts') && !Array.isArray(payload.courts)) {
+    errors.push({ field: 'courts', message: 'Courts must be an array' });
   }
 
   return { ok: errors.length === 0, errors };

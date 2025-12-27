@@ -149,7 +149,6 @@ function closeModal() {
 }
 
 function validate() {
-  // validare minimă, dar utilă
   if (!form.name) return 'Name is required';
   if (!form.city) return 'City is required';
   if (!form.address) return 'Address is required';

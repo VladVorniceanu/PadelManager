@@ -15,7 +15,12 @@ export async function fetchLocationById(id) {
 
 // POST /api/locations
 export async function createLocation(payload) {
-  const res = await httpClient.post('/locations', payload);
+  const res = await httpClient.post('/locations', {
+    name: payload.name,
+    address: payload.address,
+    city: payload.city,
+    courts: [], // important
+  });
   return res.data?.data ?? res.data;
 }
 
