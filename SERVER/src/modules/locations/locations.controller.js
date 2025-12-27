@@ -1,21 +1,13 @@
-import {
-  listLocations,
-  getLocationById,
-  createLocation,
-  updateLocation,
-  deleteLocation,
-  addCourt,
-  updateCourt,
-  deleteCourt,
-} from './locations.service.js';
+import { validateLocationPayload } from './locations.model.js';
+import * as service from './locations.service.js';
 
 export async function listLocationsHandler(req, res) {
-  const locations = await listLocations();
+  const locations = await service.listLocations();
   res.json({ data: locations });
 }
 
 export async function getLocationHandler(req, res) {
-  const location = await getLocationById(req.params.id);
+  const location = await service.getLocationById(req.params.id);
   if (!location) {
     return res.status(404).json({ message: 'Location not found' });
   }
@@ -23,15 +15,20 @@ export async function getLocationHandler(req, res) {
 }
 
 export async function createLocationHandler(req, res) {
-  const location = await createLocation(req.body);
-  res.status(201).json({ data: location });
+  const check = validateLocationPayload(req.body);
+  if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
+
+  const created = await service.createLocation(req.body);
+  return res.status(201).json(created);
 }
 
 export async function updateLocationHandler(req, res) {
-  const location = await updateLocation(req.params.id, req.body);
-  res.json({ data: location });
-}
+  const check = validateLocationPayload(req.body);
+  if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
 
+  const updated = await service.updateLocation(req.params.id, req.body);
+  return res.status(200).json(updated);
+}
 export async function deleteLocationHandler(req, res) {
   await deleteLocation(req.params.id);
   res.status(204).end();

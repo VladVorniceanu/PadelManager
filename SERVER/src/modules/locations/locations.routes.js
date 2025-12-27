@@ -7,66 +7,18 @@ import {
   getLocationHandler,
   createLocationHandler,
   updateLocationHandler,
-  deleteLocationHandler,
-  // addCourtHandler,
-  // updateCourtHandler,
-  // deleteCourtHandler,
+  deleteLocationHandler
 } from './locations.controller.js';
 
 const router = Router();
 
-/**
- * PUBLIC (read-only)
- */
+// public
 router.get('/', listLocationsHandler);
 router.get('/:id', getLocationHandler);
 
-/**
- * ADMIN (write)
- */
-router.post(
-  '/',
-  authMiddleware,
-  requireRole('admin'),
-  createLocationHandler
-);
-
-router.put(
-  '/:id',
-  authMiddleware,
-  requireRole('admin'),
-  updateLocationHandler
-);
-
-router.delete(
-  '/:id',
-  authMiddleware,
-  requireRole('admin'),
-  deleteLocationHandler
-);
-
-// /**
-//  * COURTS (nested resource, admin only)
-//  */
-// router.post(
-//   '/:id/courts',
-//   authMiddleware,
-//   requireRole('admin'),
-//   addCourtHandler
-// );
-
-// router.patch(
-//   '/:id/courts/:courtId',
-//   authMiddleware,
-//   requireRole('admin'),
-//   updateCourtHandler
-// );
-
-// router.delete(
-//   '/:id/courts/:courtId',
-//   authMiddleware,
-//   requireRole('admin'),
-//   deleteCourtHandler
-// );
+// admin only
+router.post('/', authMiddleware, requireRole('admin'), createLocationHandler);
+router.put('/:id', authMiddleware, requireRole('admin'), updateLocationHandler);
+router.delete('/:id', authMiddleware, requireRole('admin'), deleteLocationHandler);
 
 export default router;
