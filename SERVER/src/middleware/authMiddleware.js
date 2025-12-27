@@ -12,14 +12,13 @@ export default async function authMiddleware(req, res, next) {
 
     const decoded = await auth.verifyIdToken(token);
 
-    // Sincronizăm user-ul în Firestore și luăm și rolul (player/admin)
     const user = await bootstrapUserFromToken({
       uid: decoded.uid,
       email: decoded.email,
       name: decoded.name || '',
     });
 
-    req.user = user; // { id, uid, email, role, ... }
+    req.user = user;
     next();
   } catch (err) {
     console.error('Auth error:', err);
