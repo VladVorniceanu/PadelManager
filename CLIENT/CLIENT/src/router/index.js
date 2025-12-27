@@ -129,6 +129,11 @@ router.beforeEach(async (to) => {
     await authStore.init();
   }
 
+  const ok = await authStore.enforceSessionMaxAge();
+  if (!ok) {
+    return { name: 'login', query: { reason: 'session-expired' } };
+  }
+
   // Guest-only pages (login/register)
   if (to.meta.guestOnly && authStore.isAuthenticated) {
     return authStore.isAdmin ? { name: 'admin' } : { name: 'locations-list' };

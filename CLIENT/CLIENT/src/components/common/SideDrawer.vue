@@ -16,6 +16,7 @@
 
     <nav class="drawerNav">
       <button class="navItem" @click="goProfile">Profil</button>
+      <button class="navItem" @click="goLocations">Locations</button>
       <button class="navItem danger" @click="logout">Logout</button>
     </nav>
   </aside>
@@ -32,18 +33,26 @@ const emit = defineEmits(['close']);
 const router = useRouter();
 const authStore = useAuthStore();
 
-const displayName = computed(() => authStore.user?.displayName || 'User');
-const email = computed(() => authStore.user?.email || '');
+const displayName = computed(() => authStore.firebaseUser?.displayName || authStore.profile?.displayName || 'User');
+const email = computed(() => authStore.firebaseUser?.email || '');
 
 async function goProfile() {
   emit('close');
   await router.push({ name: 'profile' });
 }
 
+async function goLocations() {
+  emit('close');
+  await router.push({ name: 'locations-list' });
+}
+
 async function logout() {
   emit('close');
-  await authStore.logout(); // implementăm mai jos
-  await router.push({ name: 'login' });
+  try {
+    await authStore.logout();
+  } finally {
+    await router.push({ name: 'login' });
+  }
 }
 </script>
 
