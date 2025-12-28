@@ -13,8 +13,12 @@ export async function changeUserRole(req, res, next) {
     const { id } = req.params;
     const { role } = req.body;
 
+    if (req.user?.uid === id) {
+      return res.status(403).json({ message: 'Cannot modify own role' });
+    }
+
     if (!role || !['player', 'admin'].includes(role)) {
-      return res.status(400).json({ message: 'Rol invalid.' });
+      return res.status(400).json({ message: 'Invalid role.' });
     }
 
     const updated = await updateUserRole(id, role);
