@@ -1,65 +1,76 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #111827;
-  background-color: #e5e7eb; /* page background */
+
+  --ui-bg: #e5e7eb;
+  --ui-surface: #ffffff;
+  --ui-surface-muted: #f9fafb;
+
+  --ui-text: #111827;
+  --ui-muted: #6b7280;
+
+  --ui-border: #e5e7eb;
+
+  --ui-danger-bg: #fff5f5;
+  --ui-danger-border: #fecaca;
+  --ui-danger-text: #7f1d1d;
+
+  --ui-warn-bg: #fffbeb;
+  --ui-warn-border: #fde68a;
+  --ui-warn-text: #92400e;
+
+  --ui-radius-lg: 20px;
+  --ui-radius-md: 16px;
+  --ui-radius-sm: 14px;
+
+  --ui-shadow-soft: 0 10px 20px rgba(0,0,0,.06);
+  --ui-shadow: 0 18px 45px rgba(0,0,0,.2);
+
+  color: var(--ui-text);
+  background-color: var(--ui-bg);
 }
 
 * { box-sizing: border-box; }
 
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: #e5e7eb; /* ensure consistent even if #app changes */
+  background: var(--ui-bg);
 }
 
 /* App wrapper: TOP-DOWN, no vertical centering */
 #app {
   min-height: 100vh;
-  display: block;              /* <-- important: no flex centering */
-  padding: 24px 16px;          /* outer gutter around the card */
+  display: block;
+  padding: 24px 16px;
 }
 
 /* Main card shell */
 .app-shell {
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto;              /* center horizontally only */
-  background: #ffffff;
+  margin: 0 auto;
+
+  background: var(--ui-surface);
   border-radius: 1rem;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
 
-  /* IMPORTANT: no dynamic-looking centering */
-  min-height: calc(100vh - 48px); /* approx: 24px top + 24px bottom */
+  /* Ensures consistent "page height" feel */
+  min-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
 }
 
-/* Optional: if you still have this title somewhere */
-.app-shell__title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-}
-
 /* Make sure page content grows naturally */
-.app-shell > * {
-  flex: 0 0 auto;
-}
+.app-shell > * { flex: 0 0 auto; }
 
 /* Responsive spacing */
 @media (max-width: 720px) {
-  #app {
-    padding: 16px 12px;
-  }
-  .app-shell {
-    min-height: calc(100vh - 32px);
-  }
+  #app { padding: 16px 12px; }
+  .app-shell { min-height: calc(100vh - 32px); }
 }
 
- /* ---------------- SideDrawer (global) ---------------- */
+/* ---------------- SideDrawer (global) ---------------- */
 .sd-backdrop{
   position: fixed;
   inset: 0;
@@ -93,7 +104,7 @@ body {
 }
 .sd-userLine{ display:flex; gap:10px; align-items:center; }
 .sd-avatar{ font-size:22px; }
-.sd-name{ font-weight:700; }
+.sd-name{ font-weight:800; }
 .sd-email{ font-size:12px; color:#666; }
 
 .sd-closeBtn{
@@ -120,53 +131,164 @@ body {
   background:#fafafa;
   cursor:pointer;
 }
-.sd-danger{ background:#fff5f5; border-color:#ffd7d7; }
+.sd-danger{ background: var(--ui-danger-bg); border-color: #ffd7d7; }
 
 .sd-logout{ margin-top:auto; }
 
 /* ---------------- Auth pages (global) ---------------- */
-
 .auth { display: grid; place-items: start center; padding: 28px 0; }
+
 .authCard {
   width: min(520px, 100%);
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.10);
   padding: 18px;
 }
+
 .authHeader { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
 .authLogo { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: #f3f4f6; font-size: 20px; }
 .authTitle { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.02em; }
-.authSubtitle { margin: 4px 0 0; color: #6b7280; font-size: 13px; }
+.authSubtitle { margin: 4px 0 0; color: var(--ui-muted); font-size: 13px; }
 
-.authAlert { border: 1px solid #fecaca; background: #fff5f5; border-radius: 14px; padding: 12px; margin-bottom: 12px; }
-.authAlertTitle { font-weight: 900; color: #7f1d1d; margin-bottom: 3px; }
-.authAlertMsg { color: #7f1d1d; font-size: 13px; }
+.authAlert { border: 1px solid var(--ui-danger-border); background: var(--ui-danger-bg); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+.authAlertTitle { font-weight: 900; color: var(--ui-danger-text); margin-bottom: 3px; }
+.authAlertMsg { color: var(--ui-danger-text); font-size: 13px; }
 
 .authForm { display: flex; flex-direction: column; gap: 12px; }
 .authField { display: flex; flex-direction: column; gap: 6px; }
-.authLabel { font-size: 12px; color: #6b7280; font-weight: 800; }
+.authLabel { font-size: 12px; color: var(--ui-muted); font-weight: 800; }
+
 .authInput {
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   outline: none;
 }
-.authInput:focus { border-color: #111827; }
+.authInput:focus { border-color: var(--ui-text); }
 
 .authBtn {
-  border-radius: 14px;
+  border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   font-weight: 800;
   cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: #fff;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
 }
-.authBtn.primary { background: #111827; border-color: #111827; color: #fff; }
+.authBtn.primary { background: var(--ui-text); border-color: var(--ui-text); color: #fff; }
 .authBtn.primary:hover:enabled { background: #030712; }
-.authBtn.secondary { background: #f9fafb; }
+.authBtn.secondary { background: var(--ui-surface-muted); }
 .authBtn:disabled { opacity: .6; cursor: not-allowed; }
 
-.authFooter { margin-top: 12px; font-size: 12px; color: #6b7280; }
-.muted { color: #111827; font-weight: 800; }
+.authFooter { margin-top: 12px; font-size: 12px; color: var(--ui-muted); }
+.muted { color: var(--ui-text); font-weight: 800; }
+
+/* ---------- Global UI primitives ---------- */
+
+/* Cards */
+.card {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  padding: 14px;
+  background: var(--ui-surface);
+}
+.card.error {
+  border-color: var(--ui-danger-border);
+  background: var(--ui-danger-bg);
+}
+.card.empty { text-align: left; }
+
+.errorTitle { font-weight: 900; margin-bottom: 6px; }
+.errorMsg { color: var(--ui-danger-text); margin-bottom: 12px; }
+
+.emptyTitle { font-weight: 900; }
+.emptyMsg { color: var(--ui-muted); margin-top: 6px; font-size: 12px; }
+
+/* Buttons */
+.btn {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.btn.primary {
+  background: var(--ui-text);
+  color: #fff;
+  border-color: var(--ui-text);
+}
+.btn.subtle { background: var(--ui-surface-muted); }
+.btn.danger { background: var(--ui-danger-bg); border-color: var(--ui-danger-border); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-muted);
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ui-text);
+}
+
+/* Form inputs (global) */
+.input, .select {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  background: #fff;
+}
+.input:focus, .select:focus { border-color: var(--ui-text); }
+.input.invalid, .select.invalid { border-color: #ef4444; }
+
+/* Skeleton */
+.skeletonLine {
+  height: 14px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+/* Grids */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 980px) {
+  .grid3 { grid-template-columns: 1fr; }
+}
+
+/* Shared "simple card" for lists */
+.itemCard {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-md);
+  padding: 14px;
+}
+
+/* Tables (global) */
+.table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.table thead { background: var(--ui-surface-muted); }
+.table th, .table td {
+  border-bottom: 1px solid var(--ui-border);
+  padding: .55rem .5rem;
+  text-align: left;
+}
+.table-note {
+  margin-top: .75rem;
+  font-size: .75rem;
+  color: #9ca3af;
+}

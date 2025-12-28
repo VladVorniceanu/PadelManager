@@ -1,31 +1,7 @@
 /* AdminDashboardStyle.css
-   Shared styles for AdminDashboardView + subviews (Locations/Users/Tournaments)
+   Admin-only layout + admin components.
+   Global UI primitives (btn/card/pill/input/select/table/skeletonLine/grid3/etc.) live in src/style.css
 */
-
-:root {
-  --adm-bg: #ffffff;
-  --adm-surface: #fff;
-  --adm-surface-muted: #f9fafb;
-  --adm-border: #e5e7eb;
-  --adm-text: #111827;
-  --adm-muted: #6b7280;
-  --adm-muted-2: #4b5563;
-
-  --adm-danger-bg: #fff5f5;
-  --adm-danger-border: #fecaca;
-  --adm-danger-text: #7f1d1d;
-
-  --adm-warn-bg: #fffbeb;
-  --adm-warn-border: #fde68a;
-  --adm-warn-text: #92400e;
-
-  --adm-radius-lg: 20px;
-  --adm-radius-md: 16px;
-  --adm-radius-sm: 14px;
-
-  --adm-shadow: 0 18px 45px rgba(0,0,0,.2);
-  --adm-shadow-soft: 0 10px 20px rgba(0,0,0,.06);
-}
 
 /* ---------- Admin Page Shell (Dashboard) ---------- */
 
@@ -52,7 +28,7 @@
 .admin-subtitle {
   margin: .25rem 0 0;
   font-size: .95rem;
-  color: var(--adm-muted);
+  color: var(--ui-muted);
 }
 
 .admin-badge {
@@ -61,10 +37,11 @@
   letter-spacing: .08em;
   padding: .25rem .6rem;
   border-radius: 999px;
-  background: var(--adm-text);
+  background: var(--ui-text);
   color: #fff;
 }
 
+/* Sidebar + content */
 .admin-layout {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -74,7 +51,7 @@
 }
 
 .admin-sidebar {
-  border-right: 1px solid var(--adm-border);
+  border-right: 1px solid var(--ui-border);
   padding-right: 1rem;
   display: flex;
   flex-direction: column;
@@ -95,7 +72,7 @@
 }
 .sidebar-btn:hover { background: #f3f4f6; }
 .sidebar-btn.active {
-  background: var(--adm-text);
+  background: var(--ui-text);
   color: #fff;
   transform: translateX(1px);
 }
@@ -108,94 +85,56 @@
   gap: 1rem;
 }
 
-.section-title {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.section-subtitle {
-  margin: .25rem 0 .5rem;
-  font-size: .9rem;
-  color: var(--adm-muted);
-}
-
+/* Mobile: pills row, no sticky, no artificial spacing */
 @media (max-width: 900px) {
-.admin-layout {
-  grid-template-columns: 1fr;
-  gap: 12px;           /* smaller vertical gap */
-}
+  .admin-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 
-  /* Sidebar devine horizontal pill bar */
   .admin-sidebar {
-    display: flex;
     height: auto;
     flex-direction: row;
-    gap: 0.5rem;
+    gap: .5rem;
 
     border-right: none;
-    border-bottom: 1px solid var(--adm-border);
+    border-bottom: 1px solid var(--ui-border);
 
     padding: 6px 2px;
-    margin-bottom: 0;
+    margin: 0;
 
     overflow-x: auto;
     scrollbar-width: none;
   }
+  .admin-sidebar::-webkit-scrollbar { display: none; }
 
-  .admin-sidebar::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Pills */
   .sidebar-btn {
     flex: 0 0 auto;
     width: auto;
     height: 46px;
-
-    padding: 0.45rem 0.9rem;
+    padding: .45rem .9rem;
     border-radius: 999px;
-
-    font-size: 0.85rem;
-    font-weight: 600;
-
+    font-size: .85rem;
+    font-weight: 700;
     white-space: nowrap;
     text-align: center;
-
     background: #f3f4f6;
     color: #374151;
-
-    transition:
-      background 0.15s ease,
-      color 0.15s ease,
-      box-shadow 0.15s ease,
-      transform 0.05s ease;
+    transition: background .15s ease, color .15s ease, box-shadow .15s ease, transform .05s ease;
   }
+  .sidebar-btn:hover { background: #e5e7eb; }
 
-  .sidebar-btn:hover {
-    background: #e5e7eb;
-  }
-
-  /* Active pill */
   .sidebar-btn.active {
-    background: #111827;
-    color: #ffffff;
-
-    box-shadow:
-      0 6px 16px rgba(17, 24, 39, 0.25);
+    background: var(--ui-text);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(17, 24, 39, 0.25);
   }
+  .sidebar-btn.active:hover { background: #030712; }
 
-  .sidebar-btn.active:hover {
-    background: #030712;
-  }
-
-  .admin-main {
-    padding-left: 0;
-    padding-top: 0;
-  }
+  .admin-main { padding-left: 0; padding-top: 0; }
 }
 
-/* ---------- Shared primitives (cards / buttons / pills / form) ---------- */
+/* ---------- Admin Subviews shared layout helpers ---------- */
 
 .wrap { display: flex; flex-direction: column; gap: 16px; }
 
@@ -215,142 +154,56 @@
   margin: 0;
   letter-spacing: -0.02em;
 }
-.subtitle { margin: 0; color: var(--adm-muted); font-size: 13px; }
+.subtitle { margin: 0; color: var(--ui-muted); font-size: 13px; }
 
-.card {
-  border: 1px solid var(--adm-border);
-  border-radius: 18px;
-  padding: 14px;
-  background: var(--adm-surface);
+/* ---------- Admin: Locations/Tournaments cards grid ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-
-.card.error { border-color: var(--adm-danger-border); background: var(--adm-danger-bg); }
-.errorTitle { font-weight: 900; margin-bottom: 6px; }
-.errorMsg { color: var(--adm-danger-text); margin-bottom: 12px; }
-
-.card.empty { text-align: center; padding: 26px; }
-.emptyTitle { font-weight: 900; }
-.emptyMsg { color: var(--adm-muted); margin-top: 6px; }
-.emptyActions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 14px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  border: 1px solid var(--adm-border);
-  background: #fff;
-  border-radius: 14px;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-weight: 700;
-}
-.btn.primary { background: var(--adm-text); color: #fff; border-color: var(--adm-text); }
-.btn.danger { background: var(--adm-danger-bg); border-color: var(--adm-danger-border); }
-.btn.subtle { background: var(--adm-surface-muted); }
-.btn:disabled { opacity: .6; cursor: not-allowed; }
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid var(--adm-border);
-  background: var(--adm-surface-muted);
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--adm-text);
-}
-.pill.strong { background: var(--adm-text); color: #fff; border-color: var(--adm-text); }
-
-.input {
-  border: 1px solid var(--adm-border);
-  border-radius: 14px;
-  padding: 10px 12px;
-  outline: none;
-}
-.input:focus { border-color: var(--adm-text); }
-.input.invalid { border-color: #ef4444; }
-.input.small { padding: 8px 10px; border-radius: 12px; }
-
-.label { font-size: 12px; color: var(--adm-muted); font-weight: 800; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field.full { grid-column: 1 / -1; }
-.fieldError { font-size: 12px; color: #b00020; }
-
-.divider { height: 1px; background: #f3f4f6; margin: 4px 0; }
-
-.skeletonLine {
-  height: 14px;
-  background: #f3f4f6;
-  border-radius: 10px;
-  margin: 10px 0;
-}
-
-/* ---------- Search / select ---------- */
-
-.searchWrap { position: relative; display: flex; align-items: center; }
-.searchIcon { position: absolute; left: 10px; color: var(--adm-muted); font-size: 14px; }
-.search {
-  border: 1px solid var(--adm-border);
-  border-radius: 14px;
-  padding: 10px 34px 10px 30px;
-  outline: none;
-  min-width: 260px;
-}
-.search:focus { border-color: var(--adm-text); }
-.clearBtn {
-  position: absolute;
-  right: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 6px;
-  color: var(--adm-muted);
-}
-
-.select {
-  border: 1px solid var(--adm-border);
-  border-radius: 14px;
-  padding: 10px 12px;
-  outline: none;
-  background: #fff;
-}
-
-/* ---------- Locations grid/cards ---------- */
-
-.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
 
 .locCard {
-  border: 1px solid var(--adm-border);
+  border: 1px solid var(--ui-border);
   border-radius: 18px;
   padding: 14px;
-  background: #fff;
+  background: var(--ui-surface);
   transition: transform .12s ease, box-shadow .12s ease;
 }
-.locCard:hover { transform: translateY(-1px); box-shadow: var(--adm-shadow-soft); }
+.locCard:hover { transform: translateY(-1px); box-shadow: var(--ui-shadow-soft); }
 
 .locHead { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .locIdentity { display: flex; flex-direction: column; gap: 6px; }
 .locNameRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .locName { font-weight: 950; font-size: 16px; letter-spacing: -0.01em; }
 
-.locMeta { color: var(--adm-muted); font-size: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.locMeta {
+  color: var(--ui-muted);
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 .metaItem { display: inline-flex; gap: 6px; align-items: center; }
 .dot { opacity: .6; }
 
 .actions { display: flex; gap: 8px; }
 
-.locBody { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; gap: 12px; }
-.timestamps { font-size: 12px; color: var(--adm-muted); }
-.timestamps span { color: var(--adm-text); font-weight: 700; }
+.locBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 12px;
+  gap: 12px;
+}
+.timestamps { font-size: 12px; color: var(--ui-muted); }
+.timestamps span { color: var(--ui-text); font-weight: 700; }
 .quickActions { display: flex; justify-content: flex-end; }
 
-/* ---------- Modal shared ---------- */
+/* ---------- Modal (admin-only) ---------- */
 
 .backdrop {
   position: fixed;
@@ -364,10 +217,10 @@
 
 .modal {
   width: min(760px, 100%);
-  background: #fff;
-  border-radius: var(--adm-radius-lg);
-  border: 1px solid var(--adm-border);
-  box-shadow: var(--adm-shadow);
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
   overflow: hidden;
 }
 
@@ -380,13 +233,18 @@
   gap: 12px;
 }
 .modalTitle { font-weight: 950; font-size: 16px; }
-.modalSubtitle { color: var(--adm-muted); font-size: 12px; margin-top: 4px; }
-.iconBtn { background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 6px; color: var(--adm-text); }
+.modalSubtitle { color: var(--ui-muted); font-size: 12px; margin-top: 4px; }
+
+.iconBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 6px;
+  color: var(--ui-text);
+}
 
 .form { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-
-.sectionTitle { font-weight: 950; font-size: 13px; color: var(--adm-text); }
-.sectionHint { font-size: 12px; color: var(--adm-muted); margin-top: 4px; }
 
 .formGrid {
   display: grid;
@@ -395,23 +253,30 @@
 }
 @media (max-width: 720px) { .formGrid { grid-template-columns: 1fr; } }
 
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: 1 / -1; }
+.label { font-size: 12px; color: var(--ui-muted); font-weight: 800; }
+.fieldError { font-size: 12px; color: #b00020; }
+
+.divider { height: 1px; background: #f3f4f6; margin: 4px 0; }
+
 .inlineError {
   margin: 14px 16px 0;
-  border: 1px solid var(--adm-danger-border);
-  background: var(--adm-danger-bg);
+  border: 1px solid var(--ui-danger-border);
+  background: var(--ui-danger-bg);
   border-radius: 16px;
   padding: 12px;
 }
-.inlineErrorTitle { font-weight: 900; color: var(--adm-danger-text); margin-bottom: 4px; }
-.inlineErrorMsg { color: var(--adm-danger-text); font-size: 13px; }
+.inlineErrorTitle { font-weight: 900; color: var(--ui-danger-text); margin-bottom: 4px; }
+.inlineErrorMsg { color: var(--ui-danger-text); font-size: 13px; }
 
 .inlineNotice {
   margin-top: 10px;
-  border: 1px solid var(--adm-warn-border);
-  background: var(--adm-warn-bg);
+  border: 1px solid var(--ui-warn-border);
+  background: var(--ui-warn-bg);
   border-radius: 14px;
   padding: 10px 12px;
-  color: var(--adm-warn-text);
+  color: var(--ui-warn-text);
   font-size: 13px;
 }
 
@@ -422,7 +287,7 @@
   padding-top: 6px;
 }
 
-/* ---------- Courts ---------- */
+/* ---------- Courts (admin-only) ---------- */
 
 .courtsWrap { display: flex; flex-direction: column; gap: 12px; }
 .courtsHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
@@ -432,17 +297,17 @@
 
 .courtsEmpty {
   padding: 12px;
-  border: 1px dashed var(--adm-border);
+  border: 1px dashed var(--ui-border);
   border-radius: 16px;
-  color: var(--adm-muted);
+  color: var(--ui-muted);
   font-size: 13px;
 }
 
 .courtsList { display: flex; flex-direction: column; gap: 10px; }
 
 .courtRow {
-  border: 1px solid var(--adm-border);
-  background: #fff;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
   border-radius: 16px;
   padding: 10px;
   display: flex;
@@ -459,47 +324,26 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--adm-text);
+  color: var(--ui-text);
   user-select: none;
-  border: 1px solid var(--adm-border);
-  background: var(--adm-surface-muted);
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-muted);
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: var(--ui-radius-sm);
 }
 .smallToggle { padding: 8px 10px; border-radius: 12px; }
 .toggle input { transform: translateY(1px); }
 
-/* ---------- Confirm modal ---------- */
+/* ---------- Confirm modal (admin-only) ---------- */
 
 .confirm {
   width: min(520px, 100%);
-  background: #fff;
-  border-radius: var(--adm-radius-lg);
-  border: 1px solid var(--adm-border);
-  box-shadow: var(--adm-shadow);
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-lg);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
   padding: 16px;
 }
 .confirmTitle { font-weight: 950; font-size: 16px; }
 .confirmMsg { color: #374151; margin-top: 8px; font-size: 13px; line-height: 1.5; }
 .confirmActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
-
-/* ---------- Shared table styles (for Users / future Tournaments) ---------- */
-
-.table {
-  width: 100%;
-  margin-top: 1rem;
-  border-collapse: collapse;
-  font-size: .9rem;
-}
-.table thead { background: var(--adm-surface-muted); }
-.table th,
-.table td {
-  border-bottom: 1px solid var(--adm-border);
-  padding: .55rem .5rem;
-  text-align: left;
-}
-.table-note {
-  margin-top: .75rem;
-  font-size: .75rem;
-  color: #9ca3af;
-}

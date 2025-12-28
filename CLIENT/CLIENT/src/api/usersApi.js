@@ -11,6 +11,6 @@ export async function fetchUsers() {
 }
 
 export async function setUserRole(userId, role) {
-  const res = await httpClient.put(`/users/${userId}/role`, { role });
-  return unwrap(res); // => updated user
+  const res = await httpClient.patch(`/users/${userId}/role`, { role });
+  return res?.data?.data;
 }

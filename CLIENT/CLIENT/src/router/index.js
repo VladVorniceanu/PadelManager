@@ -12,6 +12,7 @@ import LiveRefereeView from '../modules/live/views/LiveRefereeView.vue';
 import LiveSpectatorView from '../modules/live/views/LiveSpectatorView.vue';
 import LocationsListView from '../modules/locations/views/LocationsListView.vue';
 import LocationDetailsView from '../modules/locations/views/LocationDetailsView.vue';
+import HomeView from '../modules/home/views/HomeView.vue';
 
 import { useAuthStore } from '../modules/auth/store/useAuthStore';
 
@@ -34,7 +35,7 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    redirect: '/locations',
+    component: HomeView,
   },
 
   // Locations (public)
@@ -149,10 +150,10 @@ router.beforeEach(async (to) => {
     return { name: 'profile' };
   }
 
-  // Optional: dacă un admin intră pe "home", îl ducem în admin
-  if (to.name === 'home' && authStore.isAuthenticated && authStore.isAdmin) {
-    return { name: 'admin' };
-  }
+  // // Optional: dacă un admin intră pe "home", îl ducem în admin
+  // if (to.name === 'home' && authStore.isAuthenticated && authStore.isAdmin) {
+  //   return { name: 'admin' };
+  // }
 
   return true;
 });

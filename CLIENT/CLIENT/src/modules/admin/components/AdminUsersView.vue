@@ -20,7 +20,7 @@
       <thead>
         <tr>
           <th>Email</th>
-          <th>Nume afișat</th>
+          <th>Nume</th>
           <th>Rol</th>
           <th>Status</th>
           <th style="width: 220px;">Acțiuni</th>
@@ -33,13 +33,29 @@
           <td>{{ user.role }}</td>
           <td>{{ user.status || 'activ' }}</td>
           <td>
-            <button class="btn primary" v-if="user.role === 'player'">
-              {{ updatingId === user.id ? 'Se promovează…' : 'Promovează la admin' }}
-            </button>
+            <template v-if="isSelf(user)">
+              <span class="pill">Current user</span>
+            </template>
 
-            <button class="btn" v-else>
-              {{ updatingId === user.id ? 'Se actualizează…' : 'Retrogradează la player' }}
-            </button>
+            <template v-else>
+              <button
+                class="btn primary"
+                v-if="user.role === 'player'"
+                :disabled="updatingId === user.id"
+                @click="onChangeRole(user, 'admin')"
+              >
+                {{ updatingId === user.id ? 'Se promovează…' : 'Promovează la admin' }}
+              </button>
+
+              <button
+                class="btn"
+                v-else
+                :disabled="updatingId === user.id"
+                @click="onChangeRole(user, 'player')"
+              >
+                {{ updatingId === user.id ? 'Se actualizează…' : 'Retrogradează la player' }}
+              </button>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -54,11 +70,17 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { fetchUsers, setUserRole } from '../../../api/usersApi';
+import { auth } from '../../../services/firebase';
+
 
 const users = ref([]);
 const loading = ref(false);
 const error = ref(null);
 const updatingId = ref(null);
+
+function isSelf(user) {
+  return auth.currentUser?.uid && user?.id === auth.currentUser.uid;
+}
 
 async function loadUsers() {
   loading.value = true;

@@ -117,10 +117,8 @@ export const useAuthStore = defineStore('auth', {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       this.firebaseUser = cred.user;
 
-      // ✅ set displayName in Firebase Auth profile
       if (displayName && displayName.trim()) {
         await updateProfile(cred.user, { displayName: displayName.trim() });
-        // refresh local firebaseUser (optional, dar util pentru UI imediat)
         this.firebaseUser = auth.currentUser;
       }
 
@@ -131,7 +129,6 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       const cred = await signInWithEmailAndPassword(auth, email, password);
 
-      // mark session start explicitly
       setSessionStartedNow();
 
       this.firebaseUser = cred.user;
