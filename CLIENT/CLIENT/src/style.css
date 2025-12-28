@@ -58,3 +58,68 @@ body {
     min-height: calc(100vh - 32px);
   }
 }
+
+ /* ---------------- SideDrawer (global) ---------------- */
+.sd-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  z-index: 40;
+}
+
+.sd-drawer{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background: #fff;
+  transform: translateX(-100%);
+  transition: transform .2s ease;
+  z-index: 50;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+}
+.sd-drawer.open{ transform: translateX(0); }
+
+.sd-header{
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sd-userLine{ display:flex; gap:10px; align-items:center; }
+.sd-avatar{ font-size:22px; }
+.sd-name{ font-weight:700; }
+.sd-email{ font-size:12px; color:#666; }
+
+.sd-closeBtn{
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:18px;
+  padding:6px;
+}
+
+.sd-nav{
+  padding: 10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  height:100%;
+}
+
+.sd-item{
+  text-align:left;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid #eee;
+  background:#fafafa;
+  cursor:pointer;
+}
+.sd-danger{ background:#fff5f5; border-color:#ffd7d7; }
+
+.sd-logout{ margin-top:auto; }
