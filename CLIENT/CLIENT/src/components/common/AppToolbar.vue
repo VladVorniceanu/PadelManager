@@ -4,7 +4,7 @@
       ☰
     </button>
 
-    <div class="title">
+    <div class="title clickable" @click="goHome">
       <slot name="title">PadelManager</slot>
     </div>
 
@@ -13,6 +13,16 @@
     </div>
   </header>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function goHome() {
+  router.push('/');
+}
+</script>
 
 <style scoped>
 .toolbar {
@@ -33,4 +43,11 @@
   padding: 8px;
 }
 .title { font-weight: 700; }
+.title.clickable {
+  cursor: pointer;
+}
+
+.title.clickable:hover {
+  opacity: 0.85;
+}
 </style>
