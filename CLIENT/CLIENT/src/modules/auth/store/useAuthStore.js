@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updateProfile,
 } from 'firebase/auth';
 import { fetchCurrentUserProfile } from '../../../api/authApi';
 
@@ -110,14 +111,19 @@ export const useAuthStore = defineStore('auth', {
       return this._initPromise;
     },
 
-    async register(email, password) {
+    async register(email, password, displayName) {
       this.error = null;
+
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-
-      // mark session start explicitly
-      setSessionStartedNow();
-
       this.firebaseUser = cred.user;
+
+      // ✅ set displayName in Firebase Auth profile
+      if (displayName && displayName.trim()) {
+        await updateProfile(cred.user, { displayName: displayName.trim() });
+        // refresh local firebaseUser (optional, dar util pentru UI imediat)
+        this.firebaseUser = auth.currentUser;
+      }
+
       this.profile = await fetchCurrentUserProfile();
     },
 
