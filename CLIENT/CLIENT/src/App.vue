@@ -1,6 +1,8 @@
 <template>
   <router-view v-if="isGuestOnlyRoute" />
-  <MainLayout v-else />
+  <div v-else class="app-shell">
+    <MainLayout />
+  </div>
 </template>
 
 <script setup>

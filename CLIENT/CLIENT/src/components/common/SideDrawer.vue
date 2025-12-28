@@ -18,6 +18,15 @@
       <button class="navItem" @click="goProfile">Profil</button>
       <button class="navItem" @click="goLocations">Locations</button>
       <button class="navItem danger" @click="logout">Logout</button>
+      <nav>
+        <ul>
+          <li><router-link to="/admin">Dashboard</router-link></li>
+          <li><router-link to="/admin/locations">Locations</router-link></li>
+          <li><router-link to="/tournaments">Tournaments</router-link></li>
+          <li><router-link to="/friendly">Friendly Matches</router-link></li>
+          <li><router-link to="/profile">Profile</router-link></li>
+        </ul>
+      </nav>
     </nav>
   </aside>
 </template>

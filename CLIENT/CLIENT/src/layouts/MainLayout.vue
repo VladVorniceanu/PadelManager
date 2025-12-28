@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="layout">
     <AppToolbar @toggle-drawer="drawerOpen = true">
       <template #title>Padel Manager</template>
     </AppToolbar>
@@ -21,12 +21,21 @@ const drawerOpen = ref(false);
 </script>
 
 <style scoped>
-.page {
-  min-height: 100vh;
-  background: #f7f7f7;
+/* layout-ul NU setează width / centrare.
+   Asta e responsabilitatea “shell”-ului global din style.css */
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
+/* un singur container de conținut, cu padding constant */
 .content {
-  padding: 16px;
+  padding: 20px 24px;
+}
+@media (max-width: 720px) {
+  .content {
+    padding: 16px;
+  }
 }
 </style>

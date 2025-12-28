@@ -1,35 +1,60 @@
 :root {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #111827;
-  background-color: #e5e7eb; /* gri deschis */
+  background-color: #e5e7eb; /* page background */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
 }
 
 body {
   margin: 0;
+  background: #e5e7eb; /* ensure consistent even if #app changes */
 }
 
-/* container global al aplicației */
+/* App wrapper: TOP-DOWN, no vertical centering */
 #app {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
+  display: block;              /* <-- important: no flex centering */
+  padding: 24px 16px;          /* outer gutter around the card */
 }
 
-/* card-ul principal al aplicației */
+/* Main card shell */
 .app-shell {
   width: 100%;
   max-width: 1200px;
+  margin: 0 auto;              /* center horizontally only */
   background: #ffffff;
   border-radius: 1rem;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-  padding: 1.5rem 2rem;
+
+  /* IMPORTANT: no dynamic-looking centering */
+  min-height: calc(100vh - 48px); /* approx: 24px top + 24px bottom */
+  display: flex;
+  flex-direction: column;
 }
 
-/* titlu principal (Padel Manager) */
+/* Optional: if you still have this title somewhere */
 .app-shell__title {
   font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin: 0;
+}
+
+/* Make sure page content grows naturally */
+.app-shell > * {
+  flex: 0 0 auto;
+}
+
+/* Responsive spacing */
+@media (max-width: 720px) {
+  #app {
+    padding: 16px 12px;
+  }
+  .app-shell {
+    min-height: calc(100vh - 32px);
+  }
 }

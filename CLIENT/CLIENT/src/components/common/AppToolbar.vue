@@ -23,9 +23,7 @@
   padding: 0 12px;
   border-bottom: 1px solid #eee;
   background: white;
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: static;
 }
 .iconBtn {
   font-size: 20px;
