@@ -8,6 +8,7 @@
 
     <main class="content">
       <router-view />
+      <router-view name="modal" />
     </main>
   </div>
 </template>

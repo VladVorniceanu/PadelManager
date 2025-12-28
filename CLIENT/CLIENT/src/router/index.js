@@ -41,14 +41,13 @@ const routes = [
   // Locations (public)
   {
     path: '/locations',
-    name: 'locations-list',
     component: LocationsListView,
-  },
-  {
-    path: '/locations/:id',
-    name: 'location-details',
-    component: LocationDetailsView,
-    props: true,
+    children: [
+      {
+        path: ':id',
+        component: LocationDetailsView,
+      },
+    ],
   },
 
   // Profile (auth)
