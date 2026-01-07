@@ -7,7 +7,14 @@ export async function fetchMyReservations() {
 
 export async function createReservation(payload) {
   const res = await httpClient.post('/reservations', payload);
-  return res.data.data;
+  return res?.data;
+}
+
+export async function getCourtAvailability({ courtId, date, duration, tzOffset }) {
+  const res = await httpClient.get('/reservations/availability', {
+    params: { courtId, date, duration, tzOffset },
+  });
+  return res?.data;
 }
 
 export async function deleteReservation(id) {

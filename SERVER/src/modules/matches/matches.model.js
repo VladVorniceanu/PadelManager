@@ -1,22 +1,5 @@
 export const MATCHES_COLLECTION = 'matches';
 
-/**
- * Expected shape in Firestore:
- * {
- *   createdBy: uid,
- *   tournamentId?: string | null,
- *   locationId?: string | null,
- *   courtId?: string | null,
- *   scheduledAt?: Timestamp | null,
- *   status: 'draft' | 'scheduled' | 'completed' | 'cancelled',
- *   teams: { team1: [uid|null, uid|null], team2: [uid|null, uid|null] },
- *   score?: { sets: Array<{ t1: number, t2: number }> } | null,
- *   winnerTeam?: 1 | 2 | null,
- *   createdAt: Timestamp,
- *   updatedAt: Timestamp
- * }
- */
-
 export function mapMatch(doc) {
   const data = doc.data();
   return {
@@ -26,6 +9,7 @@ export function mapMatch(doc) {
     locationId: data.locationId ?? null,
     courtId: data.courtId ?? null,
     scheduledAt: data.scheduledAt?.toDate?.() ?? null,
+    endAt: data.endAt?.toDate?.() ?? null,
     status: data.status ?? 'draft',
     teams: data.teams ?? { team1: [null, null], team2: [null, null] },
     score: data.score ?? null,
@@ -45,9 +29,8 @@ export function validateCreateMatchPayload(body) {
   if (body.courtId != null && typeof body.courtId !== 'string') errors.courtId = 'courtId must be string';
   if (body.tournamentId != null && typeof body.tournamentId !== 'string') errors.tournamentId = 'tournamentId must be string';
 
-  if (body.scheduledAt != null && typeof body.scheduledAt !== 'string') {
-    errors.scheduledAt = 'scheduledAt must be ISO string';
-  }
+  if (body.scheduledAt != null && typeof body.scheduledAt !== 'string') errors.scheduledAt = 'scheduledAt must be ISO string';
+  if (body.endAt != null && typeof body.endAt !== 'string') errors.endAt = 'endAt must be ISO string';
 
   return { ok: Object.keys(errors).length === 0, errors };
 }
@@ -56,9 +39,11 @@ export function validateUpdateMatchPayload(body) {
   const errors = {};
 
   if (body.status != null) {
-    const allowed = ['draft', 'scheduled', 'completed', 'cancelled'];
+    const allowed = ['draft', 'scheduled', 'ongoing', 'completed', 'cancelled'];
     if (!allowed.includes(body.status)) errors.status = `status must be one of ${allowed.join(', ')}`;
   }
+
+  if (body.endAt != null && typeof body.endAt !== 'string') errors.endAt = 'endAt must be ISO string';
 
   // teams patch
   if (body.teams != null) {
@@ -70,6 +55,15 @@ export function validateUpdateMatchPayload(body) {
           if (!Array.isArray(t[k]) || t[k].length !== 2) errors[k] = `${k} must be array of length 2`;
         }
       }
+    }
+  }
+
+  // score patch: { sets: [{t1,t2},...] }
+  if (body.score != null) {
+    const s = body.score;
+    if (typeof s !== 'object') errors.score = 'score must be object';
+    else if (s.sets != null) {
+      if (!Array.isArray(s.sets)) errors.score = 'score.sets must be array';
     }
   }
 

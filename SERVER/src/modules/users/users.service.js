@@ -69,3 +69,13 @@ export async function createTestUser() {
   const snap = await ref.get();
   return mapUser(snap);
 }
+
+export async function searchUsers(query, limit=10) {
+  const snap = await db.collection(USERS_COLLECTION)
+    .where('displayName', '>=', query)
+    .where('displayName', '<=', query + '\uf8ff')
+    .limit(limit)
+    .get();
+
+  return snap.docs.map((doc) => mapUser(doc));
+}

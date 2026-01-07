@@ -36,3 +36,18 @@ export async function createTestUserHandler(req, res, next) {
     next(err);
   }
 }
+
+export async function searchUsers(req, res) {
+  const query = String(req.query.q || '').trim();
+  const limit = Math.max(1, Math.min(20, Number(req.query.limit || 10)));
+
+  if (!query) return res.json([]);
+
+  try {
+    const items = await usersService.searchUsers(query, limit);
+    return res.json(items);
+  } catch (error) {
+    console.error('searchUsers error', error);
+    return res.status(500).json({ message: 'Failed to search users' });
+  }
+}

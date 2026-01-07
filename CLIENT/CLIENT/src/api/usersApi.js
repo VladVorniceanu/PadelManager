@@ -14,3 +14,8 @@ export async function setUserRole(userId, role) {
   const res = await httpClient.patch(`/users/${userId}/role`, { role });
   return res?.data?.data;
 }
+
+export async function searchUsers(q, limit = 10) {
+  const res = await httpClient.get('/users/search', { params: { q, limit } });
+  return res?.data ?? [];
+}

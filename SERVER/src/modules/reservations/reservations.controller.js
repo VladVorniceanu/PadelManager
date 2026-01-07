@@ -40,3 +40,38 @@ export async function deleteReservationHandler(req, res) {
   await service.deleteReservationAndMatch(reservation);
   res.status(204).end();
 }
+
+export async function getCourtAvailabilityHandler(req, res) {
+  const courtId = String(req.query.courtId || '');
+  const date = String(req.query.date || '');
+  const duration = Number(req.query.duration || 60);
+  const tzOffset = Number(req.query.tzOffset ?? 0); // minutes (Date.getTimezoneOffset())
+
+  if (!courtId) 
+    return res.status(400).json({ message: 'courtId is required' });
+  if (!date || !/^\d{4}-\d{2}-_toggle\1$/.test(date.replace('-', '-'))) {
+    // keep it strict without overcomplicating
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) 
+    return res.status(400).json({ message: 'date must be YYYY-MM-DD' });
+  if (![60, 90, 120].includes(duration)) 
+    return res.status(400).json({ message: 'duration must be 60/90/120' });
+  if (!Number.isFinite(tzOffset)) return res.status(400).json({ message: 'tzOffset must be number' });
+
+  try {
+    const out = await reservationsService.getCourtAvailability({
+      courtId,
+      date,
+      durationMinutes: duration,
+      tzOffsetMinutes: tzOffset,
+      openHourLocal: 8,
+      closeHourLocal: 0,
+      slotStepMinutes: 30,
+    });
+
+    return res.json(out);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ message: e?.message || 'Failed to compute availability' });
+  }
+}
