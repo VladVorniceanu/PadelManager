@@ -11,11 +11,6 @@
         </p>
       </div>
 
-      <div class="home__heroRight">
-        <button class="btn primary" @click="goBookMatch">
-          Book a match
-        </button>
-      </div>
     </header>
 
     <!-- Sections -->
@@ -156,11 +151,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '../../../services/firebase';
 import { httpClient } from '../../../api/httpClient';
 import { fetchLocations } from '../../../api/locationsApi';
+import { useBookMatchModalStore } from '../../matches/store/useBookMatchModalStore';
 
 const router = useRouter();
 
@@ -175,6 +171,7 @@ const locations = ref([]);
 const geoBusy = ref(false);
 const geoEnabled = ref(false);
 const userPos = ref(null); // { lat, lng }
+const bookMatch = useBookMatchModalStore();
 
 const displayName = computed(() => {
   const u = auth.currentUser;
@@ -183,13 +180,11 @@ const displayName = computed(() => {
 
 /**
  * Routing helpers
- * IMPORTANT: aici ai route-name placeholder.
- * Dacă tu nu folosești name-uri, schimbă cu path-uri reale.
  */
 function goBookMatch() {
-  // schimbă cu ruta ta reală (ex: '/book' sau '/matches/create')
-  router.push({ name: 'friendly-create' }).catch(() => {});
+  bookMatch.openModal();
 }
+
 function goMatches() {
   router.push({ name: 'friendly-list' }).catch(() => {});
 }
@@ -202,8 +197,8 @@ function goTournaments() {
 
 /**
  * Loaders (fără API-uri noi pe server)
- * - matches: GET /matches (dacă există)
- * - tournaments: GET /tournaments (dacă există)
+ * - matches: GET /matches
+ * - tournaments: GET /tournaments
  * - locations: folosim locationsApi existent
  */
 async function loadMatches() {
@@ -253,7 +248,6 @@ function matchParticipants(m) {
   if (Array.isArray(m?.playerIds)) return m.playerIds;
   const teams = m?.teams;
   if (Array.isArray(teams)) {
-    // [{ players: [...] }, ...]
     return teams.flatMap((t) => t?.players ?? []);
   }
   if (teams?.team1 || teams?.team2) {
@@ -371,11 +365,22 @@ function requestGeo() {
 /**
  * Utility functions
  */
+
+function refreshHome() {
+  Promise.all(
+    [loadMatches(), loadTournaments(), loadLocations()]
+  );
+}
+
+function onReservationCreated() {
+  refreshHome();
+}
+
 function matchTitle(m) {
-  return m?.name || m?.title || `Match ${m?.id ? `#${String(m.id).slice(0, 6)}` : ''}`.trim() || 'Match';
+  return 'Match at ' + (locationNameById(m?.locationId) || 'Friendly Match');
 }
 function matchStatus(m) {
-  return String(m?.status || 'Scheduled');
+  return String(statusLabel(m?.status) || 'Scheduled');
 }
 
 const statusOptions = [
@@ -384,6 +389,7 @@ const statusOptions = [
   { value: 'running', label: 'Running' },
   { value: 'finished', label: 'Finished' },
 ];
+
 function statusLabel(value) {
   const v = String(value || '').toLowerCase();
   return statusOptions.find((s) => s.value === v)?.label || (value ? value[0].toUpperCase() + value.slice(1) : '—');
@@ -412,8 +418,16 @@ function formatDateTime(val) {
   return Number.isNaN(d.getTime()) ? String(val) : d.toLocaleString();
 }
 
-onMounted(async () => {
-  await Promise.all([loadMatches(), loadTournaments(), loadLocations()]);
+onMounted(() => {
+  window.addEventListener('pm:reservation-created', onReservationCreated);
+});
+
+onMounted(() => {
+  refreshHome();  
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pm:reservation-created', onReservationCreated);
 });
 </script>
 

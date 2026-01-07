@@ -2,6 +2,12 @@
   <div class="layout">
     <AppToolbar @toggle-drawer="drawerOpen = true">
       <template #title>Padel Manager</template>
+
+      <template #right>
+        <button class="btn primary" type="button" @click="openBookMatch">
+          Book a match
+        </button>
+      </template>
     </AppToolbar>
 
     <SideDrawer :open="drawerOpen" @close="drawerOpen = false" />
@@ -10,6 +16,9 @@
       <router-view />
       <router-view name="modal" />
     </main>
+
+    <!-- Global modal mounted once -->
+    <BookMatchModal />
   </div>
 </template>
 
@@ -18,7 +27,15 @@ import { ref } from 'vue';
 import AppToolbar from '../components/common/AppToolbar.vue';
 import SideDrawer from '../components/common/SideDrawer.vue';
 
+import BookMatchModal from '../modules/matches/components/BookMatchModal.vue';
+import { useBookMatchModalStore } from '../modules/matches/store/useBookMatchModalStore';
+
 const drawerOpen = ref(false);
+const bookMatch = useBookMatchModalStore();
+
+function openBookMatch() {
+  bookMatch.openModal();
+}
 </script>
 
 <style scoped>
@@ -30,7 +47,6 @@ const drawerOpen = ref(false);
   min-height: 100%;
 }
 
-/* un singur container de conținut, cu padding constant */
 .content {
   padding: 20px 24px;
 }

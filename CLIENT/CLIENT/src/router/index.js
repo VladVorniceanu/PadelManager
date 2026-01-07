@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import AdminDashboardView from '../modules/admin/views/AdminDashboardView.vue';
 import LoginView from '../modules/auth/views/LoginView.vue';
 import RegisterView from '../modules/auth/views/RegisterView.vue';
-import FriendlyListView from '../modules/friendlyMatches/views/FriendlyListView.vue';
-import FriendlyCreateView from '../modules/friendlyMatches/views/FriendlyCreateView.vue';
+import FriendlyListView from '../modules/matches/views/MatchesListView.vue';
+import BookMatchModal from '../modules/matches/components/BookMatchModal.vue';
 import ProfileView from '../modules/profile/views/ProfileView.vue';
 import TournamentListView from '../modules/tournaments/views/TournamentListView.vue';
 import TournamentCreateWizard from '../modules/tournaments/views/TournamentCreateWizard.vue';
@@ -71,7 +71,7 @@ const routes = [
   {
     path: '/friendly/create',
     name: 'friendly-create',
-    component: FriendlyCreateView,
+    component: BookMatchModal,
     meta: { requiresAuth: true },
   },
 
