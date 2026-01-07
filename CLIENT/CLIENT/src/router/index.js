@@ -41,11 +41,14 @@ const routes = [
   // Locations (public)
   {
     path: '/locations',
+    name: 'locations-list',
     component: LocationsListView,
     children: [
       {
         path: ':id',
+        name: 'location-details',
         component: LocationDetailsView,
+        props: true,
       },
     ],
   },
@@ -113,7 +116,7 @@ const routes = [
   // 404 fallback
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/locations',
+    redirect: '/',
   },
 ];
 
@@ -148,12 +151,7 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return { name: 'profile' };
   }
-
-  // // Optional: dacă un admin intră pe "home", îl ducem în admin
-  // if (to.name === 'home' && authStore.isAuthenticated && authStore.isAdmin) {
-  //   return { name: 'admin' };
-  // }
-
+  
   return true;
 });
 

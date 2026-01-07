@@ -15,7 +15,7 @@
     </div>
 
     <nav class="sd-nav">
-      <button class="sd-item" @click="goProfile">Profil</button>
+      <button class="sd-item" @click="goProfile">Profile</button>
       <button class="sd-item" @click="goLocations">Locations</button>
       <button class="sd-item" @click="goTournaments">Tournaments</button>
       <button class="sd-item" @click="goFriendly">Friendly Matches</button>

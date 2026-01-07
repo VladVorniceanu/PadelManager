@@ -5,7 +5,7 @@
         <div class="authLogo">🏓</div>
         <div>
           <h1 class="authTitle">Create account</h1>
-          <p class="authSubtitle">Creează un cont nou pentru Padel Manager.</p>
+          <p class="authSubtitle">Create your new account for Padel Manager.</p>
         </div>
       </header>
 
@@ -22,7 +22,7 @@
             class="authInput"
             type="text"
             autocomplete="name"
-            placeholder="Ex: Vlad Vorniceanu"
+            placeholder="John Doe"
             :disabled="loading"
           />
         </label>
@@ -34,7 +34,7 @@
             class="authInput"
             type="email"
             autocomplete="email"
-            placeholder="you@example.com"
+            placeholder="JohnDoe@example.com"
             :disabled="loading"
           />
         </label>
@@ -46,7 +46,7 @@
             class="authInput"
             type="password"
             autocomplete="new-password"
-            placeholder="Min 6 characters"
+            placeholder="At least 6 characters..."
             :disabled="loading"
           />
         </label>
@@ -73,7 +73,7 @@
       </form>
 
       <footer class="authFooter">
-        Prin crearea contului accepți regulile aplicației (placeholder).
+        By creating an account, you agree to the application's terms and conditions (placeholder).
       </footer>
     </section>
   </div>

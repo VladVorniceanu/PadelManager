@@ -5,7 +5,7 @@
         <div class="authLogo">🏓</div>
         <div>
           <h1 class="authTitle">Welcome back</h1>
-          <p class="authSubtitle">Loghează-te ca să continui în Padel Manager.</p>
+          <p class="authSubtitle">Please log in to continue to Padel Manager.</p>
         </div>
       </header>
 
@@ -22,7 +22,7 @@
             class="authInput"
             type="email"
             autocomplete="email"
-            placeholder="you@example.com"
+            placeholder="YourEmail@example.com"
             :disabled="loading"
           />
         </label>
@@ -49,7 +49,7 @@
       </form>
 
       <footer class="authFooter">
-        <span class="muted">Tip:</span> Dacă ești admin, vei fi redirecționat automat către Admin.
+        <span class="muted">Tip:</span> If you are an admin, you will be redirected to the admin dashboard upon login.
       </footer>
     </section>
   </div>
@@ -93,7 +93,7 @@ async function onSubmit() {
     }
 
     // fallback: role-based default
-    await router.replace(authStore.isAdmin ? { name: 'admin' } : { name: 'locations-list' });
+    await router.replace(authStore.isAdmin ? { name: 'admin' } : { name: 'home' });
   } catch (e) {
     console.error(e);
     error.value = authStore.error || e?.message || 'Login failed.';
