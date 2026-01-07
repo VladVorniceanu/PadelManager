@@ -139,7 +139,7 @@ router.beforeEach(async (to) => {
 
   // Guest-only pages (login/register)
   if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return authStore.isAdmin ? { name: 'admin' } : { name: 'locations-list' };
+    return authStore.isAdmin ? { name: 'admin' } : { name: 'home' };
   }
 
   // Auth required
@@ -151,7 +151,7 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
     return { name: 'profile' };
   }
-  
+
   return true;
 });
 

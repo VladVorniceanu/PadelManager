@@ -188,16 +188,16 @@ const displayName = computed(() => {
  */
 function goBookMatch() {
   // schimbă cu ruta ta reală (ex: '/book' sau '/matches/create')
-  router.push({ path: '/matches/create' }).catch(() => {});
+  router.push({ name: 'friendly-create' }).catch(() => {});
 }
 function goMatches() {
-  router.push({ path: '/matches' }).catch(() => {});
+  router.push({ name: 'friendly-list' }).catch(() => {});
 }
 function goLocations() {
-  router.push({ path: '/locations' }).catch(() => {});
+  router.push({ name: 'locations-list' }).catch(() => {});
 }
 function goTournaments() {
-  router.push({ path: '/tournaments' }).catch(() => {});
+  router.push({ name: 'tournaments-list' }).catch(() => {});
 }
 
 /**
@@ -334,7 +334,6 @@ function haversineKm(a, b) {
 
 const nearbyLocations = computed(() => {
   const list = locations.value || [];
-  // fără geolocation -> fallback primele 3
   if (!geoEnabled.value || !userPos.value) {
     return list.slice(0, 3);
   }
@@ -370,7 +369,7 @@ function requestGeo() {
 }
 
 /**
- * Helpers / labels
+ * Utility functions
  */
 function matchTitle(m) {
   return m?.name || m?.title || `Match ${m?.id ? `#${String(m.id).slice(0, 6)}` : ''}`.trim() || 'Match';

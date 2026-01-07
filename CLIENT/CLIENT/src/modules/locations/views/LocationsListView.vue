@@ -3,7 +3,7 @@
     <header class="pageHeader">
       <div>
         <h1 class="pageTitle">Locations</h1>
-        <p class="pageSubtitle">Alege o locație și rezervă rapid un meci.</p>
+        <p class="pageSubtitle">Check out all the available locations.</p>
       </div>
 
       <button class="btn subtle" :disabled="loading" @click="load">
@@ -18,14 +18,14 @@
     </div>
 
     <div v-else-if="error" class="card error">
-      <div class="errorTitle">Eroare</div>
+      <div class="errorTitle">Error</div>
       <div class="errorMsg">{{ error }}</div>
       <button class="btn" @click="load">Retry</button>
     </div>
 
     <div v-else-if="!items.length" class="card empty">
-      <div class="emptyTitle">Nu există locații.</div>
-      <div class="emptyMsg">Revino mai târziu.</div>
+      <div class="emptyTitle">No locations available.</div>
+      <div class="emptyMsg">Please come back later.</div>
     </div>
 
     <div v-else class="list">
@@ -54,7 +54,6 @@
       </button>
     </div>
 
-    <!-- modal route outlet -->
     <router-view />
   </section>
 </template>
