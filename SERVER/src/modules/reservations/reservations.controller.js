@@ -59,7 +59,7 @@ export async function getCourtAvailabilityHandler(req, res) {
   if (!Number.isFinite(tzOffset)) return res.status(400).json({ message: 'tzOffset must be number' });
 
   try {
-    const out = await reservationsService.getCourtAvailability({
+    const out = await service.getCourtAvailability({
       courtId,
       date,
       durationMinutes: duration,
