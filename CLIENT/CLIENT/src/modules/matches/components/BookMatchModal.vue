@@ -1,11 +1,11 @@
 <template>
   <teleport to="body">
     <div v-if="modal.open" class="backdrop" @click.self="close">
-      <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal modal--wide" role="dialog" aria-modal="true">
         <div class="modalHeader">
           <div>
             <div class="modalTitle">Book a match</div>
-            <div class="modalSubtitle">Creează o rezervare (și implicit un meci).</div>
+            <div class="modalSubtitle">Pick location, court and an available time slot.</div>
           </div>
           <button class="iconBtn" type="button" @click="close" aria-label="Close">✕</button>
         </div>
@@ -17,6 +17,7 @@
 
         <form class="form" @submit.prevent="submit">
           <div class="formGrid">
+            <!-- Location -->
             <label class="field full">
               <div class="label">Location</div>
               <select v-model="form.locationId" class="select" :disabled="loadingLocations">
@@ -27,9 +28,14 @@
               </select>
             </label>
 
+            <!-- Court -->
             <label class="field full">
               <div class="label">Court</div>
-              <select v-model="form.courtId" class="select" :disabled="!courtsForSelected.length">
+              <select
+                v-model="form.courtId"
+                class="select"
+                :disabled="!form.locationId || !courtsForSelected.length"
+              >
                 <option value="" disabled>
                   {{ !form.locationId ? 'Pick a location first…' : 'Select a court…' }}
                 </option>
@@ -39,20 +45,112 @@
               </select>
             </label>
 
-            <label class="field">
-              <div class="label">Start</div>
-              <input v-model="form.startAtLocal" class="input" type="datetime-local" />
+            <!-- Duration -->
+            <div class="field full">
+              <div class="label">Duration</div>
+              <div class="durationPills" role="radiogroup" aria-label="Duration">
+                <button
+                  v-for="d in DURATIONS"
+                  :key="d"
+                  type="button"
+                  class="durationPill"
+                  :class="{ active: form.duration === d }"
+                  @click="form.duration = d"
+                >
+                  {{ d }} min
+                </button>
+              </div>
+            </div>
+
+            <!-- Date -->
+            <label class="field full">
+              <div class="label">Date</div>
+              <input v-model="form.dateLocal" class="input" type="date" />
             </label>
 
-            <label class="field">
-              <div class="label">End</div>
-              <input v-model="form.endAtLocal" class="input" type="datetime-local" />
-            </label>
+            <!-- Availability -->
+            <div class="field full">
+              <div class="label">Available times</div>
+
+              <div v-if="!canLoadAvailability" class="inlineNotice">
+                Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
+              </div>
+
+              <div v-else>
+                <div v-if="loadingAvail" class="card" style="padding: 12px;">
+                  <div class="skeletonLine"></div>
+                  <div class="skeletonLine"></div>
+                </div>
+
+                <div v-else-if="!availability.slots.length" class="inlineNotice">
+                  No available slots for this day. Try another date or duration.
+                </div>
+
+                <div v-else class="slotsGrid" role="list">
+                  <button
+                    v-for="s in availability.slots"
+                    :key="s.startAt"
+                    type="button"
+                    class="slotBtn"
+                    :class="{ active: form.startAt === s.startAt }"
+                    @click="pickSlot(s)"
+                  >
+                    {{ s.label }}
+                  </button>
+                </div>
+
+                <div v-if="form.startAt && form.endAt" class="pickedHint">
+                  Selected: <b>{{ pickedLabel }}</b> ({{ form.duration }} min)
+                </div>
+              </div>
+            </div>
+
+            <!-- Players -->
+            <div class="field full">
+              <div class="label">Players</div>
+
+              <div class="teamsEditor">
+                <div class="teamsEditor__col">
+                  <div class="teamsEditor__head">Team 1</div>
+                  <div class="teamsEditor__hint">Player 1 is always you.</div>
+
+                  <div class="slotRow">
+                    <div class="slotLabel">P1</div>
+                    <div class="pill strong">Me</div>
+                  </div>
+
+                  <div class="slotRow">
+                    <div class="slotLabel">P2</div>
+                    <PlayerSearchInput v-model="team1p2" />
+                  </div>
+                </div>
+
+                <div class="teamsEditor__divider" aria-hidden="true"></div>
+
+                <div class="teamsEditor__col">
+                  <div class="teamsEditor__head">Team 2</div>
+
+                  <div class="slotRow">
+                    <div class="slotLabel">P1</div>
+                    <PlayerSearchInput v-model="team2p1" />
+                  </div>
+
+                  <div class="slotRow">
+                    <div class="slotLabel">P2</div>
+                    <PlayerSearchInput v-model="team2p2" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="teamsHint">
+                You can add/modify players later too. Empty slots are allowed.
+              </div>
+            </div>
           </div>
 
           <div class="modalActions">
             <button class="btn" type="button" @click="close">Cancel</button>
-            <button class="btn primary" type="submit" :disabled="saving">
+            <button class="btn primary" type="submit" :disabled="saving || !canSubmit">
               {{ saving ? 'Saving…' : 'Create reservation' }}
             </button>
           </div>
@@ -68,33 +166,87 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useBookMatchModalStore } from '../store/useBookMatchModalStore';
-import { fetchLocations } from '../../../api/locationsApi';
-import { createReservation } from '../../../api/reservationsApi';
 import { useRouter } from 'vue-router';
+import { auth } from '@/services/firebase';
+
+import PlayerSearchInput from '@/components/common/PlayerSearchInput.vue';
+import { useBookMatchModalStore } from '@/modules/matches/store/useBookMatchModalStore';
+import { fetchLocations } from '@/api/locationsApi';
+import { createReservation, getCourtAvailability } from '@/api/reservationsApi';
 
 const router = useRouter();
-
 const modal = useBookMatchModalStore();
+
+const DURATIONS = [60, 90, 120];
 
 const loadingLocations = ref(false);
 const locations = ref([]);
+
+const loadingAvail = ref(false);
+const availability = ref({ slots: [] });
 
 const saving = ref(false);
 const uiError = ref(null);
 const successMsg = ref('');
 
+// "request version" to ignore stale availability responses
+let availabilityReqId = 0;
+
 const form = reactive({
   locationId: '',
   courtId: '',
-  startAtLocal: '',
-  endAtLocal: '',
+  duration: 90,
+  dateLocal: '',
+  startAt: '', // ISO
+  endAt: '',   // ISO
 });
 
-function close() {
+const team1p2 = ref(null);
+const team2p1 = ref(null);
+const team2p2 = ref(null);
+
+function resetEphemeral() {
   uiError.value = null;
   successMsg.value = '';
+}
+
+function resetForm() {
+  form.locationId = modal.locationId || '';
+  form.courtId = '';
+  form.duration = 90;
+  form.dateLocal = defaultDateLocal();
+  form.startAt = '';
+  form.endAt = '';
+
+  team1p2.value = null;
+  team2p1.value = null;
+  team2p2.value = null;
+
+  availability.value = { slots: [] };
+}
+
+function close() {
+  resetEphemeral();
   modal.closeModal();
+}
+
+function defaultDateLocal() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+async function loadLocationsOnce() {
+  if (locations.value?.length) return;
+  loadingLocations.value = true;
+  try {
+    locations.value = (await fetchLocations()) || [];
+  } catch (e) {
+    // fail-safe: allow modal to open; show error only if user needs it
+    console.error(e);
+  } finally {
+    loadingLocations.value = false;
+  }
 }
 
 const locationOptions = computed(() =>
@@ -122,107 +274,149 @@ const courtsForSelected = computed(() => {
     .filter(Boolean);
 });
 
-function toIsoOrNull(datetimeLocal) {
-  if (!datetimeLocal) return null;
-  const d = new Date(datetimeLocal);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
+const canLoadAvailability = computed(() =>
+  Boolean(form.locationId && form.courtId && form.dateLocal && DURATIONS.includes(form.duration))
+);
+
+function clearPickedSlot() {
+  form.startAt = '';
+  form.endAt = '';
 }
 
-async function loadLocationsOnce() {
-  if (locations.value?.length) return;
-  loadingLocations.value = true;
+async function loadAvailability() {
+  if (!canLoadAvailability.value) {
+    availability.value = { slots: [] };
+    return;
+  }
+
+  const myReq = ++availabilityReqId;
+  loadingAvail.value = true;
+
   try {
-    locations.value = (await fetchLocations()) || [];
+    const tzOffset = new Date().getTimezoneOffset();
+
+    const res = await getCourtAvailability({
+      courtId: form.courtId,
+      date: form.dateLocal,
+      duration: form.duration,
+      tzOffset,
+    });
+
+    // ignore stale response
+    if (myReq !== availabilityReqId) return;
+
+    availability.value = res || { slots: [] };
+
+    // if user had selected a slot that no longer exists, clear it
+    if (form.startAt && !availability.value.slots.some((s) => s.startAt === form.startAt)) {
+      clearPickedSlot();
+    }
+  } catch (e) {
+    console.error(e);
+    if (myReq !== availabilityReqId) return;
+    availability.value = { slots: [] };
   } finally {
-    loadingLocations.value = false;
+    if (myReq === availabilityReqId) loadingAvail.value = false;
   }
 }
 
-// when modal opens, apply optional prefill + defaults
+function pickSlot(s) {
+  form.startAt = s.startAt;
+  form.endAt = s.endAt;
+}
+
+const pickedLabel = computed(() => {
+  const s = availability.value?.slots?.find((x) => x.startAt === form.startAt);
+  return s?.label || '—';
+});
+
+const canSubmit = computed(() =>
+  Boolean(form.locationId && form.courtId && form.startAt && form.endAt)
+);
+
+// ---- Watchers (minimal + deterministic) ----
+
+// Open: init + ensure we have locations + load availability (if possible)
 watch(
   () => modal.open,
   async (isOpen) => {
     if (!isOpen) return;
 
-    uiError.value = null;
-    successMsg.value = '';
-
-    await loadLocationsOnce();
-
-    form.locationId = modal.locationId || form.locationId || '';
-    form.courtId = '';
-
-    // defaults: now+1h, +2h
-    const now = new Date();
-    const start = new Date(now.getTime() + 60 * 60 * 1000);
-    const end = new Date(now.getTime() + 2 * 60 * 60 * 1000);
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const toLocalInput = (d) =>
-      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
-    form.startAtLocal = toLocalInput(start);
-    form.endAtLocal = toLocalInput(end);
+    resetEphemeral();
+    await loadLocationsOnce(); // warmup exists in MainLayout, but keep as fail-safe
+    resetForm();
+    await loadAvailability();
   }
 );
 
+// When location changes: reset dependent fields
 watch(
   () => form.locationId,
   () => {
     form.courtId = '';
+    availability.value = { slots: [] };
+    clearPickedSlot();
   }
 );
 
+// When any availability input changes: reload availability
+watch(
+  () => [form.courtId, form.dateLocal, form.duration],
+  async () => {
+    availability.value = { slots: [] };
+    clearPickedSlot();
+    await loadAvailability();
+  }
+);
+
+// ---- Submit ----
+
+function toUid(userOrNull) {
+  if (!userOrNull) return null;
+  if (typeof userOrNull === 'string') return userOrNull;
+  return userOrNull.id || userOrNull.uid || null;
+}
+
 async function submit() {
-  uiError.value = null;
-  successMsg.value = '';
+  resetEphemeral();
 
-  if (!form.locationId) {
-    uiError.value = 'Selectează o locație.';
-    return;
-  }
-  if (!form.courtId) {
-    uiError.value = 'Selectează un teren.';
+  if (!canSubmit.value) {
+    uiError.value = 'Selectează un slot disponibil.';
     return;
   }
 
-  const startAt = toIsoOrNull(form.startAtLocal);
-  const endAt = toIsoOrNull(form.endAtLocal);
-  if (!startAt || !endAt) {
-    uiError.value = 'Datele sunt invalide. Alege Start/End.';
+  const uid = auth.currentUser?.uid || null;
+  if (!uid) {
+    uiError.value = 'Trebuie să fii logat.';
     return;
   }
 
   saving.value = true;
   try {
-    await createReservation({
+    const payload = {
       locationId: form.locationId,
       courtId: form.courtId,
-      startAt,
-      endAt,
-      tournamentId: null,
-    });
+      startAt: form.startAt,
+      endAt: form.endAt,
+      teams: {
+        team1: [uid, toUid(team1p2.value)],
+        team2: [toUid(team2p1.value), toUid(team2p2.value)],
+      },
+    };
 
-    successMsg.value = 'Reservation created successfully.';
+    await createReservation(payload);
 
-    // ✅ notify pages that care about it
-    const path = router.currentRoute.value?.path || '';
-    const shouldRefreshHere = path === '/' || path.startsWith('/friendly');
-
-    if (shouldRefreshHere) {
-      window.dispatchEvent(new CustomEvent('pm:reservation-created', {
-        detail: { locationId: form.locationId, courtId: form.courtId, startAt, endAt }
-      }));
-      close();
-      return;
-    }
-
-    // otherwise: go home
+    // notify + close
+    window.dispatchEvent(new CustomEvent('pm:reservation-created', { detail: payload }));
     close();
-    await router.push({ name: 'home' }).catch(() => {});
-    
+
+    // optional navigation (keep simple + safe)
+    const path = router.currentRoute.value?.path || '';
+    if (!(path === '/' || path.startsWith('/friendly') || path.startsWith('/matches'))) {
+      await router.push({ name: 'home' }).catch(() => {});
+    }
   } catch (e) {
+    console.error(e);
     uiError.value = e?.response?.data?.message || e?.message || 'Operation failed.';
   } finally {
     saving.value = false;
@@ -231,3 +425,10 @@ async function submit() {
 
 onMounted(loadLocationsOnce);
 </script>
+
+<style scoped>
+/* ✅ păstrăm în componentă DOAR dimensiunea specială a modalului */
+.modal--wide {
+  width: min(1200px, 96vw);
+}
+</style>
