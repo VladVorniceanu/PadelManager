@@ -39,8 +39,6 @@ function openBookMatch() {
 </script>
 
 <style scoped>
-/* layout-ul NU setează width / centrare.
-   Asta e responsabilitatea “shell”-ului global din style.css */
 .layout {
   display: flex;
   flex-direction: column;

@@ -16,9 +16,9 @@
 
     <nav class="sd-nav">
       <button class="sd-item" @click="goProfile">Profile</button>
-      <button class="sd-item" @click="goLocations">Locations</button>
+      <button class="sd-item" @click="goMatches">Matches</button>
       <button class="sd-item" @click="goTournaments">Tournaments</button>
-      <button class="sd-item" @click="goFriendly">Friendly Matches</button>
+      <button class="sd-item" @click="goLocations">Locations</button>
 
       <button v-if="isAdmin" class="sd-item" @click="goAdmin">Admin Dashboard</button>
 
@@ -46,7 +46,7 @@ const isAdmin = computed(() => authStore.profile?.role === 'admin');
 async function goProfile() { emit('close'); await router.push({ name: 'profile' }); }
 async function goLocations() { emit('close'); await router.push({ name: 'locations-list' }); }
 async function goTournaments() { emit('close'); await router.push({ name: 'tournaments-list' }); }
-async function goFriendly() { emit('close'); await router.push({ name: 'friendly-list' }); }
+async function goMatches() { emit('close'); await router.push({ name: 'friendly-list' }); }
 async function goAdmin() { emit('close'); await router.push({ name: 'admin' }); }
 
 async function logout() {

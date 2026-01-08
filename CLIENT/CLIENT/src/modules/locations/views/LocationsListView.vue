@@ -90,10 +90,4 @@ onMounted(load);
 </script>
 
 <style scoped>
-.page { display: flex; flex-direction: column; gap: 16px; }
-.pageHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-.pageTitle { margin: 0; font-size: 22px; font-weight: 950; letter-spacing: -0.02em; }
-.pageSubtitle { margin: 6px 0 0; font-size: 13px; color: #6b7280; }
-
-.list { display: flex; flex-direction: column; gap: 12px; }
 </style>
