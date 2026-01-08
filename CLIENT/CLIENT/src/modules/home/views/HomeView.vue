@@ -1,25 +1,21 @@
 <template>
-  <section class="home">
-    <!-- Top row -->
-    <header class="home__hero">
-      <div class="home__heroLeft">
-        <h1 class="home__title">
-          Welcome, <span class="home__name">{{ displayName }}</span>
+  <section class="page">
+    <!-- Hero -->
+    <header class="homeHero">
+      <div>
+        <h1 class="homeTitle">
+          Welcome, <span class="homeName">{{ displayName }}</span>
         </h1>
-        <p class="home__subtitle">
-          Quick overview of what’s happening in your Padel Manager account.
-        </p>
+        <p class="pageSubtitle">Quick overview of what’s happening in your Padel Manager account.</p>
       </div>
-
     </header>
 
-    <!-- Sections -->
-    <div class="home__sections">
+    <div class="homeSections">
       <!-- Future matches -->
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Your future matches</h2>
-          <button class="btn subtle" @click="goMatches">View all</button>
+          <button class="btn subtle" type="button" @click="goMatches">View all</button>
         </div>
 
         <div v-if="loadingMatches" class="card">
@@ -27,22 +23,80 @@
           <div class="skeletonLine"></div>
         </div>
 
-        <div v-else-if="futureMatches.length === 0" class="card empty">
+        <div v-else-if="!futureMatches.length" class="card empty">
           <div class="emptyTitle">No upcoming matches.</div>
           <div class="emptyMsg">Create one and invite players.</div>
         </div>
 
-        <div v-else class="grid3">
-          <article v-for="m in futureMatches" :key="m.id" class="itemCard">
-            <div class="itemCard__top">
-              <div class="itemCard__title">{{ matchTitle(m) }}</div>
-              <span class="pill">{{ matchStatus(m) }}</span>
+        <div v-else class="homeMatchesGrid">
+          <button
+            v-for="m in futureMatches"
+            :key="m.id"
+            type="button"
+            class="listCard listCard--match homeMatchCard"
+            @click="openDetails(m)"
+          >
+            <!-- LEFT -->
+            <div class="listCard__left">
+              <div class="listCard__titleRow">
+                <div class="listCard__title">
+                  Match at {{ locationNameById(matchLocationId(m)) }}
+                </div>
+              </div>
+
+              <span class="pill">{{ matchBadge(m) }}</span>
+
+              <div class="matchLeftMeta">
+                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
+                <div>🎾 {{ courtLabel(m) }}</div>
+              </div>
             </div>
-            <div class="itemCard__meta">
-              <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
-              <div v-if="matchLocationLabel(m)">📍 {{ matchLocationLabel(m) }}</div>
+
+            <!-- RIGHT -->
+            <div class="listCard__right matchRight">
+              <div class="scoreBox">
+                <!-- Score (sets) -->
+                <div v-if="hasPadelScore(m)" class="scoreBox__score">
+                  <div class="setsScore" aria-label="Sets score">
+                    <div
+                      v-for="(s, idx) in normalizedSets(m)"
+                      :key="`${m.id}-set-${idx}`"
+                      class="setCol"
+                    >
+                      <div class="setVal">{{ s.t1 }}</div>
+                      <div class="setDash">—</div>
+                      <div class="setVal">{{ s.t2 }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Teams -->
+                <div class="teamsBox" aria-label="Teams">
+                  <div class="teamCol">
+                    <div
+                      v-for="(uid, idx) in teamPlayers(m, 1)"
+                      :key="`t1-${m.id}-${idx}`"
+                      class="playerLine"
+                    >
+                      {{ userDisplayNameById(uid, { meUid: myUid }) }}
+                    </div>
+                  </div>
+
+                  <div class="teamsDividerV" aria-hidden="true"></div>
+
+                  <div class="teamCol">
+                    <div
+                      v-for="(uid, idx) in teamPlayers(m, 2)"
+                      :key="`t2-${m.id}-${idx}`"
+                      class="playerLine"
+                    >
+                      {{ userDisplayNameById(uid, { meUid: myUid }) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </article>
+          </button>
         </div>
       </section>
 
@@ -50,7 +104,7 @@
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Recent matches</h2>
-          <button class="btn subtle" @click="goMatches">View all</button>
+          <button class="btn subtle" type="button" @click="goMatches">View all</button>
         </div>
 
         <div v-if="loadingMatches" class="card">
@@ -58,22 +112,78 @@
           <div class="skeletonLine"></div>
         </div>
 
-        <div v-else-if="recentMatches.length === 0" class="card empty">
+        <div v-else-if="!recentMatches.length" class="card empty">
           <div class="emptyTitle">No recent matches.</div>
           <div class="emptyMsg">Play a match to see history here.</div>
         </div>
 
-        <div v-else class="grid3">
-          <article v-for="m in recentMatches" :key="m.id" class="itemCard">
-            <div class="itemCard__top">
-              <div class="itemCard__title">{{ matchTitle(m) }}</div>
-              <span class="pill">{{ matchStatus(m) }}</span>
+        <div v-else class="homeMatchesGrid">
+          <button
+            v-for="m in recentMatches"
+            :key="m.id"
+            type="button"
+            class="listCard listCard--match homeMatchCard"
+            @click="openDetails(m)"
+          >
+            <!-- LEFT -->
+            <div class="listCard__left">
+              <div class="listCard__titleRow">
+                <div class="listCard__title">
+                  Match at {{ locationNameById(matchLocationId(m)) }}
+                </div>
+              </div>
+
+              <span class="pill">{{ matchBadge(m) }}</span>
+
+              <div class="matchLeftMeta">
+                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
+                <div>🎾 {{ courtLabel(m) }}</div>
+              </div>
             </div>
-            <div class="itemCard__meta">
-              <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
-              <div v-if="matchLocationLabel(m)">📍 {{ matchLocationLabel(m) }}</div>
+
+            <!-- RIGHT -->
+            <div class="listCard__right matchRight">
+              <div class="scoreBox">
+                <div v-if="hasPadelScore(m)" class="scoreBox__score">
+                  <div class="setsScore" aria-label="Sets score">
+                    <div
+                      v-for="(s, idx) in normalizedSets(m)"
+                      :key="`${m.id}-set-${idx}`"
+                      class="setCol"
+                    >
+                      <div class="setVal">{{ s.t1 }}</div>
+                      <div class="setDash">—</div>
+                      <div class="setVal">{{ s.t2 }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="teamsBox" aria-label="Teams">
+                  <div class="teamCol">
+                    <div
+                      v-for="(uid, idx) in teamPlayers(m, 1)"
+                      :key="`t1-${m.id}-${idx}`"
+                      class="playerLine"
+                    >
+                      {{ userDisplayNameById(uid, { meUid: myUid }) }}
+                    </div>
+                  </div>
+
+                  <div class="teamsDividerV" aria-hidden="true"></div>
+
+                  <div class="teamCol">
+                    <div
+                      v-for="(uid, idx) in teamPlayers(m, 2)"
+                      :key="`t2-${m.id}-${idx}`"
+                      class="playerLine"
+                    >
+                      {{ userDisplayNameById(uid, { meUid: myUid }) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </article>
+          </button>
         </div>
       </section>
 
@@ -83,19 +193,19 @@
           <h2 class="homeSection__title">Locations</h2>
 
           <div class="homeSection__actions">
-            <button class="btn subtle" @click="requestGeo" :disabled="geoBusy">
+            <button class="btn subtle" type="button" @click="requestGeo" :disabled="geoBusy">
               {{ geoBusy ? 'Locating…' : geoEnabled ? 'Location enabled' : 'Use my location' }}
             </button>
-            <button class="btn subtle" @click="goLocations">View all</button>
+            <button class="btn subtle" type="button" @click="goLocations">View all</button>
           </div>
         </div>
 
-        <div v-if="loadingLocations" class="card">
+        <div v-if="loadingLookups" class="card">
           <div class="skeletonLine"></div>
           <div class="skeletonLine"></div>
         </div>
 
-        <div v-else-if="nearbyLocations.length === 0" class="card empty">
+        <div v-else-if="!nearbyLocations.length" class="card empty">
           <div class="emptyTitle">No locations to show.</div>
           <div class="emptyMsg">
             {{ geoEnabled ? 'No locations found within 20km (or missing coordinates).' : 'Enable location to see nearby results.' }}
@@ -120,7 +230,7 @@
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Available tournaments</h2>
-          <button class="btn subtle" @click="goTournaments">View all</button>
+          <button class="btn subtle" type="button" @click="goTournaments">View all</button>
         </div>
 
         <div v-if="loadingTournaments" class="card">
@@ -128,7 +238,7 @@
           <div class="skeletonLine"></div>
         </div>
 
-        <div v-else-if="availableTournaments.length === 0" class="card empty">
+        <div v-else-if="!availableTournaments.length" class="card empty">
           <div class="emptyTitle">No tournaments available.</div>
           <div class="emptyMsg">Check back later.</div>
         </div>
@@ -141,50 +251,67 @@
             </div>
             <div class="itemCard__meta">
               <div>🗓 {{ formatDate(t.startDate) }} → {{ formatDate(t.endDate) }}</div>
-              <div v-if="locationNameById(t.locationId)">📍 {{ locationNameById(t.locationId) }}</div>
+              <div>📍 {{ locationNameById(t.locationId) }}</div>
             </div>
           </article>
         </div>
       </section>
     </div>
+
+    <!-- Details modal -->
+    <MatchDetailsModal
+      v-if="details.open && details.item"
+      :match="details.item"
+      :locations="locations"
+      :my-uid="myUid"
+      @close="closeDetails"
+      @updated="onMatchUpdated"
+    />
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { auth } from '../../../services/firebase';
-import { httpClient } from '../../../api/httpClient';
-import { fetchLocations } from '../../../api/locationsApi';
-import { useBookMatchModalStore } from '../../matches/store/useBookMatchModalStore';
+import { auth } from '@/services/firebase';
+import { httpClient } from '@/api/httpClient';
+import { useLookups } from '@/composables/useLookups';
+import MatchDetailsModal from '@/modules/matches/views/MatchDetailsModal.vue';
 
 const router = useRouter();
 
+const {
+  warmupLookups,
+  locations,
+  users, // not directly used here, but kept for reactive re-render of names
+  locationNameById,
+  userDisplayNameById,
+} = useLookups();
+
+// ---- local state (home-specific API only) ----
 const loadingMatches = ref(false);
 const loadingTournaments = ref(false);
-const loadingLocations = ref(false);
+const loadingLookups = ref(false);
 
 const matches = ref([]);
 const tournaments = ref([]);
-const locations = ref([]);
 
+// geo
 const geoBusy = ref(false);
 const geoEnabled = ref(false);
-const userPos = ref(null); // { lat, lng }
-const bookMatch = useBookMatchModalStore();
+const userPos = ref(null); // {lat,lng}
 
+// modal state
+const details = reactive({ open: false, item: null });
+
+// ---- computed ----
+const myUid = computed(() => auth.currentUser?.uid || '');
 const displayName = computed(() => {
   const u = auth.currentUser;
   return u?.displayName || u?.email || 'player';
 });
 
-/**
- * Routing helpers
- */
-function goBookMatch() {
-  bookMatch.openModal();
-}
-
+// ---- routing ----
 function goMatches() {
   router.push({ name: 'friendly-list' }).catch(() => {});
 }
@@ -195,12 +322,7 @@ function goTournaments() {
   router.push({ name: 'tournaments-list' }).catch(() => {});
 }
 
-/**
- * Loaders (fără API-uri noi pe server)
- * - matches: GET /matches
- * - tournaments: GET /tournaments
- * - locations: folosim locationsApi existent
- */
+// ---- loaders ----
 async function loadMatches() {
   loadingMatches.value = true;
   try {
@@ -225,36 +347,44 @@ async function loadTournaments() {
   }
 }
 
-async function loadLocations() {
-  loadingLocations.value = true;
-  try {
-    const items = await fetchLocations();
-    locations.value = items ?? [];
-  } catch {
-    locations.value = [];
-  } finally {
-    loadingLocations.value = false;
+async function refreshHome() {
+  await Promise.allSettled([loadMatches(), loadTournaments()]);
+}
+
+// ---- match helpers (same “shape-safe” style as MatchesListView) ----
+function matchDate(m) {
+  return m?.scheduledAt;
+}
+function isFuture(m) {
+  const d = new Date(matchDate(m));
+  return !Number.isNaN(d.getTime()) && d.getTime() > Date.now();
+}
+
+function matchBadge(m) {
+  const status = String(m?.status || '').toLowerCase();
+  if (status === 'completed') return 'Completed';
+  if (status === 'ongoing') return 'Ongoing';
+  if (status === 'scheduled' && isFuture(m)) return 'Future'
+  else {
+    
+    return 'Completed';
   }
 }
 
-/**
- * Filtering logic (best-effort, ca să nu depindem 100% de schema exactă)
- */
-const myUid = computed(() => auth.currentUser?.uid);
+function matchLocationId(m) {
+  return m?.locationId;
+}
+
+function courtLabel(m) {
+  const id = m?.courtId;
+  if (id) return `Court ${String(id).slice(0, 6)}`;
+  return 'Court —';
+}
 
 function matchParticipants(m) {
-  // încearcă mai multe forme posibile
-  if (Array.isArray(m?.participants)) return m.participants;
-  if (Array.isArray(m?.playerIds)) return m.playerIds;
-  const teams = m?.teams;
-  if (Array.isArray(teams)) {
-    return teams.flatMap((t) => t?.players ?? []);
-  }
-  if (teams?.team1 || teams?.team2) {
-    const t1 = teams.team1?.players ?? [];
-    const t2 = teams.team2?.players ?? [];
-    return [...t1, ...t2];
-  }
+  const t1 = m?.teams?.team1;
+  const t2 = m?.teams?.team2;
+  if (Array.isArray(t1) || Array.isArray(t2)) return [...(t1 || []), ...(t2 || [])].filter(Boolean);
   return [];
 }
 
@@ -262,24 +392,7 @@ function isMyMatch(m) {
   const uid = myUid.value;
   if (!uid) return false;
   if (m?.createdBy === uid) return true;
-  const list = matchParticipants(m);
-  return list.includes(uid);
-}
-
-function matchDate(m) {
-  return m?.scheduledAt || m?.startTime || m?.date || m?.createdAt || null;
-}
-
-function isFuture(m) {
-  const d = new Date(matchDate(m));
-  if (Number.isNaN(d.getTime())) return false;
-  return d.getTime() > Date.now();
-}
-
-function isPast(m) {
-  const d = new Date(matchDate(m));
-  if (Number.isNaN(d.getTime())) return false;
-  return d.getTime() <= Date.now();
+  return matchParticipants(m).includes(uid);
 }
 
 const myMatches = computed(() => (matches.value || []).filter(isMyMatch));
@@ -293,11 +406,36 @@ const futureMatches = computed(() =>
 
 const recentMatches = computed(() =>
   [...myMatches.value]
-    .filter(isPast)
+    .filter((m) => !isFuture(m))
     .sort((a, b) => new Date(matchDate(b)) - new Date(matchDate(a)))
     .slice(0, 3)
 );
 
+// ---- score helpers ----
+function normalizedSets(m) {
+  const sets = m?.score?.sets;
+  if (!Array.isArray(sets)) return [];
+  return sets
+    .map((s) => ({ t1: Number(s?.t1 ?? 0), t2: Number(s?.t2 ?? 0) }))
+    .filter((s) => Number.isFinite(s.t1) && Number.isFinite(s.t2));
+}
+function hasPadelScore(m) {
+  return normalizedSets(m).length > 0;
+}
+
+// ---- teams helpers ----
+function teamPlayers(m, teamNo) {
+  const teams = m?.teams;
+  if (teams?.team1 || teams?.team2) {
+    const arr = teamNo === 1 ? teams.team1 : teams.team2;
+    return Array.isArray(arr) ? arr.filter((x) => x != null) : [];
+  }
+  const all = matchParticipants(m);
+  const half = Math.ceil(all.length / 2);
+  return teamNo === 1 ? all.slice(0, half) : all.slice(half);
+}
+
+// ---- tournaments ----
 const availableTournaments = computed(() =>
   [...(tournaments.value || [])]
     .filter((t) => ['scheduled', 'running'].includes(String(t?.status || '').toLowerCase()))
@@ -305,32 +443,35 @@ const availableTournaments = computed(() =>
     .slice(0, 3)
 );
 
-/**
- * Locations 20km (dacă există coords)
- */
+function statusLabel(value) {
+  const v = String(value || '').toLowerCase();
+  if (v === 'draft') return 'Draft';
+  if (v === 'scheduled') return 'Scheduled';
+  if (v === 'ongoing') return 'Ongoing';
+  if (v === 'completed') return 'Completed';
+  return value ? value[0].toUpperCase() + value.slice(1) : '—';
+}
+
+// ---- locations (from lookups store, not API call here) ----
 function getLocCoords(l) {
-  // suportă mai multe shape-uri
   const lat = l?.lat ?? l?.latitude ?? l?.coords?.lat ?? l?.geo?.lat;
   const lng = l?.lng ?? l?.longitude ?? l?.coords?.lng ?? l?.geo?.lng;
   if (typeof lat !== 'number' || typeof lng !== 'number') return null;
   return { lat, lng };
 }
-
 function haversineKm(a, b) {
   const R = 6371;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
   const s1 = Math.sin(dLat / 2);
   const s2 = Math.sin(dLng / 2);
-  const aa = s1 * s1 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * s2 * s2;
+  const aa = s1 * s1 + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * s2 * s2;
   return 2 * R * Math.asin(Math.sqrt(aa));
 }
 
 const nearbyLocations = computed(() => {
   const list = locations.value || [];
-  if (!geoEnabled.value || !userPos.value) {
-    return list.slice(0, 3);
-  }
+  if (!geoEnabled.value || !userPos.value) return list.slice(0, 3);
 
   const out = [];
   for (const l of list) {
@@ -362,51 +503,22 @@ function requestGeo() {
   );
 }
 
-/**
- * Utility functions
- */
-
-function refreshHome() {
-  Promise.all(
-    [loadMatches(), loadTournaments(), loadLocations()]
-  );
+// ---- modal handlers ----
+function openDetails(m) {
+  details.item = m;
+  details.open = true;
+}
+function closeDetails() {
+  details.open = false;
+  details.item = null;
+}
+function onMatchUpdated(updated) {
+  if (!updated?.id) return;
+  matches.value = (matches.value || []).map((x) => (x.id === updated.id ? updated : x));
+  if (details.item?.id === updated.id) details.item = updated;
 }
 
-function onReservationCreated() {
-  refreshHome();
-}
-
-function matchTitle(m) {
-  return 'Match at ' + (locationNameById(m?.locationId) || 'Friendly Match');
-}
-function matchStatus(m) {
-  return String(statusLabel(m?.status) || 'Scheduled');
-}
-
-const statusOptions = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'scheduled', label: 'Scheduled' },
-  { value: 'running', label: 'Running' },
-  { value: 'finished', label: 'Finished' },
-];
-
-function statusLabel(value) {
-  const v = String(value || '').toLowerCase();
-  return statusOptions.find((s) => s.value === v)?.label || (value ? value[0].toUpperCase() + value.slice(1) : '—');
-}
-
-function locationNameById(locationId) {
-  if (!locationId) return '';
-  const loc = (locations.value || []).find((x) => x.id === locationId);
-  if (!loc) return '';
-  return `${loc.name || '—'}${loc.city ? ` — ${loc.city}` : ''}`;
-}
-
-function matchLocationLabel(m) {
-  const locationId = m?.locationId || m?.location?.id || null;
-  return locationNameById(locationId);
-}
-
+// ---- utils ----
 function formatDate(val) {
   if (!val) return '—';
   const d = new Date(val);
@@ -418,13 +530,20 @@ function formatDateTime(val) {
   return Number.isNaN(d.getTime()) ? String(val) : d.toLocaleString();
 }
 
-onMounted(() => {
-  window.addEventListener('pm:reservation-created', onReservationCreated);
-});
+// ---- events ----
+function onReservationCreated() {
+  refreshHome();
+}
 
-onMounted(() => {
-  refreshHome();  
-})
+onMounted(async () => {
+  window.addEventListener('pm:reservation-created', onReservationCreated);
+
+  loadingLookups.value = true;
+  await warmupLookups().catch(() => {});
+  loadingLookups.value = false;
+
+  await refreshHome();
+});
 
 onUnmounted(() => {
   window.removeEventListener('pm:reservation-created', onReservationCreated);
@@ -432,86 +551,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.home {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+/* local: keep minimal, rely on global UI primitives */
+.homeHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
+.homeTitle { margin: 0; font-size: 28px; font-weight: 950; letter-spacing: -0.02em; }
+.homeName { font-weight: 950; }
 
-.home__hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
-}
+.homeSections { display: flex; flex-direction: column; gap: 14px; }
+.homeSection { display: flex; flex-direction: column; gap: 10px; }
 
-.home__title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 950;
-  letter-spacing: -0.02em;
-}
-
-.home__subtitle {
-  margin: 6px 0 0;
-  color: #6b7280;
-  font-size: 13px;
-}
-
-.home__sections {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.homeSection {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.homeSection__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.homeSection__title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-}
-
-.homeSection__actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Card content formatting (specific) */
-.itemCard__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.itemCard__title {
-  font-weight: 950;
-  font-size: 14px;
-}
-
-.itemCard__meta {
-  margin-top: 10px;
-  color: #6b7280;
-  font-size: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+.homeSection__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.homeSection__title { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
+.homeSection__actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 </style>
