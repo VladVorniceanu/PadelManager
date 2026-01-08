@@ -1,4 +1,4 @@
-import { listUsers, updateUserRole } from './users.service.js';
+import { listUsers, updateUserRole, searchUsers } from './users.service.js';
 export async function getUsers(req, res, next) {
   try {
     const users = await listUsers();
@@ -37,14 +37,14 @@ export async function createTestUserHandler(req, res, next) {
   }
 }
 
-export async function searchUsers(req, res) {
+export async function searchUsersHandler(req, res) {
   const query = String(req.query.q || '').trim();
   const limit = Math.max(1, Math.min(20, Number(req.query.limit || 10)));
 
   if (!query) return res.json([]);
 
   try {
-    const items = await usersService.searchUsers(query, limit);
+    const items = await searchUsers(query, limit);
     return res.json(items);
   } catch (error) {
     console.error('searchUsers error', error);
