@@ -6,9 +6,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { onMounted,computed } from 'vue';
 import { useRoute } from 'vue-router';
 import MainLayout from './layouts/MainLayout.vue';
+import { useLookups } from './composables/useLookups';
+
 
 const route = useRoute();
 const isGuestOnlyRoute = computed(() => {
@@ -19,5 +21,11 @@ const isGuestOnlyRoute = computed(() => {
 
   const path = String(route.path || '');
   return path.startsWith('/login') || path.startsWith('/register');
+});
+
+const { warmupLookups } = useLookups();
+
+onMounted(() => {
+  warmupLookups();
 });
 </script>
