@@ -7,10 +7,35 @@ import { MATCHES_COLLECTION } from '../matches/matches.model.js';
  * Helpers (same paradigm)
  * ---------------------------
  */
-function httpError(message, status = 400) {
-  const err = new Error(message);
-  err.status = status;
+// Accept both call styles:
+export function httpError(status, message) {
+  const err = new Error(message || 'Error');
+  err.status = status || 500;
   return err;
+}
+
+function normalizeDateParam(dateRaw) {
+  const raw = Array.isArray(dateRaw) ? dateRaw[0] : dateRaw;
+
+  if (raw == null) return '';
+
+  // dacă e Date (rar, dar safe)
+  if (raw instanceof Date) {
+    if (Number.isNaN(raw.getTime())) return '';
+    const y = raw.getUTCFullYear();
+    const m = String(raw.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(raw.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // string
+  const s = String(raw).trim();
+
+  // dacă vine ISO cu timp -> păstrează doar yyyy-mm-dd
+  const head = s.slice(0, 10);
+
+  // accept doar yyyy-mm-dd
+  return head;
 }
 
 function toTimestampOrNull(iso) {
@@ -49,6 +74,13 @@ function clampTeams({ requesterUid, teams }) {
   }
 
   return { team1, team2 };
+}
+
+function toInt(raw) {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  if (v == null) return NaN;
+  const n = Number(String(v).trim());
+  return Number.isFinite(n) ? n : NaN;
 }
 
 /**
@@ -91,9 +123,18 @@ async function findOverlapsForCourt({ courtId, startAtDate, endAtDate }) {
  */
 export async function createReservationWithMatch({ uid, payload }) {
   const startDate = toDateOrNull(payload.startAt);
-  const endDate = toDateOrNull(payload.endAt);
-  if (!startDate || !endDate) throw httpError('Invalid startAt/endAt', 400);
-  if (endDate.getTime() <= startDate.getTime()) throw httpError('endAt must be after startAt', 400);
+  if (!startDate) throw httpError(400, 'Invalid startAt');
+
+  // endAt can be provided, or auto-calculated from durationMinutes
+  let endDate = toDateOrNull(payload.endAt);
+  if (!endDate) {
+    const dur = Number(payload.durationMinutes ?? payload.duration ?? 90);
+    if (!Number.isFinite(dur) || dur <= 0) throw httpError(400, 'Invalid durationMinutes');
+    endDate = new Date(startDate.getTime() + dur * 60 * 1000);
+  }
+
+  if (!endDate) throw httpError(400, 'Invalid endAt');
+  if (endDate.getTime() <= startDate.getTime()) throw httpError(400, 'endAt must be after startAt');
 
   const startTs = admin.firestore.Timestamp.fromDate(startDate);
   const endTs = admin.firestore.Timestamp.fromDate(endDate);
@@ -104,7 +145,7 @@ export async function createReservationWithMatch({ uid, payload }) {
     startAtDate: startDate,
     endAtDate: endDate,
   });
-  if (overlaps.length) throw httpError('Selected time slot is no longer available.', 409);
+  if (overlaps.length) throw httpError(409, 'Selected time slot is no longer available.');
 
   const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -182,13 +223,13 @@ export async function deleteReservation({ reservationId, requesterUid, requester
   const reservationRef = db.collection(RESERVATIONS_COLLECTION).doc(reservationId);
   const snap = await reservationRef.get();
 
-  if (!snap.exists) throw httpError('Reservation not found', 404);
+  if (!snap.exists) throw httpError(404, 'Reservation not found');
 
   const reservation = mapReservation(snap);
   const isAdmin = requesterRole === 'admin';
   const isOwner = reservation.createdBy === requesterUid;
 
-  if (!isAdmin && !isOwner) throw httpError('Not allowed', 403);
+  if (!isAdmin && !isOwner) throw httpError(403, 'Not allowed');
 
   const matchRef = reservation.matchId ? db.collection(MATCHES_COLLECTION).doc(reservation.matchId) : null;
 
@@ -210,11 +251,39 @@ function toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes, hh = 0, mm = 0 }) {
   return new Date(utcMs);
 }
 
-function minutesSinceLocalMidnight(dateUtc, tzOffsetMinutes) {
-  // local = utc - tzOffset
-  const localMs = dateUtc.getTime() - tzOffsetMinutes * 60 * 1000;
-  const local = new Date(localMs);
-  return local.getHours() * 60 + local.getMinutes();
+function minutesFromLocalDayStart(dateUtc, dayStartUtc) {
+  // dayStartUtc is the UTC moment that corresponds to local midnight for the requested date.
+  // This works even when dateUtc is in the next local day (returns > 1440).
+  return Math.round((dateUtc.getTime() - dayStartUtc.getTime()) / (60 * 1000));
+}
+
+async function resolveLocationHoursForCourt(courtId) {
+  if (!courtId) return null;
+  const snap = await db.collection('locations').get();
+  for (const doc of snap.docs) {
+    const loc = { ...doc.data(), id: doc.id };
+    const courts = Array.isArray(loc.courts) ? loc.courts : [];
+    const hit = courts.some((c) => {
+      if (!c) return false;
+      if (typeof c === 'string') return c === courtId;
+      const id = String(c.id || c.courtId || '');
+      return id === courtId;
+    });
+    if (hit) {
+      const open = Number(loc.openHourLocal ?? loc.openHour ?? 8);
+      let close = Number(loc.closeHourLocal ?? loc.closeHour ?? 22);
+
+      // 0 (00:00) means midnight end-of-day (24:00)
+      if (close === 0) close = 24;
+
+      return {
+        locationId: loc.id,
+        openHourLocal: Number.isFinite(open) ? open : 8,
+        closeHourLocal: Number.isFinite(close) ? close : 22,
+      };
+    }
+  }
+  return null;
 }
 
 /**
@@ -222,37 +291,65 @@ function minutesSinceLocalMidnight(dateUtc, tzOffsetMinutes) {
  */
 export async function getCourtAvailability({
   courtId,
-  date, // YYYY-MM-DD (local)
+  date, // YYYY-MM-DD (local) OR ISO string (we'll normalize)
   durationMinutes,
   tzOffsetMinutes,
-  openHourLocal = 8,
-  closeHourLocal = 22,
+  // Optional overrides (if not provided, we resolve from Location -> openHourLocal/closeHourLocal)
+  openHourLocal,
+  closeHourLocal,
   slotStepMinutes = 30,
 }) {
-  const [yStr, mStr, dStr] = String(date).split('-');
+
+  const dateStr = normalizeDateParam(date); // sau req.query.date (depinde cum ai semnătura)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    throw httpError(400, 'Invalid date');
+}
+  const dur = toInt(durationMinutes);
+  const tz = toInt(tzOffsetMinutes);
+  const [yStr, mStr, dStr] = dateStr.split('-');
   const y = Number(yStr);
   const m = Number(mStr);
   const d = Number(dStr);
 
   if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
-    throw httpError('Invalid date', 400);
+    throw httpError(400, 'Invalid date');
   }
-  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
-    throw httpError('Invalid durationMinutes', 400);
+  if (!Number.isFinite(dur) || dur <= 0) {
+    throw httpError(400, 'Invalid durationMinutes');
   }
-  if (!Number.isFinite(tzOffsetMinutes)) {
-    throw httpError('Invalid tzOffsetMinutes', 400);
+  if (!Number.isFinite(tz)) {
+    throw httpError(400, 'Invalid tzOffsetMinutes');
   }
 
-  const dayStartUtc = toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes, hh: 0, mm: 0 });
-  const dayEndUtc = toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes, hh: 23, mm: 59 });
+  // Resolve location hours (defaults)
+  const resolved = await resolveLocationHoursForCourt(courtId).catch(() => null);
+  const openH = Number.isFinite(Number(openHourLocal))
+    ? Number(openHourLocal)
+    : Number(resolved?.openHourLocal ?? 8);
+  let closeH = Number.isFinite(Number(closeHourLocal))
+    ? Number(closeHourLocal)
+    : Number(resolved?.closeHourLocal ?? 22);
+
+  // Convention: closeHourLocal = 0 means midnight (24:00)
+  if (closeH === 0) closeH = 24;
+  // If close is earlier than open, treat it as "next day" (e.g. open 20, close 2 => close 26)
+  if (Number.isFinite(openH) && Number.isFinite(closeH) && closeH <= openH) {
+    closeH += 24;
+  }
+  if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw httpError(400, 'Invalid openHourLocal');
+  if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw httpError(400, 'Invalid closeHourLocal');
+
+  const dayStartUtc = toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes: tz, hh: 0, mm: 0 });
+  // Query a bit wider than one day to safely catch overlaps when close hour is past midnight.
+  const rangeStartUtc = new Date(dayStartUtc.getTime() - 24 * 60 * 60 * 1000);
+  const rangeEndUtc = new Date(dayStartUtc.getTime() + 48 * 60 * 60 * 1000);
 
   // query reservations for that day-ish (by startAt range)
   const snap = await db
     .collection(RESERVATIONS_COLLECTION)
     .where('courtId', '==', courtId)
-    .where('startAt', '>=', admin.firestore.Timestamp.fromDate(dayStartUtc))
-    .where('startAt', '<=', admin.firestore.Timestamp.fromDate(dayEndUtc))
+    .where('startAt', '>=', admin.firestore.Timestamp.fromDate(rangeStartUtc))
+    .where('startAt', '<=', admin.firestore.Timestamp.fromDate(rangeEndUtc))
     .get();
 
   const booked = [];
@@ -262,45 +359,33 @@ export async function getCourtAvailability({
     const e = r.endAt?.toDate?.();
     if (!s || !e) continue;
 
-    const startMin = minutesSinceLocalMidnight(s, tzOffsetMinutes);
-    const endMin = minutesSinceLocalMidnight(e, tzOffsetMinutes);
+    const startMin = minutesFromLocalDayStart(s, dayStartUtc);
+    const endMin = minutesFromLocalDayStart(e, dayStartUtc);
     booked.push({ startMin, endMin });
   }
 
   // generate candidate slots (local minutes)
-  const openMin = openHourLocal * 60;
-  const closeMin = closeHourLocal * 60;
+  const openMin = Math.round(openH * 60);
+  let closeMin = Math.round(closeH * 60);
+  // If close is "earlier" than open, treat as next-day close.
+  if (closeMin <= openMin) closeMin += 24 * 60;
 
   const slots = [];
-  for (let startMin = openMin; startMin + durationMinutes <= closeMin; startMin += slotStepMinutes) {
-    const endMin = startMin + durationMinutes;
+  for (let startMin = openMin; startMin + dur <= closeMin; startMin += slotStepMinutes) {
+    const endMin = startMin + dur;
 
     const overlaps = booked.some((b) => startMin < b.endMin && endMin > b.startMin);
     if (overlaps) continue;
 
-    // produce ISO in UTC for the actual start/end
-    const startUtc = toUtcFromLocalDateParts({
-      y,
-      m,
-      d,
-      tzOffsetMinutes,
-      hh: Math.floor(startMin / 60),
-      mm: startMin % 60,
-    });
-    const endUtc = toUtcFromLocalDateParts({
-      y,
-      m,
-      d,
-      tzOffsetMinutes,
-      hh: Math.floor(endMin / 60),
-      mm: endMin % 60,
-    });
+    const startUtc = new Date(dayStartUtc.getTime() + startMin * 60 * 1000);
+    const endUtc = new Date(dayStartUtc.getTime() + endMin * 60 * 1000);
 
     const pad = (n) => String(n).padStart(2, '0');
-    const label = `${pad(Math.floor(startMin / 60))}:${pad(startMin % 60)}`;
+    const localStart = new Date(startUtc.getTime() - tz * 60 * 1000);
+    const label = `${pad(localStart.getHours())}:${pad(localStart.getMinutes())}`;
 
     slots.push({
-      label, // "HH:MM" local
+      label,
       startAt: startUtc.toISOString(),
       endAt: endUtc.toISOString(),
     });
@@ -308,10 +393,10 @@ export async function getCourtAvailability({
 
   return {
     courtId,
-    date,
-    durationMinutes,
-    openHourLocal,
-    closeHourLocal,
+    date: dateStr,
+    durationMinutes: dur,
+    openHourLocal: openH,
+    closeHourLocal: ((closeH % 24) + 24) % 24,
     slotStepMinutes,
     slots,
   };

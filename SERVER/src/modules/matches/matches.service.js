@@ -1,5 +1,11 @@
 import { admin, db } from '../../config/firebase.js';
-import { MATCHES_COLLECTION, mapMatch, extractParticipants } from './matches.model.js';
+import {
+  MATCHES_COLLECTION,
+  mapMatch,
+  extractParticipants,
+  validateCreateMatchPayload,
+  validateUpdateMatchPayload,
+} from './matches.model.js';
 
 function isoToDateOrNull(iso) {
   if (!iso) return null;
@@ -43,24 +49,34 @@ async function reconcileStatusIfNeeded(docRef, mappedMatch) {
 }
 
 export async function createMatch({ uid, payload }) {
-  const { ok, errors } = validateCreateMatchPayload(payload);
+  // Auto-calculate endAt if missing: endAt = scheduledAt + durationMinutes
+  const hydrated = { ...payload };
+  if (hydrated.scheduledAt && !hydrated.endAt) {
+    const dur = Number(hydrated.durationMinutes ?? hydrated.duration ?? 0);
+    if (Number.isFinite(dur) && dur > 0) {
+      const start = isoToDateOrNull(hydrated.scheduledAt);
+      if (start) hydrated.endAt = new Date(start.getTime() + dur * 60 * 1000).toISOString();
+    }
+  }
+
+  const { ok, errors } = validateCreateMatchPayload(hydrated);
   if (!ok) throw new Error(`Invalid match payload: ${JSON.stringify(errors)}`);
 
   const now = admin.firestore.Timestamp.now();
-  const scheduledAt = isoToDateOrNull(payload.scheduledAt);
-  const endAt = isoToDateOrNull(payload.endAt);
+  const scheduledAt = isoToDateOrNull(hydrated.scheduledAt);
+  const endAt = isoToDateOrNull(hydrated.endAt);
 
   const docRef = await db.collection(MATCHES_COLLECTION).add({
-    createdBy: payload.createdBy,
-    tournamentId: payload.tournamentId ?? null,
-    locationId: payload.locationId ?? null,
-    courtId: payload.courtId ?? null,
+    createdBy: hydrated.createdBy,
+    tournamentId: hydrated.tournamentId ?? null,
+    locationId: hydrated.locationId ?? null,
+    courtId: hydrated.courtId ?? null,
     scheduledAt: scheduledAt ? admin.firestore.Timestamp.fromDate(scheduledAt) : null,
     endAt: endAt ? admin.firestore.Timestamp.fromDate(endAt) : null,
-    status: payload.status ?? 'draft',
-    teams: payload.teams ?? { team1: [null, null], team2: [null, null] },
-    score: payload.score ?? null,
-    winnerTeam: payload.winnerTeam ?? null,
+    status: hydrated.status ?? 'draft',
+    teams: hydrated.teams ?? { team1: [null, null], team2: [null, null] },
+    score: hydrated.score ?? null,
+    winnerTeam: hydrated.winnerTeam ?? null,
     createdAt: now,
     updatedAt: now,
   });
@@ -98,6 +114,9 @@ export async function updateMatch(id, patch) {
 
   const data = snap.data();
 
+  const { ok, errors } = validateUpdateMatchPayload(patch);
+  if (!ok) throw httpError(Object.values(errors).join(', '), 400);
+
   // apply patch carefully
   const next = { ...patch };
 
@@ -107,6 +126,26 @@ export async function updateMatch(id, patch) {
     next.scheduledAt = d && !Number.isNaN(d.getTime())
       ? admin.firestore.Timestamp.fromDate(d)
       : null;
+  }
+
+  // endAt update (explicit) if provided
+  if (patch.endAt !== undefined) {
+    const d = patch.endAt ? new Date(patch.endAt) : null;
+    next.endAt = d && !Number.isNaN(d.getTime())
+      ? admin.firestore.Timestamp.fromDate(d)
+      : null;
+  }
+
+  // Auto-calculate endAt if missing but we have durationMinutes (+ scheduledAt new or existing)
+  const shouldAutoEndAt = patch.endAt === undefined && patch.durationMinutes !== undefined;
+  if (shouldAutoEndAt) {
+    const dur = Number(patch.durationMinutes);
+    const startTs = next.scheduledAt !== undefined ? next.scheduledAt : (data.scheduledAt ?? null);
+    const startDate = startTs?.toDate ? startTs.toDate() : (startTs ? new Date(startTs) : null);
+    if (Number.isFinite(dur) && dur > 0 && startDate && !Number.isNaN(startDate.getTime())) {
+      const endDate = new Date(startDate.getTime() + dur * 60 * 1000);
+      next.endAt = admin.firestore.Timestamp.fromDate(endDate);
+    }
   }
 
   // merge teams if partial
