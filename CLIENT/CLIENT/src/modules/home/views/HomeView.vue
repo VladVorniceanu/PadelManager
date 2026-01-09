@@ -44,11 +44,11 @@
                 </div>
               </div>
 
-              <span class="pill">{{ matchBadge(m) }}</span>
+              <!-- <span class="pill">{{ matchBadge(m) }}</span> -->
 
               <div class="matchLeftMeta">
-                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
                 <div>🎾 {{ courtLabel(m) }}</div>
+                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
               </div>
             </div>
 
@@ -445,7 +445,6 @@ const availableTournaments = computed(() =>
 
 function statusLabel(value) {
   const v = String(value || '').toLowerCase();
-  if (v === 'draft') return 'Draft';
   if (v === 'scheduled') return 'Scheduled';
   if (v === 'ongoing') return 'Ongoing';
   if (v === 'completed') return 'Completed';
