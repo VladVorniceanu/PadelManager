@@ -245,9 +245,8 @@ export async function deleteReservation({ reservationId, requesterUid, requester
  * ✅ Availability (logic from v1)
  * ---------------------------
  */
-function toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes, hh = 0, mm = 0 }) {
-  // tzOffsetMinutes = Date.getTimezoneOffset() (UTC - local)
-  const utcMs = Date.UTC(y, m - 1, d, hh, mm) + tzOffsetMinutes * 60 * 1000;
+function toUtcFromLocalDateParts({ y, m, d, hh = 0, mm = 0 }) {
+  const utcMs = Date.UTC(y, m - 1, d, hh, mm);
   return new Date(utcMs);
 }
 
@@ -293,8 +292,6 @@ export async function getCourtAvailability({
   courtId,
   date, // YYYY-MM-DD (local) OR ISO string (we'll normalize)
   durationMinutes,
-  tzOffsetMinutes,
-  // Optional overrides (if not provided, we resolve from Location -> openHourLocal/closeHourLocal)
   openHourLocal,
   closeHourLocal,
   slotStepMinutes = 30,
@@ -305,7 +302,6 @@ export async function getCourtAvailability({
     throw httpError(400, 'Invalid date');
 }
   const dur = toInt(durationMinutes);
-  const tz = toInt(tzOffsetMinutes);
   const [yStr, mStr, dStr] = dateStr.split('-');
   const y = Number(yStr);
   const m = Number(mStr);
@@ -316,9 +312,6 @@ export async function getCourtAvailability({
   }
   if (!Number.isFinite(dur) || dur <= 0) {
     throw httpError(400, 'Invalid durationMinutes');
-  }
-  if (!Number.isFinite(tz)) {
-    throw httpError(400, 'Invalid tzOffsetMinutes');
   }
 
   // Resolve location hours (defaults)
@@ -339,7 +332,7 @@ export async function getCourtAvailability({
   if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw httpError(400, 'Invalid openHourLocal');
   if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw httpError(400, 'Invalid closeHourLocal');
 
-  const dayStartUtc = toUtcFromLocalDateParts({ y, m, d, tzOffsetMinutes: tz, hh: 0, mm: 0 });
+  const dayStartUtc = toUtcFromLocalDateParts({ y, m, d, hh: 0, mm: 0 });
   // Query a bit wider than one day to safely catch overlaps when close hour is past midnight.
   const rangeStartUtc = new Date(dayStartUtc.getTime() - 24 * 60 * 60 * 1000);
   const rangeEndUtc = new Date(dayStartUtc.getTime() + 48 * 60 * 60 * 1000);
@@ -381,7 +374,7 @@ export async function getCourtAvailability({
     const endUtc = new Date(dayStartUtc.getTime() + endMin * 60 * 1000);
 
     const pad = (n) => String(n).padStart(2, '0');
-    const localStart = new Date(startUtc.getTime() - tz * 60 * 1000);
+    const localStart = new Date(startUtc.getTime());
     const label = `${pad(localStart.getHours())}:${pad(localStart.getMinutes())}`;
 
     slots.push({

@@ -82,14 +82,12 @@
                   <div class="skeletonLine"></div>
                 </div>
 
-                <div v-else-if="!availability.slots.length" class="inlineNotice">
+                <div v-else-if="!(availability?.slots?.length)" class="inlineNotice">
                   No available slots for this day. Try another date or duration.
                 </div>
 
                 <div v-else class="slotsGrid" role="list">
-                  <button
-                    v-for="s in availability.slots"
-                    :key="s.startAt"
+                  <button v-for="s in (availability?.slots || [])" :key="s.startAt"
                     type="button"
                     class="slotBtn"
                     :class="{ active: form.startAt === s.startAt }"
@@ -293,19 +291,17 @@ async function loadAvailability() {
   loadingAvail.value = true;
 
   try {
-    const tzOffset = new Date().getTimezoneOffset();
 
     const res = await getCourtAvailability({
       courtId: form.courtId,
       date: form.dateLocal,
       duration: form.duration,
-      tzOffset,
     });
 
     // ignore stale response
     if (myReq !== availabilityReqId) return;
 
-    availability.value = res || { slots: [] };
+    availability.value = res && Array.isArray(res.slots) ? res : { slots: [] };
 
     // if user had selected a slot that no longer exists, clear it
     if (form.startAt && !availability.value.slots.some((s) => s.startAt === form.startAt)) {

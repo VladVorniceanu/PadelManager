@@ -47,13 +47,10 @@ export async function getCourtAvailabilityHandler(req, res) {
 
     const durationMinutes = req.query.durationMinutes ?? req.query.duration;
 
-    const tzOffsetMinutes = req.query.tzOffsetMinutes ?? req.query.tzOffset;
-
     const result = await service.getCourtAvailability({
       courtId,
       date,
       durationMinutes,
-      tzOffsetMinutes,
     });
 
     return res.json({ data: result });
