@@ -12,7 +12,12 @@ export async function createReservation(payload) {
 
 export async function getCourtAvailability({ courtId, date, duration, tzOffset }) {
   const res = await httpClient.get('/reservations/availability', {
-    params: { courtId, date, duration, tzOffset },
+    params: {
+      courtId,
+      date,
+      durationMinutes: duration,
+      tzOffsetMinutes: tzOffset,
+    },
   });
   return res?.data;
 }
