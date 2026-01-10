@@ -148,20 +148,20 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { httpClient } from '@/api/httpClient';
 import PlayerSearchInput from '@/components/common/PlayerSearchInput.vue';
 import { useLookups } from '@/composables/useLookups';
 
 const props = defineProps({
   match: { type: Object, required: true },
-  locations: { type: Array, default: () => [] }, // kept for compat
+  locations: { type: Array, default: () => [] },
   myUid: { type: String, default: '' },
 });
 
 const emit = defineEmits(['close', 'updated']);
 
-const { locationNameById } = useLookups();
+const { warmupLookups, userDisplayNameById, locationNameById } = useLookups();
 
 function matchLocationId(m) {
   return m?.locationId || m?.location?.id || m?.reservation?.locationId || null;
@@ -200,7 +200,7 @@ const teamsError = ref('');
 
 function uidToModel(uid) {
   if (!uid) return null;
-  return typeof uid === 'string' ? { id: uid, displayName: '', email: '' } : uid;
+  return typeof uid === 'string' ? { id: uid, displayName: userDisplayNameById(uid, { meUid: props.myUid }) } : uid;
 }
 
 function loadTeamsFromMatch(m) {
@@ -323,6 +323,10 @@ async function saveScore() {
     savingScore.value = false;
   }
 }
+
+onMounted(() => {
+  warmupLookups?.();
+});
 
 watch(
   () => props.match,
