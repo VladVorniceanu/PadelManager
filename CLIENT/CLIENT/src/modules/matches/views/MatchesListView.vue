@@ -58,7 +58,7 @@
             </div>
           </div>
 
-          <span v-if m class="pill">{{ matchBadge(m) }}</span>
+          <span class="pill">{{ matchBadge(m) }}</span>
 
           <div class="matchLeftMeta">
             <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
