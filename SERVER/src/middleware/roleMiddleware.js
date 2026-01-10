@@ -11,3 +11,10 @@ export function requireRole(...allowedRoles) {
     next();
   };
 }
+
+export function requireSameUser(req, res, next) {
+  if (req.user.id !== req.params.id && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  next();
+}

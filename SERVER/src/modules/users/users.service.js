@@ -55,19 +55,21 @@ export async function updateUserRole(userId, role) {
   };
 }
 
-export async function createTestUser() {
-  const ref = db.collection(USERS_COLLECTION).doc();
-  const now = admin.firestore.FieldValue.serverTimestamp();
-  await ref.set({
-    uid: ref.id,
-    email: `test-${ref.id}@example.com`,
-    displayName: 'Test User',
-    role: 'player',
-    createdAt: now,
-    updatedAt: now,
-  });
-  const snap = await ref.get();
-  return mapUser(snap);
+export async function updateUserProfileDetails(userId, details) {
+  const ref = db.collection(USERS_COLLECTION).doc(userId);
+
+  const updateData = {
+    ...details,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await ref.update(updateData);
+
+  const updated = await ref.get();
+  return {
+    id: updated.id,
+    ...updated.data(),
+  };
 }
 
 export async function searchUsers(query, limit=10) {

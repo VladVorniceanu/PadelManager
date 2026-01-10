@@ -15,6 +15,11 @@ export async function setUserRole(userId, role) {
   return unwrap(res);
 }
 
+export async function updateUserProfile(userId, profileData) {
+  const res = await httpClient.patch(`/users/${userId}`, profileData);
+  return unwrap(res);
+}
+
 export async function searchUsers(q, limit = 10) {
   const res = await httpClient.get('/users/search', { params: { q, limit } });
   return res?.data ?? [];

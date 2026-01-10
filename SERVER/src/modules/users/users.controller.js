@@ -1,4 +1,4 @@
-import { listUsers, updateUserRole, searchUsers } from './users.service.js';
+import { listUsers, updateUserRole, searchUsers, updateUserProfileDetails } from './users.service.js';
 export async function getUsers(req, res, next) {
   try {
     const users = await listUsers();
@@ -28,10 +28,21 @@ export async function changeUserRole(req, res, next) {
   }
 }
 
-export async function createTestUserHandler(req, res, next) {
+export async function updateUserProfile(req, res, next) {
   try {
-    const user = await createTestUser();
-    res.status(201).json(user);
+    const { id } = req.params;
+    const { displayName, email } = req.body;
+
+    if (req.user?.uid !== id) {
+      return res.status(403).json({ message: 'Cannot change another user\'s profile' });
+    }
+
+    if (!displayName && !email) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+
+    const updated = await updateUserProfileDetails(id, { displayName, email });
+    res.json(updated);
   } catch (err) {
     next(err);
   }
