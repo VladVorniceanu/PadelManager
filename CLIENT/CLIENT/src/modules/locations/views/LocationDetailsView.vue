@@ -89,9 +89,11 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';
+import { useBookMatchModalStore } from '@/modules/matches/store/useBookMatchModalStore';
 
 const route = useRoute();
 const router = useRouter();
+const bookMatchModal = useBookMatchModalStore();
 
 const loading = ref(false);
 const error = ref(null);
@@ -139,11 +141,10 @@ async function load() {
 }
 
 function bookMatch() {
-  // Precomplete location for match booking flow
-  router.push({
-    path: '/matches/create',
-    query: { locationId: locationId.value },
-  }).catch(() => {});
+  // ✅ Use the global BookMatchModal and prefill the location.
+  bookMatchModal.openModal({ locationId: locationId.value });
+  // close this details modal route
+  close();
 }
 
 onMounted(load);
