@@ -4,9 +4,9 @@
       <template #title>Padel Manager</template>
 
       <template #right>
-        <button class="btn primary" type="button" @click="openBookMatch">
+        <UiButton variant="primary" type="button" @click="openBookMatch">
           Book a match
-        </button>
+        </UiButton>
       </template>
     </AppToolbar>
 
@@ -24,6 +24,8 @@
 
 <script setup>
 import { ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+
 import AppToolbar from '../components/common/AppToolbar.vue';
 import SideDrawer from '../components/common/SideDrawer.vue';
 

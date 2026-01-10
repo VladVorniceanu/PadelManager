@@ -137,7 +137,7 @@ const details = reactive({ open: false, item: null });
 
 const myUid = computed(() => auth.currentUser?.uid || '');
 
-const { locations, warmupLookups, locationNameById, userDisplayNameById } = useLookups();
+const { locations, warmupLookups, courtNameById, locationNameById, userDisplayNameById } = useLookups();
 
 const emptyHint = computed(() => {
   if (filter.value === 'future') return 'No upcoming matches. Book one and invite players.';
@@ -249,8 +249,7 @@ function matchLocationId(m) {
 
 function courtLabel(m) {
   const id = m?.courtId;
-  if (id) return `Court ${String(id).slice(0, 6)}`;
-  return 'Court —';
+  return courtNameById(matchLocationId(m), id);
 }
 
 /**

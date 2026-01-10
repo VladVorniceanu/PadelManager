@@ -23,7 +23,7 @@
         <div class="card error">
           <div class="errorTitle">Eroare</div>
           <div class="errorMsg">{{ error }}</div>
-          <button class="btn" @click="load">Retry</button>
+          <UiButton  @click="load">Retry</UiButton>
         </div>
       </div>
 
@@ -73,10 +73,10 @@
             </div>
 
             <div class="detailsActions">
-              <button class="btn" @click="close">Close</button>
-              <button class="btn primary" @click="bookMatch">
+              <UiButton  @click="close">Close</UiButton>
+              <UiButton  @click="bookMatch">
                 Book a match
-              </button>
+              </UiButton>
             </div>
           </section>
         </div>
@@ -87,6 +87,8 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+
 import { useRoute, useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';
 import { useBookMatchModalStore } from '@/modules/matches/store/useBookMatchModalStore';

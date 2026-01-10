@@ -1,168 +1,169 @@
 <template>
-  <teleport to="body">
-    <div v-if="modal.open" class="backdrop" @click.self="close">
-      <div class="modal modal--wide" role="dialog" aria-modal="true">
-        <div class="modalHeader">
-          <div>
-            <div class="modalTitle">Book a match</div>
-            <div class="modalSubtitle">Pick location, court and an available time slot.</div>
-          </div>
-          <button class="iconBtn" type="button" @click="close" aria-label="Close">✕</button>
-        </div>
-
-        <div v-if="uiError" class="inlineError">
-          <div class="inlineErrorTitle">Nu putem crea rezervarea</div>
-          <div class="inlineErrorMsg">{{ uiError }}</div>
-        </div>
-
-        <form class="form" @submit.prevent="submit">
-          <div class="formGrid">
-            <!-- Location -->
-            <label class="field full">
-              <div class="label">Location</div>
-              <select v-model="form.locationId" class="select" :disabled="loadingLocations">
-                <option value="" disabled>Select a location…</option>
-                <option v-for="l in locationOptions" :key="l.id" :value="l.id">
-                  {{ l.name }} — {{ l.city }}
-                </option>
-              </select>
-            </label>
-
-            <!-- Court -->
-            <label class="field full">
-              <div class="label">Court</div>
-              <select
-                v-model="form.courtId"
-                class="select"
-                :disabled="!form.locationId || !courtsForSelected.length"
-              >
-                <option value="" disabled>
-                  {{ !form.locationId ? 'Pick a location first…' : 'Select a court…' }}
-                </option>
-                <option v-for="c in courtsForSelected" :key="c.id" :value="c.id">
-                  {{ c.label }}
-                </option>
-              </select>
-            </label>
-
-            <!-- Duration -->
-            <div class="field full">
-              <div class="label">Duration</div>
-              <div class="durationPills" role="radiogroup" aria-label="Duration">
-                <button
-                  v-for="d in DURATIONS"
-                  :key="d"
-                  type="button"
-                  class="durationPill"
-                  :class="{ active: form.duration === d }"
-                  @click="form.duration = d"
-                >
-                  {{ d }} min
-                </button>
-              </div>
+  <UiModal
+    v-if="modal.open"
+    title="Book a match"
+    subtitle="Pick location, court and an available time slot."
+    modal-class="modal--wide"
+    @close="close"
+  >
+    <div v-if="uiError" class="inlineError">
+              <div class="inlineErrorTitle">Cannot create the reservation</div>
+              <div class="inlineErrorMsg">{{ uiError }}</div>
             </div>
 
-            <!-- Date -->
-            <label class="field full">
-              <div class="label">Date</div>
-              <input v-model="form.dateLocal" class="input" type="date" />
-            </label>
+            <form class="form" @submit.prevent="submit">
+              <div class="formGrid">
+                <!-- Location -->
+                <label class="field full">
+                  <div class="label">Location</div>
+                  <UiSelect v-model="form.locationId" :disabled="loadingLocations">
+                    <option value="" disabled>Select a location…</option>
+                    <option v-for="l in locationOptions" :key="l.id" :value="l.id">
+                      {{ l.name }} — {{ l.city }}
+                    </option>
+                  </UiSelect>
+                </label>
 
-            <!-- Availability -->
-            <div class="field full">
-              <div class="label">Available times</div>
-
-              <div v-if="!canLoadAvailability" class="inlineNotice">
-                Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
-              </div>
-
-              <div v-else>
-                <div v-if="loadingAvail" class="card" style="padding: 12px;">
-                  <div class="skeletonLine"></div>
-                  <div class="skeletonLine"></div>
-                </div>
-
-                <div v-else-if="!(availability?.slots?.length)" class="inlineNotice">
-                  No available slots for this day. Try another date or duration.
-                </div>
-
-                <div v-else class="slotsGrid" role="list">
-                  <button v-for="s in (availability?.slots || [])" :key="s.startAt"
-                    type="button"
-                    class="slotBtn"
-                    :class="{ active: form.startAt === s.startAt }"
-                    @click="pickSlot(s)"
+                <!-- Court -->
+                <label class="field full">
+                  <div class="label">Court</div>
+                  <UiSelect
+                    v-model="form.courtId"
+                    :disabled="!form.locationId || !courtsForSelected.length"
                   >
-                    {{ s.label }}
-                  </button>
+                    <option value="" disabled>
+                      {{ !form.locationId ? 'Pick a location first…' : 'Select a court…' }}
+                    </option>
+                    <option v-for="c in courtsForSelected" :key="c.id" :value="c.id">
+                      {{ c.label }}
+                    </option>
+                  </UiSelect>
+                </label>
+
+                <!-- Duration -->
+                <div class="field full">
+                  <div class="label">Duration</div>
+                  <div class="durationPills" role="radiogroup" aria-label="Duration">
+                    <UiButton
+                      v-for="d in DURATIONS"
+                      :key="d"
+                      type="button"
+                      class="durationPill"
+                      :class="{ active: form.duration === d }"
+                      @click="form.duration = d"
+                    >
+                      {{ d }} min
+                    </UiButton>
+                  </div>
                 </div>
 
-                <div v-if="form.startAt && form.endAt" class="pickedHint">
-                  Selected: <b>{{ pickedLabel }}</b> ({{ form.duration }} min)
+                <!-- Date -->
+                <label class="field full">
+                  <div class="label">Date</div>
+                  <UiInput v-model="form.dateLocal" type="date" />
+                </label>
+
+                <!-- Availability -->
+                <div class="field full">
+                  <div class="label">Available times</div>
+
+                  <div v-if="!canLoadAvailability" class="inlineNotice">
+                    Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
+                  </div>
+
+                  <div v-else>
+                    <div v-if="loadingAvail" class="card" style="padding: 12px;">
+                      <div class="skeletonLine"></div>
+                      <div class="skeletonLine"></div>
+                    </div>
+
+                    <div v-else-if="!(availability?.slots?.length)" class="inlineNotice">
+                      No available slots for this day. Try another date or duration.
+                    </div>
+
+                    <div v-else class="slotsGrid" role="list">
+                      <button v-for="s in (availability?.slots || [])" :key="s.startAt"
+                        type="button"
+                        class="slotBtn"
+                        :class="{ active: form.startAt === s.startAt }"
+                        @click="pickSlot(s)"
+                      >
+                        {{ s.label }}
+                      </button>
+                    </div>
+
+                    <div v-if="form.startAt && form.endAt" class="pickedHint">
+                      Selected: <b>{{ pickedLabel }}</b> ({{ form.duration }} min)
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Players -->
+                <div class="field full">
+                  <div class="label">Players</div>
+
+                  <div class="teamsEditor">
+                    <div class="teamsEditor__col">
+                      <div class="teamsEditor__head">Team 1</div>
+                      <div class="teamsEditor__hint">Player 1 is always you.</div>
+
+                      <div class="slotRow">
+                        <div class="slotLabel">P1</div>
+                        <UiPill strong>Me</UiPill>
+                      </div>
+
+                      <div class="slotRow">
+                        <div class="slotLabel">P2</div>
+                        <PlayerSearchInput v-model="team1p2" />
+                      </div>
+                    </div>
+
+                    <div class="teamsEditor__divider" aria-hidden="true"></div>
+
+                    <div class="teamsEditor__col">
+                      <div class="teamsEditor__head">Team 2</div>
+
+                      <div class="slotRow">
+                        <div class="slotLabel">P1</div>
+                        <PlayerSearchInput v-model="team2p1" />
+                      </div>
+
+                      <div class="slotRow">
+                        <div class="slotLabel">P2</div>
+                        <PlayerSearchInput v-model="team2p2" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="teamsHint">
+                    You can add/modify players later too. Empty slots are allowed.
+                  </div>
                 </div>
               </div>
+
+              <div class="modalActions">
+                <UiButton type="destructive" @click="close">Cancel</UiButton>
+                <UiButton variant="primary" type="submit" :disabled="saving || !canSubmit">
+                  {{ saving ? 'Saving…' : 'Create reservation' }}
+                </UiButton>
+              </div>
+            </form>
+
+            <div v-if="successMsg" class="card" style="margin: 0 16px 16px;">
+              <b>Done!</b> {{ successMsg }}
             </div>
-
-            <!-- Players -->
-            <div class="field full">
-              <div class="label">Players</div>
-
-              <div class="teamsEditor">
-                <div class="teamsEditor__col">
-                  <div class="teamsEditor__head">Team 1</div>
-                  <div class="teamsEditor__hint">Player 1 is always you.</div>
-
-                  <div class="slotRow">
-                    <div class="slotLabel">P1</div>
-                    <div class="pill strong">Me</div>
-                  </div>
-
-                  <div class="slotRow">
-                    <div class="slotLabel">P2</div>
-                    <PlayerSearchInput v-model="team1p2" />
-                  </div>
-                </div>
-
-                <div class="teamsEditor__divider" aria-hidden="true"></div>
-
-                <div class="teamsEditor__col">
-                  <div class="teamsEditor__head">Team 2</div>
-
-                  <div class="slotRow">
-                    <div class="slotLabel">P1</div>
-                    <PlayerSearchInput v-model="team2p1" />
-                  </div>
-
-                  <div class="slotRow">
-                    <div class="slotLabel">P2</div>
-                    <PlayerSearchInput v-model="team2p2" />
-                  </div>
-                </div>
-              </div>
-
-              <div class="teamsHint">
-                You can add/modify players later too. Empty slots are allowed.
-              </div>
-            </div>
-          </div>
-
-          <div class="modalActions">
-            <button class="btn" type="button" @click="close">Cancel</button>
-            <button class="btn primary" type="submit" :disabled="saving || !canSubmit">
-              {{ saving ? 'Saving…' : 'Create reservation' }}
-            </button>
-          </div>
-        </form>
-
-        <div v-if="successMsg" class="card" style="margin: 0 16px 16px;">
-          <b>Done!</b> {{ successMsg }}
-        </div>
-      </div>
-    </div>
-  </teleport>
+  </UiModal>
 </template>
 
+
 <script setup>
+import UiModal from '@/components/ui/UiModal.vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiSelect from '@/components/ui/UiSelect.vue';
+import UiInput from '@/components/ui/UiInput.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiNotice from '@/components/ui/UiNotice.vue';
+
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/services/firebase';

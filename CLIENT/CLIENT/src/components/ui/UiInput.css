@@ -1,0 +1,9 @@
+.input {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  background: #fff;
+}
+
+.input.small { padding: 8px 10px; font-weight: 900; }

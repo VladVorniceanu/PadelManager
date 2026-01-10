@@ -53,6 +53,19 @@ export function useLookups() {
     return u.displayName || u.name || u.email || `User ${key.slice(0, 6)}`;
   }
 
+  function courtNameById(locationId, courtId) {
+    const locKey = safeId(locationId);
+    const courtKey = safeId(courtId);
+    if (!locKey || !courtKey) return 'Court';
+    
+    const loc = locationById.value.get(locKey);
+    if (!loc || !Array.isArray(loc.courts)) return `Court ${courtKey.slice(0, 6)}`; 
+    const court = loc.courts.find(c => safeId(c.id) === courtKey);
+    if (!court) return `Court ${courtKey.slice(0, 6)}`;
+    
+    return court.name || `Court ${courtKey.slice(0, 6)}`;
+  }
+
   async function warmupLookups() {
     await Promise.allSettled([
       (locationsStore.loadLocationsOnce?.() ?? locationsStore.loadLocations?.()),
@@ -66,6 +79,7 @@ export function useLookups() {
     warmupLookups,
     locationNameById,
     userDisplayNameById,
+    courtNameById,
     locationsStore,
     usersStore,
   };

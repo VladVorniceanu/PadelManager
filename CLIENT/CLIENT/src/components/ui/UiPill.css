@@ -1,0 +1,14 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface-muted);
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ui-text);
+}
+
+.strong { font-weight: 950; }

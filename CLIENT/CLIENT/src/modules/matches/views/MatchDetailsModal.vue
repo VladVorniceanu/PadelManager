@@ -34,7 +34,7 @@
 
                     <div class="slotRow">
                       <div class="slotLabel">P1</div>
-                      <div class="pill strong">Me</div>
+                      <PlayerSearchInput v-model="team1p1" :disabled="true" />
                     </div>
 
                     <div class="slotRow">
@@ -161,7 +161,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'updated']);
 
-const { warmupLookups, userDisplayNameById, locationNameById } = useLookups();
+const { warmupLookups, courtNameById, userDisplayNameById, locationNameById } = useLookups();
 
 function matchLocationId(m) {
   return m?.locationId || m?.location?.id || m?.reservation?.locationId || null;
@@ -182,7 +182,7 @@ function statusLabel(v) {
 
 const title = computed(() => `Match at ${locationNameById(matchLocationId(props.match))}`);
 const subtitle = computed(() => {
-  const court = props.match?.courtId ? `Court ${String(props.match.courtId).slice(0, 6)}` : 'Court —';
+  const court = props.match?.courtId ? courtNameById(matchLocationId(props.match), props.match.courtId) : 'Court —';
   return `${fmt(props.match?.scheduledAt)} • ${court}`;
 });
 
@@ -191,6 +191,7 @@ const canEditScore = computed(() => String(props.match?.status || '').toLowerCas
 /**
  * Teams draft
  */
+const team1p1 = ref({ id: props.myUid, displayName: userDisplayNameById(props.myUid, { meUid: props.myUid }) });
 const team1p2 = ref(null);
 const team2p1 = ref(null);
 const team2p2 = ref(null);
@@ -230,7 +231,7 @@ async function saveTeams() {
   try {
     const payload = {
       teams: {
-        team1: [props.myUid || null, toUid(team1p2.value)],
+        team1: [toUid(team1p1.value), toUid(team1p2.value)],
         team2: [toUid(team2p1.value), toUid(team2p2.value)],
       },
     };

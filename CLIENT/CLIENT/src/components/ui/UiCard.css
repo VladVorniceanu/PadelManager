@@ -1,0 +1,13 @@
+.card {
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  padding: 14px;
+  background: var(--ui-surface);
+}
+
+.card.error {
+  border-color: var(--ui-danger-border);
+  background: var(--ui-danger-bg);
+}
+
+.card.empty { text-align: left; }

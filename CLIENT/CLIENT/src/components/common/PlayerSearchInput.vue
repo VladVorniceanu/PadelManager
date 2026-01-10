@@ -17,7 +17,7 @@
       <button
         v-if="modelValue"
         type="button"
-        class="btn subtle playerSearch__clear"
+        class="playerSearch__clear"
         :disabled="disabled"
         @click="clear"
       >
@@ -193,7 +193,8 @@ onBeforeUnmount(() => {
 .playerSearch { position: relative; width: 100%; }
 .playerSearch__row { display: flex; gap: 8px; align-items: center; }
 .playerSearch__input { width: 100%; }
-.playerSearch__clear { padding: 10px 10px; }
+.playerSearch__clear { padding: 10px 10px; font-size: 12px; cursor: pointer; border: none; background: var(--ui-surface-muted); border-radius: 14px; }
+.playerSearch__clear:hover { background: var(--ui-surface-muted-hover); }
 
 .playerSearch__panel {
   position: absolute;

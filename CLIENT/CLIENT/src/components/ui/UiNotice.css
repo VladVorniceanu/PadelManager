@@ -1,0 +1,9 @@
+.inlineNotice {
+  border: 1px solid var(--ui-warn-border);
+  background: var(--ui-warn-bg);
+  color: var(--ui-warn-text);
+  border-radius: var(--ui-radius-sm);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}

@@ -6,22 +6,22 @@
         <p class="pageSubtitle">Check out all the available locations.</p>
       </div>
 
-      <button class="btn subtle" :disabled="loading" @click="load">
+      <UiButton variant="subtle" :disabled="loading" @click="load">
         {{ loading ? 'Loading…' : 'Refresh' }}
-      </button>
+      </UiButton>
     </header>
 
-    <div v-if="loading" class="card">
+    <UiStateCard v-if="loading" variant="loading" :lines="3" >
       <div class="skeletonLine"></div>
       <div class="skeletonLine"></div>
       <div class="skeletonLine"></div>
-    </div>
+    </UiStateCard>
 
-    <div v-else-if="error" class="card error">
-      <div class="errorTitle">Error</div>
-      <div class="errorMsg">{{ error }}</div>
-      <button class="btn" @click="load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="error" variant="error" title="Error" :message="error">
+      <template #action>
+        <UiButton @click="load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
     <div v-else-if="!items.length" class="card empty">
       <div class="emptyTitle">No locations available.</div>
@@ -29,14 +29,14 @@
     </div>
 
     <div v-else class="list">
-      <button
+      <UiListCard
         v-for="l in items"
         :key="l.id"
         type="button"
-        class="listCard"
+        as="button" variant="location"
         @click="openDetails(l)"
       >
-        <div class="listCard__left">
+        <template #left>
           <div class="listCard__titleRow">
             <div class="listCard__title">{{ l.name || '—' }}</div>
             <span class="pill">{{ (l.courts?.length ?? 0) }} courts</span>
@@ -44,14 +44,14 @@
 
           <div class="listCard__city">{{ l.city || '—' }}</div>
           <div class="listCard__address">{{ l.address || '—' }}</div>
-        </div>
+        </template>
 
-        <div class="listCard__right">
+        <template #right>
           <div class="mediaFrame" aria-hidden="true">
             <span class="mediaFrame__hint">Image</span>
           </div>
-        </div>
-      </button>
+        </template>
+      </UiListCard>
     </div>
 
     <router-view />
@@ -60,6 +60,10 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiListCard from '@/components/ui/UiListCard.vue';
+
 import { useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';
 

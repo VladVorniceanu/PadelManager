@@ -1,0 +1,24 @@
+/* Buttons */
+.btn {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  border-radius: var(--ui-radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.btn.primary {
+  background: var(--ui-text);
+  color: #fff;
+  border-color: var(--ui-text);
+}
+
+.btn.subtle { background: var(--ui-surface-muted); }
+
+.btn.danger {
+  background: var(--ui-danger-bg);
+  border-color: var(--ui-danger-border);
+}
+
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
