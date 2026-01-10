@@ -4,7 +4,7 @@ import * as service from './live.service.js';
 export async function getLiveHandler(req, res) {
   const live = await service.getLiveByMatchId(req.params.matchId);
   if (!live) return res.status(404).json({ message: 'Live state not found' });
-  res.json({ data: live });
+  res.json(live);
 }
 
 export async function upsertLiveHandler(req, res) {

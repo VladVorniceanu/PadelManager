@@ -21,7 +21,7 @@ export async function listMatchesHandler(req, res) {
     ? await service.listAllMatchesAdmin()
     : await service.listMatchesForUser(uid);
 
-  res.json({ data: items });
+  res.json(items);
 }
 
 export async function getMatchHandler(req, res) {
@@ -37,7 +37,7 @@ export async function getMatchHandler(req, res) {
     }
   }
 
-  res.json({ data: match });
+  res.json(match);
 }
 
 export async function createMatchHandler(req, res) {
@@ -45,7 +45,7 @@ export async function createMatchHandler(req, res) {
   if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
 
   const created = await service.createMatch({ uid: req.user.uid, payload: req.body });
-  res.status(201).json({ data: created });
+  res.status(201).json(created);
 }
 
 export async function updateMatchHandler(req, res) {
@@ -57,7 +57,7 @@ export async function updateMatchHandler(req, res) {
   if (!canMutateMatch(req, match)) return res.status(403).json({ message: 'Forbidden' });
 
   const updated = await service.updateMatch(req.params.id, req.body);
-  res.json({ data: updated });
+  res.json(updated);
 }
 
 export async function deleteMatchHandler(req, res) {

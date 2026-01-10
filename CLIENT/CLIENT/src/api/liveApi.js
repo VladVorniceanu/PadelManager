@@ -2,7 +2,7 @@ import { httpClient } from './httpClient';
 
 export async function getLive(matchId) {
   const { data } = await httpClient.get(`/live/${matchId}`);
-  return data.data;
+  return data;
 }
 
 export async function upsertLive(payload) {

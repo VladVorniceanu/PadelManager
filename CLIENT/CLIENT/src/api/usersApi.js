@@ -12,7 +12,7 @@ export async function fetchUsers() {
 
 export async function setUserRole(userId, role) {
   const res = await httpClient.patch(`/users/${userId}/role`, { role });
-  return res?.data?.data;
+  return unwrap(res);
 }
 
 export async function searchUsers(q, limit = 10) {

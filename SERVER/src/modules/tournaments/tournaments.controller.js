@@ -3,13 +3,13 @@ import * as service from './tournaments.service.js';
 
 export async function listTournamentsHandler(req, res) {
   const data = await service.listTournaments();
-  res.json({ data });
+  res.json(data);
 }
 
 export async function getTournamentHandler(req, res) {
   const t = await service.getTournamentById(req.params.id);
   if (!t) return res.status(404).json({ message: 'Tournament not found' });
-  res.json({ data: t });
+  res.json(t);
 }
 
 export async function createTournamentHandler(req, res) {
@@ -17,7 +17,7 @@ export async function createTournamentHandler(req, res) {
   if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
 
   const created = await service.createTournament(check.data, req.user);
-  res.status(201).json({ data: created });
+  res.status(201).json(created);
 }
 
 export async function updateTournamentHandler(req, res) {
@@ -25,7 +25,7 @@ export async function updateTournamentHandler(req, res) {
   if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
 
   const updated = await service.updateTournament(req.params.id, check.data);
-  res.json({ data: updated });
+  res.json(updated);
 }
 
 export async function deleteTournamentHandler(req, res) {

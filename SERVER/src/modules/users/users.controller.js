@@ -2,7 +2,7 @@ import { listUsers, updateUserRole, searchUsers } from './users.service.js';
 export async function getUsers(req, res, next) {
   try {
     const users = await listUsers();
-    res.json({ data: users });
+    res.json(users);
   } catch (err) {
     next(err);
   }
@@ -22,7 +22,7 @@ export async function changeUserRole(req, res, next) {
     }
 
     const updated = await updateUserRole(id, role);
-    res.json({ data: updated });
+    res.json(updated);
   } catch (err) {
     next(err);
   }
