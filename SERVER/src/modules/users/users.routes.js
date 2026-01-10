@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.use(authMiddleware);
 router.get('/search', searchUsersHandler);
-router.get('/', getUsers, requireRole('admin'));
-router.patch('/:id/role', changeUserRole, requireRole('admin'));
+router.get('/', requireRole('admin'), getUsers);
+router.patch('/:id/role', requireRole('admin'), changeUserRole);
 
 export default router;
