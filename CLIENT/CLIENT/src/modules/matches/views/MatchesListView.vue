@@ -11,8 +11,8 @@
           <button class="segmented__btn" :class="{ active: filter === 'all' }" type="button" @click="filter = 'all'">
             All
           </button>
-          <button class="segmented__btn" :class="{ active: filter === 'future' }" type="button" @click="filter = 'future'">
-            Future
+          <button class="segmented__btn" :class="{ active: filter === 'upcoming' }" type="button" @click="filter = 'upcoming'">
+            Upcoming
           </button>
           <button class="segmented__btn" :class="{ active: filter === 'finalised' }" type="button" @click="filter = 'finalised'">
             Finalised
@@ -58,7 +58,7 @@
             </div>
           </div>
 
-          <span class="pill">{{ matchBadge(m) }}</span>
+          <span v-if m class="pill">{{ matchBadge(m) }}</span>
 
           <div class="matchLeftMeta">
             <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
@@ -132,7 +132,7 @@ const error = ref(null);
 
 const matches = ref([]);
 
-const filter = ref('all'); // 'all' | 'future' | 'finalised'
+const filter = ref('all');
 const details = reactive({ open: false, item: null });
 
 const myUid = computed(() => auth.currentUser?.uid || '');
@@ -204,7 +204,7 @@ function hasPadelScore(m) {
   return normalizedSets(m).length > 0;
 }
 
-function isFinalised(m) {
+function isCompleted(m) {
   const status = String(m?.status || '').toLowerCase();
   if (status === 'completed') return true;
 
@@ -218,22 +218,22 @@ function matchBadge(m) {
   const status = String(m?.status || '').toLowerCase();
   if (status === 'completed') return 'Completed';
   if (status === 'ongoing') return 'Ongoing';
-  if (isFuture(m)) return 'Future';
+  if (isFuture(m)) return 'Upcoming';
   return 'Scheduled';
 }
 
 const filteredMatches = computed(() => {
   const list = [...myMatches.value];
 
-  if (filter.value === 'future') {
+  if (filter.value === 'upcoming') {
     return list
       .filter(isFuture)
       .sort((a, b) => new Date(matchDate(a)) - new Date(matchDate(b)));
   }
 
-  if (filter.value === 'finalised') {
+  if (filter.value === 'completed') {
     return list
-      .filter(isFinalised)
+      .filter(isCompleted)
       .sort((a, b) => new Date(matchDate(b)) - new Date(matchDate(a)));
   }
 

@@ -12,14 +12,12 @@ function canMutateMatch(req, match) {
   if (!uid) return false;
   if (match.createdBy === uid) return true;
   const parts = extractParticipants(match);
-  return parts.includes(uid); // allow participants to update/delete their match if you want
+  return parts.includes(uid);
 }
 
 export async function listMatchesHandler(req, res) {
   const uid = req.user.uid;
-  const items = isAdmin(req)
-    ? await service.listAllMatchesAdmin()
-    : await service.listMatchesForUser(uid);
+  const items = await service.listMatchesForUser(uid);
 
   res.json(items);
 }

@@ -19,39 +19,82 @@ function isoToDateOrNull(iso) {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function computeDerivedStatus(match) {
-  const now = Date.now();
+function toMs(v) {
+  if (!v) return null;
 
-  const start = match.scheduledAt ? new Date(match.scheduledAt).getTime() : null;
-  const end = match.endAt ? new Date(match.endAt).getTime() : null;
+  // Firestore Timestamp
+  if (typeof v.toMillis === 'function') return v.toMillis();
+  if (typeof v.toDate === 'function') return v.toDate().getTime();
 
+  // JS Date
+  if (v instanceof Date) {
+    const ms = v.getTime();
+    return Number.isNaN(ms) ? null : ms;
+  }
+
+  // ISO string / number
+  const d = new Date(v);
+  const ms = d.getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
+
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+function computeDerivedStatus(match, nowMs) {
   const status = String(match.status || 'draft').toLowerCase();
+  if (status === 'cancelled' || status === 'completed' || status === 'draft') return null;
 
-  if (!start || !end) return null; // can't derive
+  const startMs = toMs(match.scheduledAt);
+  const endMs = toMs(match.endAt) ?? (startMs != null ? startMs + 60 * 60 * 1000 : null);
 
-  if (status === 'cancelled' || status === 'draft') return null;
+  if (startMs == null || endMs == null) return null;
 
-  if (now >= start && now < end) {
-    if (status === 'scheduled') return 'ongoing';
-  }
-
-  if (now >= end) {
+  if (nowMs >= endMs) {
     if (status === 'scheduled' || status === 'ongoing') return 'completed';
+    return null;
   }
 
+  if (nowMs >= startMs && nowMs < endMs) {
+    if (status === 'scheduled') return 'ongoing';
+    return null;
+  }
+
+  // now < start -> keep scheduled
   return null;
 }
 
-async function reconcileStatusIfNeeded(docRef, mappedMatch) {
-  const next = computeDerivedStatus(mappedMatch);
-  if (!next) return mappedMatch;
+async function reconcileStatusesForMatches(pairs) {
+  const nowTs = admin.firestore.Timestamp.now();
+  const nowMs = nowTs.toMillis();
 
-  await docRef.update({
-    status: next,
-    updatedAt: admin.firestore.Timestamp.now(),
+  const updates = [];
+  const result = pairs.map(({ ref, match }) => {
+    const next = computeDerivedStatus(match, nowMs);
+    if (!next) return match;
+
+    updates.push({ ref, next });
+    return { ...match, status: next };
   });
 
-  return { ...mappedMatch, status: next };
+  if (!updates.length) return result;
+
+  // batch max 500 writes
+  for (const group of chunk(updates, 200)) {
+    const batch = db.batch();
+    for (const u of group) {
+      batch.update(u.ref, {
+        status: u.next,
+        updatedAt: nowTs,
+      });
+    }
+    await batch.commit();
+  }
+
+  return result;
 }
 
 export async function createMatch({ uid, payload }) {
@@ -73,7 +116,6 @@ export async function createMatch({ uid, payload }) {
   const endAt = isoToDateOrNull(hydrated.endAt);
 
   const docRef = await db.collection(MATCHES_COLLECTION).add({
-    // ✅ never trust client for ownership
     createdBy: uid,
     tournamentId: hydrated.tournamentId ?? null,
     locationId: hydrated.locationId ?? null,
@@ -98,20 +140,18 @@ export async function getMatchById(id) {
 }
 
 export async function listMatchesForUser(uid) {
-  // Firestore can't query nested array-of-arrays easily; simplest: fetch recent and filter.
-  // Optimize later by also storing a `participants` array.
   const snap = await db.collection(MATCHES_COLLECTION).orderBy('updatedAt', 'desc').limit(200).get();
-  const all = snap.docs.map(mapMatch);
-  return all.filter((m) => {
-    if (m.createdBy === uid) return true;
-    const parts = extractParticipants(m);
+
+  // păstrezi ref + match mapped
+  const allPairs = snap.docs.map((doc) => ({ ref: doc.ref, match: mapMatch(doc) }));
+
+  const userPairs = allPairs.filter(({ match }) => {
+    if (match.createdBy === uid) return true;
+    const parts = extractParticipants(match);
     return parts.includes(uid);
   });
-}
 
-export async function listAllMatchesAdmin() {
-  const snap = await db.collection(MATCHES_COLLECTION).orderBy('updatedAt', 'desc').limit(500).get();
-  return snap.docs.map(mapMatch);
+  return await reconcileStatusesForMatches(userPairs);
 }
 
 export async function updateMatch(id, patch) {
