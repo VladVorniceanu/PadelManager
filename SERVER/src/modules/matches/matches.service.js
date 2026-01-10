@@ -7,6 +7,12 @@ import {
   validateUpdateMatchPayload,
 } from './matches.model.js';
 
+function httpError(status, message) {
+  const err = new Error(message || 'Error');
+  err.status = status || 500;
+  return err;
+}
+
 function isoToDateOrNull(iso) {
   if (!iso) return null;
   const d = new Date(iso);
@@ -60,14 +66,15 @@ export async function createMatch({ uid, payload }) {
   }
 
   const { ok, errors } = validateCreateMatchPayload(hydrated);
-  if (!ok) throw new Error(`Invalid match payload: ${JSON.stringify(errors)}`);
+  if (!ok) throw httpError(400, `Invalid match payload: ${JSON.stringify(errors)}`);
 
   const now = admin.firestore.Timestamp.now();
   const scheduledAt = isoToDateOrNull(hydrated.scheduledAt);
   const endAt = isoToDateOrNull(hydrated.endAt);
 
   const docRef = await db.collection(MATCHES_COLLECTION).add({
-    createdBy: hydrated.createdBy,
+    // ✅ never trust client for ownership
+    createdBy: uid,
     tournamentId: hydrated.tournamentId ?? null,
     locationId: hydrated.locationId ?? null,
     courtId: hydrated.courtId ?? null,
@@ -115,7 +122,7 @@ export async function updateMatch(id, patch) {
   const data = snap.data();
 
   const { ok, errors } = validateUpdateMatchPayload(patch);
-  if (!ok) throw httpError(Object.values(errors).join(', '), 400);
+  if (!ok) throw httpError(400, Object.values(errors).join(', '));
 
   // apply patch carefully
   const next = { ...patch };
