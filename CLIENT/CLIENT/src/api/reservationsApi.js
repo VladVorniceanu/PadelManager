@@ -2,12 +2,12 @@ import { httpClient } from './httpClient';
 
 export async function fetchMyReservations() {
   const res = await httpClient.get('/reservations');
-  return res.data.data;
+  return res.data;
 }
 
 export async function createReservation(payload) {
   const res = await httpClient.post('/reservations', payload);
-  return res?.data;
+  return res.data;
 }
 
 export async function getCourtAvailability({ courtId, date, duration }) {
@@ -18,9 +18,5 @@ export async function getCourtAvailability({ courtId, date, duration }) {
       durationMinutes: duration,
     },
   });
-  return res?.data?.data;
-}
-
-export async function deleteReservation(id) {
-  await httpClient.delete(`/reservations/${id}`);
+  return res.data;
 }

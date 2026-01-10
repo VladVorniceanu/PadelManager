@@ -19,29 +19,20 @@ function normalizeDateParam(dateRaw) {
 
   if (raw == null) return '';
 
-  // dacă e Date (rar, dar safe)
+  // if it's a Date, use its ISO date part (UTC)
   if (raw instanceof Date) {
     if (Number.isNaN(raw.getTime())) return '';
-    const y = raw.getUTCFullYear();
-    const m = String(raw.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(raw.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return raw.toISOString().slice(0, 10);
   }
 
   // string
   const s = String(raw).trim();
 
-  // dacă vine ISO cu timp -> păstrează doar yyyy-mm-dd
+  // if it's ISO with time -> keep yyyy-mm-dd
   const head = s.slice(0, 10);
 
   // accept doar yyyy-mm-dd
   return head;
-}
-
-function toTimestampOrNull(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return admin.firestore.Timestamp.fromDate(d);
 }
 
 function toDateOrNull(iso) {
@@ -198,11 +189,6 @@ export async function createReservationWithMatch({ uid, payload }) {
   };
 }
 
-export async function getReservationById(id) {
-  const snap = await db.collection(RESERVATIONS_COLLECTION).doc(id).get();
-  return snap.exists ? mapReservation(snap) : null;
-}
-
 export async function listReservationsForUser(uid) {
   const snap = await db
     .collection(RESERVATIONS_COLLECTION)
@@ -216,72 +202,47 @@ export async function listReservationsForUser(uid) {
 
 /**
  * ---------------------------
- * ✅ Delete reservation (+ match) with auth (logic from v1, style from v2)
+ * ✅ Availability (NO timezone offsets)
  * ---------------------------
  */
-export async function deleteReservation({ reservationId, requesterUid, requesterRole }) {
-  const reservationRef = db.collection(RESERVATIONS_COLLECTION).doc(reservationId);
-  const snap = await reservationRef.get();
-
-  if (!snap.exists) throw httpError(404, 'Reservation not found');
-
-  const reservation = mapReservation(snap);
-  const isAdmin = requesterRole === 'admin';
-  const isOwner = reservation.createdBy === requesterUid;
-
-  if (!isAdmin && !isOwner) throw httpError(403, 'Not allowed');
-
-  const matchRef = reservation.matchId ? db.collection(MATCHES_COLLECTION).doc(reservation.matchId) : null;
-
-  const batch = db.batch();
-  batch.delete(reservationRef);
-  if (matchRef) batch.delete(matchRef);
-
-  await batch.commit();
+function dayStartUtcFromDateStr(dateStr) {
+  // Treat YYYY-MM-DD as a UTC date boundary. No local conversions.
+  const d = new Date(`${dateStr}T00:00:00.000Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/**
- * ---------------------------
- * ✅ Availability (logic from v1)
- * ---------------------------
- */
-function toUtcFromLocalDateParts({ y, m, d, hh = 0, mm = 0 }) {
-  const utcMs = Date.UTC(y, m - 1, d, hh, mm);
-  return new Date(utcMs);
-}
-
-function minutesFromLocalDayStart(dateUtc, dayStartUtc) {
-  // dayStartUtc is the UTC moment that corresponds to local midnight for the requested date.
-  // This works even when dateUtc is in the next local day (returns > 1440).
-  return Math.round((dateUtc.getTime() - dayStartUtc.getTime()) / (60 * 1000));
+function minutesFromDayStart(date, dayStartUtc) {
+  return Math.round((date.getTime() - dayStartUtc.getTime()) / (60 * 1000));
 }
 
 async function resolveLocationHoursForCourt(courtId) {
   if (!courtId) return null;
+
+  // NOTE: This is intentionally simple (scan locations) because courts are embedded in locations.
+  // If you need scale, store `courtId -> locationId` mapping.
   const snap = await db.collection('locations').get();
   for (const doc of snap.docs) {
     const loc = { ...doc.data(), id: doc.id };
     const courts = Array.isArray(loc.courts) ? loc.courts : [];
+
     const hit = courts.some((c) => {
       if (!c) return false;
       if (typeof c === 'string') return c === courtId;
       const id = String(c.id || c.courtId || '');
       return id === courtId;
     });
+
     if (hit) {
-      const open = Number(loc.openHourLocal ?? loc.openHour ?? 8);
-      let close = Number(loc.closeHourLocal ?? loc.closeHour ?? 22);
-
-      // 0 (00:00) means midnight end-of-day (24:00)
-      if (close === 0) close = 24;
-
+      const open = Number(loc.openHour ?? 8);
+      const close = Number(loc.closeHour ?? 22);
       return {
         locationId: loc.id,
-        openHourLocal: Number.isFinite(open) ? open : 8,
-        closeHourLocal: Number.isFinite(close) ? close : 22,
+        openHour: Number.isFinite(open) ? open : 8,
+        closeHour: Number.isFinite(close) ? close : 22,
       };
     }
   }
+
   return null;
 }
 
@@ -290,49 +251,37 @@ async function resolveLocationHoursForCourt(courtId) {
  */
 export async function getCourtAvailability({
   courtId,
-  date, // YYYY-MM-DD (local) OR ISO string (we'll normalize)
+  date, // YYYY-MM-DD (or ISO; we'll normalize to YYYY-MM-DD)
   durationMinutes,
-  openHourLocal,
-  closeHourLocal,
+  openHour,
+  closeHour,
   slotStepMinutes = 30,
 }) {
 
-  const dateStr = normalizeDateParam(date); // sau req.query.date (depinde cum ai semnătura)
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    throw httpError(400, 'Invalid date');
-}
-  const dur = toInt(durationMinutes);
-  const [yStr, mStr, dStr] = dateStr.split('-');
-  const y = Number(yStr);
-  const m = Number(mStr);
-  const d = Number(dStr);
+  const dateStr = normalizeDateParam(date);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) throw httpError(400, 'Invalid date');
 
-  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
-    throw httpError(400, 'Invalid date');
-  }
+  const dayStartUtc = dayStartUtcFromDateStr(dateStr);
+  if (!dayStartUtc) throw httpError(400, 'Invalid date');
+
+  const dur = toInt(durationMinutes);
   if (!Number.isFinite(dur) || dur <= 0) {
     throw httpError(400, 'Invalid durationMinutes');
   }
 
   // Resolve location hours (defaults)
   const resolved = await resolveLocationHoursForCourt(courtId).catch(() => null);
-  const openH = Number.isFinite(Number(openHourLocal))
-    ? Number(openHourLocal)
-    : Number(resolved?.openHourLocal ?? 8);
-  let closeH = Number.isFinite(Number(closeHourLocal))
-    ? Number(closeHourLocal)
-    : Number(resolved?.closeHourLocal ?? 22);
+  const openH = Number.isFinite(Number(openHour)) ? Number(openHour) : Number(resolved?.openHour ?? 8);
+  let closeH = Number.isFinite(Number(closeHour)) ? Number(closeHour) : Number(resolved?.closeHour ?? 22);
 
-  // Convention: closeHourLocal = 0 means midnight (24:00)
+  // Convention: closeHour = 0 means midnight end-of-day (24:00)
   if (closeH === 0) closeH = 24;
   // If close is earlier than open, treat it as "next day" (e.g. open 20, close 2 => close 26)
-  if (Number.isFinite(openH) && Number.isFinite(closeH) && closeH <= openH) {
-    closeH += 24;
-  }
-  if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw httpError(400, 'Invalid openHourLocal');
-  if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw httpError(400, 'Invalid closeHourLocal');
+  if (Number.isFinite(openH) && Number.isFinite(closeH) && closeH <= openH) closeH += 24;
 
-  const dayStartUtc = toUtcFromLocalDateParts({ y, m, d, hh: 0, mm: 0 });
+  if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw httpError(400, 'Invalid openHour');
+  if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw httpError(400, 'Invalid closeHour');
+
   // Query a bit wider than one day to safely catch overlaps when close hour is past midnight.
   const rangeStartUtc = new Date(dayStartUtc.getTime() - 24 * 60 * 60 * 1000);
   const rangeEndUtc = new Date(dayStartUtc.getTime() + 48 * 60 * 60 * 1000);
@@ -352,8 +301,8 @@ export async function getCourtAvailability({
     const e = r.endAt?.toDate?.();
     if (!s || !e) continue;
 
-    const startMin = minutesFromLocalDayStart(s, dayStartUtc);
-    const endMin = minutesFromLocalDayStart(e, dayStartUtc);
+    const startMin = minutesFromDayStart(s, dayStartUtc);
+    const endMin = minutesFromDayStart(e, dayStartUtc);
     booked.push({ startMin, endMin });
   }
 
@@ -374,8 +323,9 @@ export async function getCourtAvailability({
     const endUtc = new Date(dayStartUtc.getTime() + endMin * 60 * 1000);
 
     const pad = (n) => String(n).padStart(2, '0');
-    const localStart = new Date(startUtc.getTime());
-    const label = `${pad(localStart.getHours())}:${pad(localStart.getMinutes())}`;
+    const hh = Math.floor(startMin / 60) % 24;
+    const mm = startMin % 60;
+    const label = `${pad(hh)}:${pad(mm)}`;
 
     slots.push({
       label,
@@ -388,8 +338,8 @@ export async function getCourtAvailability({
     courtId,
     date: dateStr,
     durationMinutes: dur,
-    openHourLocal: openH,
-    closeHourLocal: ((closeH % 24) + 24) % 24,
+    openHour: openH,
+    closeHour: ((closeH % 24) + 24) % 24,
     slotStepMinutes,
     slots,
   };

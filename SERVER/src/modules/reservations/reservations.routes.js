@@ -3,7 +3,6 @@ import authMiddleware from '../../middleware/authMiddleware.js';
 import {
   listReservationsHandler,
   createReservationHandler,
-  deleteReservationHandler,
   getCourtAvailabilityHandler,
 } from './reservations.controller.js';
 
@@ -13,6 +12,5 @@ router.use(authMiddleware);
 router.get('/', listReservationsHandler);
 router.get('/availability', getCourtAvailabilityHandler);
 router.post('/', createReservationHandler);
-router.delete('/:id', deleteReservationHandler);
 
 export default router;
