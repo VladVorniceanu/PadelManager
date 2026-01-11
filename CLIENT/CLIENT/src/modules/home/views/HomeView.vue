@@ -275,7 +275,7 @@ import UiStateCard from '@/components/ui/UiStateCard.vue';
 import UiListCard from '@/components/ui/UiListCard.vue';
 
 import { useRouter } from 'vue-router';
-import { auth } from '@/services/firebase';
+import { useAuthStore } from '@/modules/auth/store/useAuthStore';
 import { httpClient } from '@/api/httpClient';
 import { useLookups } from '@/composables/useLookups';
 import MatchDetailsModal from '@/modules/matches/views/MatchDetailsModal.vue';
@@ -290,11 +290,12 @@ const {
   userDisplayNameById,
 } = useLookups();
 
+const authStore = useAuthStore();
+
 // ---- local state (home-specific API only) ----
 const loadingMatches = ref(false);
 const loadingTournaments = ref(false);
 const loadingLookups = ref(false);
-
 const matches = ref([]);
 const tournaments = ref([]);
 
@@ -307,11 +308,8 @@ const userPos = ref(null); // {lat,lng}
 const details = reactive({ open: false, item: null });
 
 // ---- computed ----
-const myUid = computed(() => auth.currentUser?.uid || '');
-const displayName = computed(() => {
-  const u = auth.currentUser;
-  return u?.displayName || u?.email || 'player';
-});
+const myUid = computed(() => authStore.firebaseUser?.uid || null);
+const displayName = computed(() => authStore.firebaseUser?.displayName || authStore.profile?.displayName || 'User');
 
 // ---- routing ----
 function goMatches() {

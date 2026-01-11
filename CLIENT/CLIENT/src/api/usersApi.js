@@ -7,7 +7,12 @@ function unwrap(res) {
 
 export async function fetchUsers() {
   const res = await httpClient.get('/users');
-  return unwrap(res); // => array users
+  return unwrap(res);
+}
+
+export async function fetchProfile(userId) {
+  const res = await httpClient.get(`/users/profile/${userId}`);
+  return unwrap(res);
 }
 
 export async function setUserRole(userId, role) {

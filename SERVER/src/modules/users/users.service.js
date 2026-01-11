@@ -1,5 +1,6 @@
 import { admin, db } from '../../config/firebase.js';
 import { USERS_COLLECTION, mapUser } from './users.model.js';
+import { logger } from '../../config/logger.js';
 
 export async function bootstrapUserFromToken({ uid, email, name }) {
   const ref = db.collection(USERS_COLLECTION).doc(uid);
@@ -12,7 +13,7 @@ export async function bootstrapUserFromToken({ uid, email, name }) {
       uid,
       email: email || '',
       displayName: name || '',
-      role: 'player', // default
+      role: 'player',
       createdAt: now,
       updatedAt: now,
     };
@@ -22,9 +23,11 @@ export async function bootstrapUserFromToken({ uid, email, name }) {
     return mapUser(newSnap);
   }
 
+  const existing = snap.data();
+
   await ref.update({
     email: email || '',
-    displayName: name || '',
+    displayName: existing?.displayName ? existing.displayName : (name || ''),
     updatedAt: now,
   });
 
@@ -38,6 +41,20 @@ export async function listUsers() {
     id: doc.id,
     ...doc.data(),
   }));
+}
+
+export async function getUserProfile(userId) {
+  const ref = db.collection(USERS_COLLECTION).doc(userId);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    return null;
+  }
+
+  return {
+    id: snap.id,
+    ...snap.data(),
+  };
 }
 
 export async function updateUserRole(userId, role) {
@@ -57,13 +74,31 @@ export async function updateUserRole(userId, role) {
 
 export async function updateUserProfileDetails(userId, details) {
   const ref = db.collection(USERS_COLLECTION).doc(userId);
+  const snap = await ref.get();
+  if (!snap.exists) return null;
 
-  const updateData = {
-    ...details,
-    updatedAt: new Date().toISOString(),
-  };
+  const allowed = [
+    'profilePicUrl',
+    'displayName',
+    'preferredSide',
+    'playingLevel',
+    'preferredPosition',
+    'preferredTime',
+  ];
 
-  await ref.update(updateData);
+  const next = {};
+  for (const k of allowed) {
+    if (details[k] !== undefined) next[k] = details[k];
+  }
+
+  // normalizări simple (opțional)
+  if (typeof next.displayName === 'string') next.displayName = next.displayName.trim();
+  if (typeof next.profilePicUrl === 'string') next.profilePicUrl = next.profilePicUrl.trim();
+
+  await ref.update({
+    ...next,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   const updated = await ref.get();
   return {
