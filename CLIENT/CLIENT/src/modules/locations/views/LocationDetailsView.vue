@@ -1,5 +1,6 @@
 <template>
-  <UiModal
+  <div>
+    <UiModal
     :title="loc?.name || 'Location'"
     :subtitle="[loc?.city, loc?.address].filter(Boolean).join(' — ') || '—'"
     modal-class="modal--wide"
@@ -67,8 +68,8 @@
           </section>
         </div>
       </div>
-    
-  </UiModal>
+    </UiModal>
+  </div>
 </template>
 
 <script setup>
@@ -142,8 +143,6 @@ onMounted(load);
 </script>
 
 <style scoped>
-.modalBody { padding: 16px; }
-
 .detailsGrid {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;

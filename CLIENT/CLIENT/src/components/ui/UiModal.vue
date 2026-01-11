@@ -1,7 +1,7 @@
 <template>
   <teleport to="body">
     <div class="backdrop" @click.self="emit('close')">
-      <div class="modal" :class="modalClass" role="dialog" aria-modal="true">
+      <div class="modal" v-bind="attrs" :class="modalClass" role="dialog" aria-modal="true">
         <div v-if="hasHeader" class="modalHeader">
           <div>
             <div class="modalTitle">
@@ -24,8 +24,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, useAttrs } from 'vue';
 import UiIconButton from './UiIconButton.vue';
+
+const attrs = useAttrs
 
 const props = defineProps({
   title: { type: String, default: '' },
