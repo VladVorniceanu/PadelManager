@@ -5,9 +5,7 @@
 </template>
 
 <script setup>
-defineProps({
-  strong: { type: Boolean, default: false },
-});
+defineProps({ strong: { type: Boolean, default: false } });
 </script>
 
 <style scoped src="./UiPill.css"></style>

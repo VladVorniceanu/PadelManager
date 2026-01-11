@@ -7,29 +7,28 @@
       </div>
 
       <div class="headRight">
-        <button class="btn primary" @click="openCreate">+ Add tournament</button>
+        <UiButton variant="primary"  @click="openCreate">+ Add tournament</UiButton>
       </div>
     </header>
 
-    <div v-if="store.loading" class="card">
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </div>
+    <UiStateCard v-if="store.loading" variant="loading" :lines="3" />
 
-    <div v-else-if="store.error" class="card error">
-      <div class="errorTitle">Eroare</div>
-      <div class="errorMsg">{{ store.error }}</div>
-      <button class="btn" @click="store.load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="store.error" variant="error" title="Eroare" :message="store.error">
+      <template #action>
+        <UiButton @click="store.load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
-    <div v-else-if="!store.items.length" class="card empty">
-      <div class="emptyTitle">Nu există turnee încă.</div>
-      <div class="emptyMsg">Apasă “Add tournament” ca să creezi primul turneu.</div>
-      <div class="emptyActions">
-        <button class="btn primary" @click="openCreate">+ Add tournament</button>
-      </div>
-    </div>
+    <UiStateCard
+      v-else-if="!store.items.length"
+      variant="empty"
+      title="Nu există turnee încă."
+      message="Apasă “Add tournament” ca să creezi primul turneu."
+    >
+      <template #action>
+        <UiButton variant="primary" @click="openCreate">+ Add tournament</UiButton>
+      </template>
+    </UiStateCard>
 
     <div v-else class="grid">
       <article v-for="t in store.items" :key="t.id" class="locCard">
@@ -37,7 +36,7 @@
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">{{ t.name }}</div>
-                <span class="pill">{{ statusLabel(t.status) }}</span>
+                <UiPill>{{ statusLabel(t.status) }}</UiPill>
             </div>
 
             <div class="locMeta">
@@ -52,8 +51,8 @@
           </div>
 
           <div class="actions">
-            <button class="btn" @click="openEdit(t)">Edit</button>
-            <button class="btn danger" @click="confirmDelete(t)">Delete</button>
+            <UiButton  @click="openEdit(t)">Edit</UiButton>
+            <UiButton variant="danger"  @click="confirmDelete(t)">Delete</UiButton>
           </div>
         </div>
 
@@ -67,15 +66,12 @@
     </div>
 
     <!-- Modal create/edit -->
-    <div v-if="modal.open" class="backdrop" @click.self="closeModal">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modalHeader">
-          <div>
-            <div class="modalTitle">{{ modal.mode === 'create' ? 'Add tournament' : 'Edit tournament' }}</div>
-            <div class="modalSubtitle">Completează detaliile turneului.</div>
-          </div>
-          <button class="iconBtn" @click="closeModal">✕</button>
-        </div>
+    <UiModal
+      v-if="modal.open"
+      :title="modal.mode === 'create' ? 'Add tournament' : 'Edit tournament'"
+      subtitle="Completează detaliile turneului."
+      @close="closeModal"
+    >
 
         <div v-if="uiError" class="inlineError">
           <div class="inlineErrorTitle">Nu putem salva</div>
@@ -86,75 +82,71 @@
           <div class="formGrid">
             <label class="field full">
               <div class="label">Name</div>
-              <input v-model.trim="form.name" class="input" :class="{ invalid: !!fieldErrors.name }" />
+              <UiInput v-model.trim="form.name"  :class="{ invalid: !!fieldErrors.name }" />
               <div v-if="fieldErrors.name" class="fieldError">{{ fieldErrors.name }}</div>
             </label>
 
             <label class="field full">
               <div class="label">Location</div>
-              <select
+              <UiSelect
                 v-model="form.locationId"
-                class="select"
+                
                 :class="{ invalid: !!fieldErrors.locationId }"
               >
                 <option value="" disabled>Select a location…</option>
                 <option v-for="l in locationOptions" :key="l.id" :value="l.id">
                   {{ l.name }} — {{ l.city }}
                 </option>
-              </select>
+              </UiSelect>
               <div v-if="fieldErrors.locationId" class="fieldError">{{ fieldErrors.locationId }}</div>
             </label>
 
             <label class="field">
               <div class="label">Start date</div>
-              <input v-model="form.startDate" class="input" type="date" />
+              <UiInput v-model="form.startDate"  type="date" />
             </label>
 
             <label class="field">
               <div class="label">End date</div>
-              <input v-model="form.endDate" class="input" type="date" />
+              <UiInput v-model="form.endDate"  type="date" />
             </label>
-
-            <label class="field full">
-              <div class="label">Status</div>
-              <select v-model="form.status" class="select">
-                <option v-for="s in statusOptions" :key="s.value" :value="s.value">
-                  {{ s.label }}
-                </option>
-              </select>
-            </label>
+ -->
           </div>
 
           <div class="modalActions">
-            <button type="button" class="btn" @click="closeModal">Cancel</button>
-            <button type="submit" class="btn primary" :disabled="saving">
+            <UiButton type="button"  @click="closeModal">Cancel</UiButton>
+            <UiButton variant="primary" type="submit"  :disabled="saving">
               {{ saving ? 'Saving…' : 'Save' }}
-            </button>
+            </UiButton>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
 
     <!-- Confirm delete -->
-    <div v-if="confirm.open" class="backdrop" @click.self="confirm.open = false">
-      <div class="confirm">
-        <div class="confirmTitle">Confirm delete</div>
-        <div class="confirmMsg">
-          Ștergi turneul <b>{{ confirm.name }}</b>? Acțiunea este ireversibilă.
-        </div>
-        <div class="confirmActions">
-          <button class="btn" @click="confirm.open = false">Cancel</button>
-          <button class="btn danger" :disabled="confirm.busy" @click="doDelete">
-            {{ confirm.busy ? 'Deleting…' : 'Delete' }}
-          </button>
-        </div>
+    <UiModal v-if="confirm.open" title="Confirm delete" @close="confirm.open = false">
+      <div class="confirmMsg">
+        Ștergi turneul <b>{{ confirm.name }}</b>? Acțiunea este ireversibilă.
       </div>
-    </div>
+
+      <div class="confirmActions" style="margin-top: 12px;">
+        <UiButton variant="subtle" @click="confirm.open = false">Cancel</UiButton>
+        <UiButton variant="danger" :disabled="confirm.busy" @click="doDelete">
+          {{ confirm.busy ? 'Deleting…' : 'Delete' }}
+        </UiButton>
+      </div>
+    </UiModal>
   </section>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiInput from '@/components/ui/UiInput.vue';
+import UiSelect from '@/components/ui/UiSelect.vue';
+import UiModal from '@/components/ui/UiModal.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+
 import { useAdminTournamentsStore } from '../store/useAdminTournamentsStore';
 import { useAdminLocationsStore } from '../store/useAdminLocationsStore';
 

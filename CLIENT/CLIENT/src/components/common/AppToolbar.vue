@@ -1,8 +1,8 @@
 <template>
   <header class="toolbar">
-    <button class="iconBtn" @click="$emit('toggle-drawer')" aria-label="Open menu">
+    <UiIconButton @click="$emit('toggle-drawer')" aria-label="Open menu">
       ☰
-    </button>
+    </UiIconButton>
 
     <div class="title clickable" @click="goHome">
       <slot name="title">PadelManager</slot>
@@ -16,6 +16,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import UiIconButton from '@/components/ui/UiIconButton.vue';
 
 const router = useRouter();
 
@@ -31,8 +32,8 @@ function goHome() {
   align-items: center;
   justify-content: space-between;
   padding: 0 12px;
-  border-bottom: 1px solid #eee;
-  background: white;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-surface);
   position: static;
 }
 .iconBtn {

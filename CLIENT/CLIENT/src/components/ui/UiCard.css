@@ -10,4 +10,8 @@
   background: var(--ui-danger-bg);
 }
 
-.card.empty { text-align: left; }
+.card.empty { 
+  flex-direction: column;
+  display: flex;
+  gap: 12px;
+ }

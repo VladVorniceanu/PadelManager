@@ -4,7 +4,7 @@
       <template #title>Padel Manager</template>
 
       <template #right>
-        <UiButton variant="primary" type="button" @click="openBookMatch">
+        <UiButton variant="primary" @click="openBookMatch">
           Book a match
         </UiButton>
       </template>

@@ -7,86 +7,88 @@
       </div>
 
       <div class="pageHeader__actions">
-        <button class="btn subtle" :disabled="loading" @click="load">
+        <UiButton variant="subtle"  :disabled="loading" @click="load">
           {{ loading ? 'Refreshing…' : 'Refresh' }}
-        </button>
+        </UiButton>
       </div>
     </header>
 
-    <div v-if="loading" class="card">
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </div>
+    <UiStateCard v-if="loading" variant="loading" :lines="3" />
 
-    <div v-else-if="error" class="card error">
-      <div class="errorTitle">Eroare</div>
-      <div class="errorMsg">{{ error }}</div>
-      <button class="btn" @click="load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="error" variant="error" title="Eroare" :message="error">
+      <template #action>
+        <UiButton @click="load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
     <div v-else class="statsGrid">
       <!-- Primary stats -->
-      <article class="card statCard">
+      <UiCard class="statCard">
         <div class="statCard__label">Games played</div>
         <div class="statCard__value">{{ stats.gamesPlayed }}</div>
         <div class="statCard__meta">Total matches you have participated in.</div>
-      </article>
+      </UiCard>
 
-      <article class="card statCard">
+      <UiCard class="statCard">
         <div class="statCard__label">Wins</div>
         <div class="statCard__value">{{ stats.wins }}</div>
         <div class="statCard__meta">Only finalised matches.</div>
-      </article>
+      </UiCard>
 
-      <article class="card statCard">
+      <UiCard class="statCard">
         <div class="statCard__label">Losses</div>
         <div class="statCard__value">{{ stats.losses }}</div>
         <div class="statCard__meta">Only finalised matches.</div>
-      </article>
+      </UiCard>
 
-      <article class="card statCard">
+      <UiCard class="statCard">
         <div class="statCard__label">Win rate</div>
         <div class="statCard__value">{{ winRate }}</div>
         <div class="statCard__meta">Wins / (Wins + Losses).</div>
-      </article>
+      </UiCard>
 
       <!-- Secondary stats -->
-      <article class="card statCard statCard--wide">
+      <UiCard class="statCard statCard--wide">
         <div class="statCard__label">Most frequent teammate</div>
         <div class="statCard__value statCard__value--sm">
           {{ formatTopUser(stats.mostFrequentTeammate) }}
         </div>
         <div class="statCard__meta">Based on matches where you were on the same team.</div>
-      </article>
+      </UiCard>
 
-      <article class="card statCard statCard--wide">
+      <UiCard class="statCard statCard--wide">
         <div class="statCard__label">Most frequent opponent</div>
         <div class="statCard__value statCard__value--sm">
           {{ formatTopUser(stats.mostFrequentOpponent) }}
         </div>
         <div class="statCard__meta">Based on matches where you were on opposing teams.</div>
-      </article>
+      </UiCard>
 
-      <article class="card statCard statCard--wide">
+      <UiCard class="statCard statCard--wide">
         <div class="statCard__label">Most played location</div>
         <div class="statCard__value statCard__value--sm">
           {{ formatTopLocation(stats.mostPlayedLocation) }}
         </div>
         <div class="statCard__meta">Location where you played the most.</div>
-      </article>
+      </UiCard>
 
       <!-- Raw (debug) -->
-      <details class="card statsDebug">
-        <summary>Raw payload</summary>
-        <pre class="json">{{ prettyStats }}</pre>
-      </details>
+      <UiCard class="statsDebug">
+        <details>
+          <summary>Raw payload</summary>
+          <pre class="json">{{ prettyStats }}</pre>
+        </details>
+      </UiCard>
     </div>
   </section>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiCard from '@/components/ui/UiCard.vue';
+
 import { httpClient } from '@/api/httpClient';
 import { useLookups } from '@/composables/useLookups';
 

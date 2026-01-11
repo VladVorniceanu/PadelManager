@@ -3,27 +3,23 @@
     <header class="header">
       <div class="headLeft">
         <h2 class="title">Overview</h2>
-        <p class="subtitle">Statistici rapide calculate din API-urile existente.</p>
+        <p class="subtitle">Welcome to the admin overview dashboard.</p>
       </div>
 
       <div class="headRight">
-        <button class="btn" :disabled="loading" @click="load">
+        <UiButton variant="subtle" :disabled="loading" @click="load">
           {{ loading ? 'Refreshing…' : 'Refresh' }}
-        </button>
+        </UiButton>
       </div>
     </header>
 
-    <div v-if="loading" class="card">
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </div>
+    <UiStateCard v-if="loading" variant="loading" :lines="3" />
 
-    <div v-else-if="error" class="card error">
-      <div class="errorTitle">Eroare</div>
-      <div class="errorMsg">{{ error }}</div>
-      <button class="btn" @click="load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="error" variant="error" title="Eroare" :message="error">
+      <template #action>
+        <UiButton @click="load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
     <div v-else class="grid">
       <article class="locCard">
@@ -31,7 +27,7 @@
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">Total users</div>
-              <span class="pill strong">{{ metrics.totalUsers }}</span>
+              <UiPill strong>{{ metrics.totalUsers }}</UiPill>
             </div>
             <div class="locMeta">
               <span class="metaItem">👤 Admins: {{ metrics.totalAdmins }}</span>
@@ -53,7 +49,7 @@
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">Total locations</div>
-              <span class="pill strong">{{ metrics.totalLocations }}</span>
+              <UiPill strong>{{ metrics.totalLocations }}</UiPill>
             </div>
             <div class="locMeta">
               <span class="metaItem">📍 Courts total: {{ metrics.totalCourts }}</span>
@@ -78,7 +74,7 @@
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">Security</div>
-              <span class="pill">{{ metrics.tokenStatus }}</span>
+              <UiPill>{{ metrics.tokenStatus }}</UiPill>
             </div>
             <div class="locMeta">
               <span class="metaItem">🔒 Auth: Bearer token via Axios interceptor</span>
@@ -98,7 +94,7 @@
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">Courts distribution</div>
-              <span class="pill">{{ metrics.locationsWithCourts }} / {{ metrics.totalLocations }}</span>
+              <UiPill>{{ metrics.locationsWithCourts }} / {{ metrics.totalLocations }}</UiPill>
             </div>
             <div class="locMeta">
               <span class="metaItem">🏟️ Locations with ≥1 court</span>
@@ -118,6 +114,10 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+
 import { fetchUsers } from '@/api/usersApi';
 import { fetchLocations } from '@/api/locationsApi';
 import { auth } from '@/services/firebase';

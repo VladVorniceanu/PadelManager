@@ -1,7 +1,7 @@
 .backdrop{
   position: fixed;
   inset: 0;
-  background: rgba(17,24,39,.45);
+  background: var(--ui-overlay);
   display: grid;
   place-items: center;
   z-index: 120;
@@ -10,7 +10,7 @@
 
 .modal{
   width: fit-content;
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: var(--ui-radius-lg);
   border: 1px solid var(--ui-border);
   box-shadow: var(--ui-shadow);
@@ -22,7 +22,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 16px 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--ui-border);
   gap: 12px;
 }
 
@@ -30,5 +30,4 @@
 .modalSubtitle{ color: var(--ui-muted); font-size: 12px; margin-top: 4px; }
 
 .modalBody{ padding: 16px; }
-
 .modal--wide{ width: min(1200px, 96vw); }

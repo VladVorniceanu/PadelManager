@@ -1,6 +1,6 @@
 <template>
   <div class="segmented" role="tablist" :aria-label="ariaLabel">
-    <button
+    <UiButton
       v-for="opt in options"
       :key="String(opt.value)"
       class="segmented__btn"
@@ -9,11 +9,13 @@
       @click="emit('update:modelValue', opt.value)"
     >
       {{ opt.label }}
-    </button>
+    </UiButton>
   </div>
 </template>
 
 <script setup>
+import UiButton from '@/components/ui/UiButton.vue';
+
 defineProps({
   modelValue: { type: String, required: true },
   options: { type: Array, default: () => [] }, // [{ value, label }]

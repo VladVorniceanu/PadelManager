@@ -1,13 +1,11 @@
 <template>
-  <button class="iconBtn" :type="type" v-bind="$attrs">
+  <UiButton class="iconBtn" :type="type" v-bind="$attrs">
     <slot />
-  </button>
+  </UiButton>
 </template>
 
 <script setup>
-defineProps({
-  type: { type: String, default: 'button' },
-});
+defineProps({ type: { type: String, default: 'button' } });
 </script>
 
 <style scoped src="./UiIconButton.css"></style>

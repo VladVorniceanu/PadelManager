@@ -6,16 +6,16 @@
       <div>
         <h2 class="admin-title">Admin console</h2>
         <p class="admin-subtitle">
-          Gestionează utilizatorii, locațiile și turneele din Padel Manager.
+          Manage platform users, locations, and tournaments.
         </p>
       </div>
-      <span class="admin-badge">Admin</span>
+      <UiPill class="strong">Admin</UiPill>
     </header>
 
     <div class="admin-layout">
       <!-- Sidebar cu tab-uri -->
       <nav class="admin-sidebar">
-        <button
+        <UiButton
           v-for="tab in tabs"
           :key="tab.id"
           type="button"
@@ -23,7 +23,7 @@
           @click="activeTab = tab.id"
         >
           {{ tab.label }}
-        </button>
+        </UiButton>
       </nav>
 
       <!-- Conținut principal -->
@@ -54,6 +54,11 @@
 
 <script setup>
 import { ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiInput from '@/components/ui/UiInput.vue';
+import UiSelect from '@/components/ui/UiSelect.vue';
+
 import AdminUsersView from '../components/AdminUsersView.vue';
 import AdminLocationsView from '../components/AdminLocationsView.vue';
 import AdminTournamentsView from '../components/AdminTournamentsView.vue';

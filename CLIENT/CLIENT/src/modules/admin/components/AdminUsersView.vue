@@ -4,24 +4,21 @@
     <div class="admin-users__header">
       <h4>Users management</h4>
       <p>
-        Gestionează conturile din platformă: promovare la rol de admin sau revenire la rol de player.
+        Manage user roles within the application. Promote players to admins or
+        demote admins back to players.
       </p>
     </div>
 
-    <div v-if="loading" class="card">
-      Se încarcă utilizatorii…
-    </div>
-    <div v-else-if="error" class="card error">
-      <div class="errorTitle">Eroare</div>
-      <div class="errorMsg">{{ error }}</div>
-    </div>
+    <UiStateCard v-if="loading" variant="loading" :lines="2" />
+
+    <UiStateCard v-else-if="error" variant="error" title="Error" :message="error" />
 
     <table v-else class="table">
       <thead>
         <tr>
           <th>Email</th>
-          <th>Nume</th>
-          <th>Rol</th>
+          <th>Name</th>
+          <th>Role</th>
           <th>Status</th>
           <th style="width: 220px;">Acțiuni</th>
         </tr>
@@ -34,27 +31,27 @@
           <td>{{ user.status || 'activ' }}</td>
           <td>
             <template v-if="isSelf(user)">
-              <span class="pill">Current user</span>
+              <UiButton disabled>Current user</UiButton>
             </template>
 
             <template v-else>
-              <button
-                class="btn primary"
+              <UiButton variant="primary"
+                
                 v-if="user.role === 'player'"
                 :disabled="updatingId === user.id"
                 @click="onChangeRole(user, 'admin')"
               >
-                {{ updatingId === user.id ? 'Se promovează…' : 'Promovează la admin' }}
-              </button>
+                {{ updatingId === user.id ? 'Promoting…' : 'Promote to admin' }}
+              </UiButton>
 
-              <button
-                class="btn"
+              <UiButton variant="danger"
+                
                 v-else
                 :disabled="updatingId === user.id"
                 @click="onChangeRole(user, 'player')"
               >
-                {{ updatingId === user.id ? 'Se actualizează…' : 'Retrogradează la player' }}
-              </button>
+                {{ updatingId === user.id ? 'Updating…' : 'Demote to player' }}
+              </UiButton>
             </template>
           </td>
         </tr>
@@ -62,13 +59,16 @@
     </table>
 
   <p class="table-note">
-    * Datele sunt preluate din colecția <code>users</code> din Firestore, prin backend-ul Express.
+    * Data is fetched from the <code>users</code> collection in Firestore via the Express backend.
   </p>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+
 import { fetchUsers, setUserRole } from '../../../api/usersApi';
 import { auth } from '../../../services/firebase';
 
@@ -90,7 +90,7 @@ async function loadUsers() {
     users.value = await fetchUsers();
   } catch (err) {
     console.error(err);
-    error.value = 'Nu am putut încărca utilizatorii. Încearcă din nou.';
+    error.value = 'Failed to load users.';
   } finally {
     loading.value = false;
   }
@@ -105,7 +105,7 @@ async function onChangeRole(user, newRole) {
     users.value = users.value.map((u) => (u.id === user.id ? updated : u));
   } catch (err) {
     console.error(err);
-    alert('A apărut o eroare la actualizarea rolului.');
+    alert('An error occurred while updating the role.');
   } finally {
     updatingId.value = null;
   }

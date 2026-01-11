@@ -35,7 +35,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
-
 const hasHeader = computed(() => props.showClose || props.title || props.subtitle);
 </script>
 

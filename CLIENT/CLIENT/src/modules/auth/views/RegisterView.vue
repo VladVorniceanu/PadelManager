@@ -63,13 +63,13 @@
           />
         </label>
 
-        <button class="authBtn primary" type="submit" :disabled="loading">
+        <UiButton class="primary" type="submit" :disabled="loading">
           {{ loading ? 'Creating…' : 'Create account' }}
-        </button>
+        </UiButton>
 
-        <button class="authBtn secondary" type="button" @click="goLogin" :disabled="loading">
+        <UiButton class="authBtn secondary" type="button" @click="goLogin" :disabled="loading">
           I already have an account
-        </button>
+        </UiButton>
       </form>
 
       <footer class="authFooter">
@@ -83,6 +83,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../store/useAuthStore';
+import UiButton from '@/components/ui/UiButton.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

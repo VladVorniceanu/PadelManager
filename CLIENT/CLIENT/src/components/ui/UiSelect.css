@@ -3,5 +3,8 @@
   border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   outline: none;
-  background: #fff;
+  background: var(--ui-surface);
 }
+
+.select:focus { border-color: var(--ui-primary); }
+.select.invalid { border-color: var(--ui-danger); }

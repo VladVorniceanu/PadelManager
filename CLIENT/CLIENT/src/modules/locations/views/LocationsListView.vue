@@ -11,11 +11,7 @@
       </UiButton>
     </header>
 
-    <UiStateCard v-if="loading" variant="loading" :lines="3" >
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </UiStateCard>
+    <UiStateCard v-if="loading" variant="loading" :lines="3" />
 
     <UiStateCard v-else-if="error" variant="error" title="Error" :message="error">
       <template #action>
@@ -23,10 +19,12 @@
       </template>
     </UiStateCard>
 
-    <div v-else-if="!items.length" class="card empty">
-      <div class="emptyTitle">No locations available.</div>
-      <div class="emptyMsg">Please come back later.</div>
-    </div>
+    <UiStateCard
+      v-else-if="!items.length"
+      variant="empty"
+      title="No locations available."
+      message="Please come back later."
+    />
 
     <div v-else class="list">
       <UiListCard
@@ -39,7 +37,6 @@
         <template #left>
           <div class="listCard__titleRow">
             <div class="listCard__title">{{ l.name || '—' }}</div>
-            <span class="pill">{{ (l.courts?.length ?? 0) }} courts</span>
           </div>
 
           <div class="listCard__city">{{ l.city || '—' }}</div>
@@ -47,9 +44,7 @@
         </template>
 
         <template #right>
-          <div class="mediaFrame" aria-hidden="true">
-            <span class="mediaFrame__hint">Image</span>
-          </div>
+          <UiPill>{{ (l.courts?.length ?? 0) }} courts</UiPill>
         </template>
       </UiListCard>
     </div>
@@ -63,6 +58,7 @@ import { onMounted, ref } from 'vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
 import UiListCard from '@/components/ui/UiListCard.vue';
+import UiPill from '@/components/ui/UiPill.vue';
 
 import { useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';

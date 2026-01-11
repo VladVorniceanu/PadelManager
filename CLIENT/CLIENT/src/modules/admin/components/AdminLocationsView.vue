@@ -4,70 +4,68 @@
     <header class="header">
       <div class="headLeft">
         <h2 class="title">Locations</h2>
-        <p class="subtitle">Admin: gestionează locații și terenuri (courts).</p>
+        <p class="subtitle">Manage locations and courts.</p>
       </div>
 
       <div class="headRight">
         <div class="searchWrap">
-          <span class="searchIcon">⌕</span>
-          <input
+          <UiInput
             v-model.trim="q"
             class="search"
             type="text"
-            placeholder="Caută după nume / oraș / adresă…"
+            placeholder="⌕ Search by name / city / address…"
           />
-          <button v-if="q" class="clearBtn" @click="q = ''" aria-label="Clear search">
+          <UiButton v-if="q" class="clearBtn" @click="q = ''" aria-label="Clear search">
             ✕
-          </button>
+          </UiButton>
         </div>
 
-        <select v-model="sortBy" class="select" aria-label="Sort">
+        <UiSelect v-model="sortBy" aria-label="Sort">
           <option value="name">Sort: Name</option>
           <option value="city">Sort: City</option>
           <option value="courts">Sort: Courts</option>
           <option value="updatedAt">Sort: Updated</option>
-        </select>
+        </UiSelect>
 
-        <button class="btn primary" @click="openCreate">
+        <UiButton variant="primary"  @click="openCreate">
           + Add location
-        </button>
+        </UiButton>
       </div>
     </header>
 
     <!-- States -->
-    <div v-if="store.loading" class="card">
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </div>
+    <UiStateCard v-if="store.loading" variant="loading" :lines="3" />
 
-    <div v-else-if="store.error" class="card error">
-      <div class="errorTitle">Eroare</div>
-      <div class="errorMsg">{{ store.error }}</div>
-      <button class="btn" @click="store.load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="store.error" variant="error" title="Error" :message="store.error">
+      <template #action>
+        <UiButton @click="store.load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
-    <div v-else-if="!filteredAndSorted.length" class="card empty">
-      <div class="emptyTitle">Nu există locații (sau filtrul nu găsește nimic).</div>
-      <div class="emptyMsg">
-        Încearcă să ștergi căutarea sau apasă “Add location”.
-      </div>
-      <div class="emptyActions">
-        <button class="btn" @click="q = ''">Clear search</button>
-        <button class="btn primary" @click="openCreate">+ Add location</button>
-      </div>
-    </div>
+    <UiStateCard
+      v-else-if="!filteredAndSorted.length"
+      variant="empty"
+      title="No locations found (or the filter matches nothing)."
+      message="Try clearing the search or click “+ Add location”."
+    >
+      <template #action>
+        <div class="emptyActions">
+          <UiButton variant="subtle" @click="q = ''">Clear search</UiButton>
+          <UiButton variant="primary" @click="openCreate">+ Add location</UiButton>
+        </div>
+      </template>
+    </UiStateCard>
 
     <!-- Grid -->
     <div v-else class="grid">
-      <article v-for="loc in filteredAndSorted" :key="loc.id" class="locCard">
+      <UiCard v-for="loc in filteredAndSorted" :key="loc.id">
         <div class="locHead">
           <div class="locIdentity">
             <div class="locNameRow">
               <div class="locName">{{ loc.name || '—' }}</div>
-              <span class="pill">
+              <UiPill>
                 {{ (loc.courts?.length ?? 0) }} courts
-              </span>
+              </UiPill>
             </div>
 
             <div class="locMeta">
@@ -78,8 +76,8 @@
           </div>
 
           <div class="actions">
-            <button class="btn" @click="openEdit(loc)">Edit</button>
-            <button class="btn danger" @click="confirmDelete(loc)">Delete</button>
+            <UiButton  @click="openEdit(loc)">Edit</UiButton>
+            <UiButton variant="danger"  @click="confirmDelete(loc)">Delete</UiButton>
           </div>
         </div>
 
@@ -94,35 +92,27 @@
           </div>
 
           <div class="quickActions">
-            <button class="btn subtle" @click="openEdit(loc)">
+            <UiButton variant="subtle"  @click="openEdit(loc)">
               Manage courts →
-            </button>
+            </UiButton>
           </div>
         </div>
-      </article>
+      </UiCard>
     </div>
 
     <!-- MODAL -->
-    <div v-if="modal.open" class="backdrop" @click.self="closeModal">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modalHeader">
-          <div>
-            <div class="modalTitle">
-              {{ modal.mode === 'create' ? 'Add location' : 'Edit location' }}
-            </div>
-            <div class="modalSubtitle">
-              {{ modal.mode === 'create'
-                ? 'Completează detaliile locației.'
-                : 'Editează detaliile și gestionează terenurile.'
-              }}
-            </div>
-          </div>
-          <button class="iconBtn" @click="closeModal" aria-label="Close">✕</button>
-        </div>
+    <UiModal
+      v-if="modal.open"
+      :title="modal.mode === 'create' ? 'Add location' : 'Edit location'"
+      :subtitle="modal.mode === 'create'
+        ? 'Fill in the location details.'
+        : 'Edit the details and manage the courts.'"
+      @close="closeModal"
+    >
 
         <!-- Errors -->
         <div v-if="uiError" class="inlineError">
-          <div class="inlineErrorTitle">Nu putem salva</div>
+          <div class="inlineErrorTitle">Cannot save</div>
           <div class="inlineErrorMsg">{{ uiError }}</div>
         </div>
 
@@ -133,9 +123,9 @@
           <div class="formGrid">
             <label class="field">
               <div class="label">Name</div>
-              <input
+              <UiInput
                 v-model.trim="form.name"
-                class="input"
+                
                 type="text"
                 placeholder="Ex: Magic Padel"
                 :class="{ invalid: !!fieldErrors.name }"
@@ -145,11 +135,11 @@
 
             <label class="field">
               <div class="label">City</div>
-              <input
+              <UiInput
                 v-model.trim="form.city"
-                class="input"
+                
                 type="text"
-                placeholder="Ex: București"
+                placeholder="Ex: Bucharest"
                 :class="{ invalid: !!fieldErrors.city }"
               />
               <div v-if="fieldErrors.city" class="fieldError">{{ fieldErrors.city }}</div>
@@ -157,11 +147,11 @@
 
             <label class="field full">
               <div class="label">Address</div>
-              <input
+              <UiInput
                 v-model.trim="form.address"
-                class="input"
+                
                 type="text"
-                placeholder="Ex: Str. Exemplu 10"
+                placeholder="Ex: Strada Exemplu 123"
                 :class="{ invalid: !!fieldErrors.address }"
               />
               <div v-if="fieldErrors.address" class="fieldError">{{ fieldErrors.address }}</div>
@@ -176,19 +166,19 @@
               <div>
                 <div class="sectionTitle">Courts</div>
                 <div class="sectionHint">
-                  Adaugă / editează terenuri pentru această locație.
+                  Add / edit courts for this location.
                 </div>
               </div>
-              <span class="pill strong">{{ courts.length }} total</span>
+              <UiPill strong>{{ courts.length }} total</UiPill>
             </div>
 
             <!-- Add court -->
             <div class="courtAddRow">
               <label class="field grow">
                 <div class="label">Court name</div>
-                <input
+                <UiInput
                   v-model.trim="courtForm.name"
-                  class="input"
+                  
                   type="text"
                   placeholder="Ex: Court 1"
                   :class="{ invalid: !!courtErrors.name }"
@@ -201,29 +191,27 @@
                 <span>Indoor</span>
               </label>
 
-              <button
+              <UiButton variant="primary"
                 type="button"
-                class="btn primary"
+                
                 :disabled="courtBusy"
                 @click="onAddCourt"
               >
                 {{ courtBusy ? 'Adding…' : '+ Add' }}
-              </button>
+              </UiButton>
             </div>
 
-            <div v-if="courtError" class="inlineNotice">
-              {{ courtError }}
-            </div>
+            <UiNotice v-if="courtError">{{ courtError }}</UiNotice>
 
             <!-- Courts list -->
             <div v-if="courts.length === 0" class="courtsEmpty">
-              Niciun teren adăugat încă.
+              No courts added yet.
             </div>
 
             <div v-else class="courtsList">
               <div class="courtRow" v-for="c in courtsDraft" :key="c.id">
                 <div class="courtLeft">
-                  <input v-model.trim="c.name" class="input small" placeholder="Court name" />
+                  <UiInput v-model.trim="c.name"  placeholder="Court name" />
                   <label class="toggle smallToggle">
                     <input type="checkbox" v-model="c.isIndoor" />
                     <span>Indoor</span>
@@ -231,24 +219,24 @@
                 </div>
 
                 <div class="courtRight">
-                  <button
+                  <UiButton
                     type="button"
-                    class="btn"
+                    
                     :disabled="courtBusy || !isCourtDirty(c.id)"
                     @click="onSaveCourt(c)"
                     title="Save changes"
                   >
                     Save
-                  </button>
-                  <button
+                  </UiButton>
+                  <UiButton variant="danger"
                     type="button"
-                    class="btn danger"
+                    
                     :disabled="courtBusy"
                     @click="onDeleteCourt(c)"
                     title="Delete court"
                   >
                     Delete
-                  </button>
+                  </UiButton>
                 </div>
               </div>
             </div>
@@ -256,36 +244,41 @@
 
           <!-- Actions -->
           <div class="modalActions">
-            <button type="button" class="btn" @click="closeModal">Cancel</button>
-            <button type="submit" class="btn primary" :disabled="saving">
+            <UiButton type="button"  @click="closeModal">Cancel</UiButton>
+            <UiButton variant="primary" type="submit"  :disabled="saving">
               {{ saving ? 'Saving…' : 'Save location' }}
-            </button>
+            </UiButton>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
 
-    <!-- Delete confirm mini-modal -->
-    <div v-if="confirm.open" class="backdrop" @click.self="confirm.open = false">
-      <div class="confirm">
-        <div class="confirmTitle">Confirm delete</div>
-        <div class="confirmMsg">
-          Ștergi locația <b>{{ confirm.name }}</b>? Acțiunea este ireversibilă.
-        </div>
-
-        <div class="confirmActions">
-          <button class="btn" @click="confirm.open = false">Cancel</button>
-          <button class="btn danger" :disabled="confirm.busy" @click="doDelete">
-            {{ confirm.busy ? 'Deleting…' : 'Delete' }}
-          </button>
-        </div>
+    <!-- Delete confirm -->
+    <UiModal v-if="confirm.open" title="Confirm delete" @close="confirm.open = false">
+      <div class="confirmMsg">
+        Delete location <b>{{ confirm.name }}</b>? This action is irreversible.
       </div>
-    </div>
+
+      <div class="confirmActions" style="margin-top: 12px;">
+        <UiButton variant="subtle" @click="confirm.open = false">Cancel</UiButton>
+        <UiButton variant="danger" :disabled="confirm.busy" @click="doDelete">
+          {{ confirm.busy ? 'Deleting…' : 'Delete' }}
+        </UiButton>
+      </div>
+    </UiModal>
   </section>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiInput from '@/components/ui/UiInput.vue';
+import UiSelect from '@/components/ui/UiSelect.vue';
+import UiCard from '@/components/ui/UiCard.vue';
+import UiModal from '@/components/ui/UiModal.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiNotice from '@/components/ui/UiNotice.vue';
+
 import { useAdminLocationsStore } from '../store/useAdminLocationsStore';
 import { addCourt, updateCourt, deleteCourt } from '../../../api/locationsApi';
 

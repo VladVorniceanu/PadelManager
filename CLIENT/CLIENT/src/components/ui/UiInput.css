@@ -3,7 +3,10 @@
   border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   outline: none;
-  background: #fff;
+  background: var(--ui-surface);
 }
+
+.input:focus { border-color: var(--ui-primary); }
+.input.invalid { border-color: var(--ui-danger); }
 
 .input.small { padding: 8px 10px; font-weight: 900; }

@@ -7,20 +7,17 @@
   cursor: pointer;
   text-align: left;
   transition: transform .12s ease, box-shadow .12s ease;
+
+  /* default (locations): grid layout */
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: 12px;
 }
 
 .listCard:hover{
   transform: translateY(-1px);
   box-shadow: var(--ui-shadow-soft);
 }
-
-
-.listCard{
-  display: grid;
-  grid-template-columns: 1fr 180px;
-  gap: 12px;
-}
-
 .listCard__titleRow{
   display: flex;
   align-items: center;

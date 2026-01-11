@@ -5,9 +5,7 @@
 </template>
 
 <script setup>
-defineProps({
-  lines: { type: Number, default: 3 },
-});
+defineProps({ lines: { type: Number, default: 3 } });
 </script>
 
 <style scoped src="./UiSkeletonLines.css"></style>

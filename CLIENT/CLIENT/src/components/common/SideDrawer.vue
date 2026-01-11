@@ -11,19 +11,19 @@
         </div>
       </div>
 
-      <button class="sd-closeBtn" @click="$emit('close')" aria-label="Close menu">✕</button>
+      <UiIconButton class="sd-closeBtn" @click="$emit('close')" aria-label="Close menu">✕</UiIconButton>
     </div>
 
     <nav class="sd-nav">
-      <button class="sd-item" @click="goProfile">Profile</button>
-      <button class="sd-item" @click="goMatches">Matches</button>
-      <button class="sd-item" @click="goTournaments">Tournaments</button>
-      <button class="sd-item" @click="goLocations">Locations</button>
+      <UiButton class="sd-item" @click="goProfile">Profile</UiButton>
+      <UiButton class="sd-item" @click="goMatches">Matches</UiButton>
+      <UiButton class="sd-item" @click="goTournaments">Tournaments</UiButton>
+      <UiButton class="sd-item" @click="goLocations">Locations</UiButton>
 
-      <button v-if="isAdmin" class="sd-item" @click="goAdmin">Admin Dashboard</button>
+      <UiButton v-if="isAdmin" class="sd-item" @click="goAdmin">Admin Dashboard</UiButton>
 
       <!-- logout last, pinned bottom -->
-      <button class="sd-item sd-danger sd-logout" @click="logout">Logout</button>
+      <UiButton class="sd-item sd-logout danger" @click="logout">Logout</UiButton>
     </nav>
   </aside>
 </template>
@@ -32,6 +32,8 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../modules/auth/store/useAuthStore';
+import UiButton from '../ui/UiButton.vue';
+import UiIconButton from '../ui/UiIconButton.vue';
 
 defineProps({ open: Boolean });
 const emit = defineEmits(['close']);

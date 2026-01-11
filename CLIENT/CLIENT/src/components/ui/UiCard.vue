@@ -1,13 +1,14 @@
 <template>
-  <div class="card" :class="variantClass">
+  <component :is="as" class="card" :class="variantClass">
     <slot />
-  </div>
+  </component>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 
 const props = defineProps({
+  as: { type: String, default: 'div' },
   variant: { type: String, default: 'default' }, // default | error | empty
 });
 

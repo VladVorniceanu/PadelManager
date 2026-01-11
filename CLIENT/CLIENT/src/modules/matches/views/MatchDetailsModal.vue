@@ -1,31 +1,19 @@
 <template>
-  <teleport to="body">
-    <div class="backdrop" @click.self="$emit('close')">
-      <div class="modal" role="dialog" aria-modal="true">
-        <div class="modalHeader">
-          <div>
-            <div class="modalTitle">{{ title }}</div>
-            <div class="modalSubtitle">{{ subtitle }}</div>
+  <UiModal :title="title" :subtitle="subtitle" @close="$emit('close')">
+    <div class="matchDetailsGrid">
+      <!-- LEFT -->
+      <section class="matchDetailsCol">
+        <UiCard>
+          <div class="detailsLabel">Status</div>
+          <div class="detailsValue detailsValue--sm">{{ statusLabel(match?.status) }}</div>
+          <div class="detailsMeta">
+            Start: <b>{{ fmt(match?.scheduledAt) }}</b><br />
+            End: <b>{{ fmt(match?.endAt) }}</b>
           </div>
+        </UiCard>
 
-          <button class="iconBtn" type="button" @click="$emit('close')" aria-label="Close">✕</button>
-        </div>
-
-        <div class="modalBody">
-          <div class="matchDetailsGrid">
-            <!-- LEFT -->
-            <section class="matchDetailsCol">
-              <div class="card">
-                <div class="detailsLabel">Status</div>
-                <div class="detailsValue detailsValue--sm">{{ statusLabel(match?.status) }}</div>
-                <div class="detailsMeta">
-                  Start: <b>{{ fmt(match?.scheduledAt) }}</b><br />
-                  End: <b>{{ fmt(match?.endAt) }}</b>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="detailsLabel">Teams</div>
+        <UiCard>
+          <div class="detailsLabel">Teams</div>
 
                 <div class="teamsEditor">
                   <div class="teamsEditor__col">
@@ -60,26 +48,24 @@
                   </div>
                 </div>
 
-                <div class="detailsActionsRow">
-                  <button class="btn subtle" type="button" :disabled="savingTeams" @click="resetTeams">
-                    Reset
-                  </button>
-                  <button class="btn primary" type="button" :disabled="savingTeams" @click="saveTeams">
-                    {{ savingTeams ? 'Saving…' : 'Save teams' }}
-                  </button>
-                </div>
+          <div class="detailsActionsRow">
+            <UiButton variant="subtle" type="button" :disabled="savingTeams" @click="resetTeams">Reset</UiButton>
+            <UiButton variant="primary" type="button" :disabled="savingTeams" @click="saveTeams">
+              {{ savingTeams ? 'Saving…' : 'Save teams' }}
+            </UiButton>
+          </div>
 
                 <div v-if="teamsError" class="inlineError" style="margin-top: 10px;">
                   <div class="inlineErrorTitle">Teams update failed</div>
                   <div class="inlineErrorMsg">{{ teamsError }}</div>
                 </div>
-              </div>
-            </section>
+        </UiCard>
+      </section>
 
             <!-- RIGHT -->
-            <section class="matchDetailsCol">
-              <div class="card">
-                <div class="detailsLabel">Score</div>
+      <section class="matchDetailsCol">
+        <UiCard>
+          <div class="detailsLabel">Score</div>
 
                 <div class="scoreEditor">
                   <div class="scoreGrid3">
@@ -89,12 +75,13 @@
                       <div class="setInputs">
                         <label class="setInputRow">
                           <span class="setTeam">T1</span>
-                          <input
-                            class="input small"
+                          <UiInput
+                            size="small"
                             type="number"
+                            number
                             min="0"
                             max="7"
-                            v-model.number="s.t1"
+                            v-model="s.t1"
                             :disabled="!canEditScore || savingScore"
                           />
                         </label>
@@ -103,12 +90,13 @@
 
                         <label class="setInputRow">
                           <span class="setTeam">T2</span>
-                          <input
-                            class="input small"
+                          <UiInput
+                            size="small"
                             type="number"
+                            number
                             min="0"
                             max="7"
-                            v-model.number="s.t2"
+                            v-model="s.t2"
                             :disabled="!canEditScore || savingScore"
                           />
                         </label>
@@ -116,35 +104,30 @@
                     </div>
                   </div>
 
-                  <div class="inlineNotice" v-if="!canEditScore" style="margin-top: 10px;">
-                    Score can be edited only when the match is <b>COMPLETED</b>.
-                  </div>
+          <UiNotice v-if="!canEditScore" style="margin-top: 10px;">
+            Score can be edited only when the match is <b>COMPLETED</b>.
+          </UiNotice>
 
-                  <div class="detailsActionsRow">
-                    <button class="btn subtle" type="button" :disabled="savingScore" @click="resetScore">
-                      Reset
-                    </button>
-                    <button class="btn primary" type="button" :disabled="!canEditScore || savingScore" @click="saveScore">
-                      {{ savingScore ? 'Saving…' : 'Save score' }}
-                    </button>
-                  </div>
+          <div class="detailsActionsRow">
+            <UiButton variant="subtle" :disabled="savingScore" @click="resetScore">Reset</UiButton>
+            <UiButton variant="primary" :disabled="!canEditScore || savingScore" @click="saveScore">
+              {{ savingScore ? 'Saving…' : 'Save score' }}
+            </UiButton>
+          </div>
 
                   <div v-if="scoreError" class="inlineError" style="margin-top: 10px;">
                     <div class="inlineErrorTitle">Score update failed</div>
                     <div class="inlineErrorMsg">{{ scoreError }}</div>
                   </div>
                 </div>
-              </div>
+        </UiCard>
 
-              <div class="detailsActions">
-                <button class="btn" type="button" @click="$emit('close')">Close</button>
-              </div>
-            </section>
-          </div>
+        <div class="detailsActions">
+          <UiButton type="button" @click="$emit('close')">Close</UiButton>
         </div>
-      </div>
+      </section>
     </div>
-  </teleport>
+  </UiModal>
 </template>
 
 <script setup>
@@ -152,6 +135,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { httpClient } from '@/api/httpClient';
 import PlayerSearchInput from '@/components/common/PlayerSearchInput.vue';
 import { useLookups } from '@/composables/useLookups';
+import UiModal from '@/components/ui/UiModal.vue';
+import UiCard from '@/components/ui/UiCard.vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiNotice from '@/components/ui/UiNotice.vue';
+import UiInput from '@/components/ui/UiInput.vue';
 
 const props = defineProps({
   match: { type: Object, required: true },

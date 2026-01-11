@@ -7,67 +7,55 @@
       </div>
 
       <div class="pageHeader__actions">
-        <div class="segmented" role="tablist" aria-label="Match filter">
-          <button class="segmented__btn" :class="{ active: filter === 'all' }" type="button" @click="filter = 'all'">
-            All
-          </button>
-          <button class="segmented__btn" :class="{ active: filter === 'upcoming' }" type="button" @click="filter = 'upcoming'">
-            Upcoming
-          </button>
-          <button class="segmented__btn" :class="{ active: filter === 'finalised' }" type="button" @click="filter = 'finalised'">
-            Finalised
-          </button>
-        </div>
+        <UiSegmented v-model="filter" :options="filterOptions" aria-label="Match filter" />
 
-        <button class="btn subtle" :disabled="loading" @click="load">
+        <UiButton variant="subtle" :disabled="loading" @click="load">
           {{ loading ? 'Loading…' : 'Refresh' }}
-        </button>
+        </UiButton>
       </div>
     </header>
 
-    <div v-if="loading" class="card">
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-      <div class="skeletonLine"></div>
-    </div>
+    <UiStateCard v-if="loading" variant="loading" :lines="3" />
 
-    <div v-else-if="error" class="card error">
-      <div class="errorTitle">Error</div>
-      <div class="errorMsg">{{ error }}</div>
-      <button class="btn" @click="load">Retry</button>
-    </div>
+    <UiStateCard v-else-if="error" variant="error" title="Error" :message="error">
+      <template #action>
+        <UiButton @click="load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
-    <div v-else-if="!filteredMatches.length" class="card empty">
-      <div class="emptyTitle">No matches found.</div>
-      <div class="emptyMsg">{{ emptyHint }}</div>
-    </div>
+    <UiStateCard
+      v-else-if="!filteredMatches.length"
+      variant="empty"
+      title="No matches found."
+      :message="emptyHint"
+    />
 
     <div v-else class="list">
-      <button
+      <UiListCard
         v-for="m in filteredMatches"
         :key="m.id"
-        type="button"
-        class="listCard listCard--match"
+        as="button"
+        variant="match"
         @click="openDetails(m)"
       >
-        <!-- LEFT -->
-        <div class="listCard__left">
+        <template #left>
           <div class="listCard__titleRow">
             <div class="listCard__title">
               Match at {{ locationNameById(matchLocationId(m)) }}
             </div>
           </div>
 
-          <span class="pill">{{ matchBadge(m) }}</span>
+          <UiPill>{{ matchBadge(m) }}</UiPill>
 
           <div class="matchLeftMeta">
             <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
             <div>🎾 {{ courtLabel(m) }}</div>
           </div>
-        </div>
+        </template>
 
         <!-- RIGHT -->
-        <div class="listCard__right matchRight">
+        <template #right>
+          <div class="matchRight">
           <div class="scoreBox">
             <!-- Score (sets) -->
             <div v-if="hasPadelScore(m)" class="scoreBox__score">
@@ -105,8 +93,9 @@
               </div>
             </div>
           </div>
-        </div>
-      </button>
+          </div>
+        </template>
+      </UiListCard>
     </div>
 
     <MatchDetailsModal
@@ -126,13 +115,23 @@ import { auth } from '@/services/firebase';
 import { httpClient } from '@/api/httpClient';
 import { useLookups } from '@/composables/useLookups';
 import MatchDetailsModal from './MatchDetailsModal.vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiSegmented from '@/components/ui/UiSegmented.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiListCard from '@/components/ui/UiListCard.vue';
+import UiPill from '@/components/ui/UiPill.vue';
 
 const loading = ref(false);
 const error = ref(null);
 
 const matches = ref([]);
 
-const filter = ref('all');
+const filter = ref('all'); // all | future | finalised
+const filterOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Future', value: 'future' },
+  { label: 'Finalised', value: 'finalised' },
+];
 const details = reactive({ open: false, item: null });
 
 const myUid = computed(() => auth.currentUser?.uid || '');
@@ -225,13 +224,13 @@ function matchBadge(m) {
 const filteredMatches = computed(() => {
   const list = [...myMatches.value];
 
-  if (filter.value === 'upcoming') {
+  if (filter.value === 'future') {
     return list
       .filter(isFuture)
       .sort((a, b) => new Date(matchDate(a)) - new Date(matchDate(b)));
   }
 
-  if (filter.value === 'completed') {
+  if (filter.value === 'finalised') {
     return list
       .filter(isCompleted)
       .sort((a, b) => new Date(matchDate(b)) - new Date(matchDate(a)));

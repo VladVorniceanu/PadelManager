@@ -67,29 +67,25 @@
                 <div class="field full">
                   <div class="label">Available times</div>
 
-                  <div v-if="!canLoadAvailability" class="inlineNotice">
+                  <UiNotice v-if="!canLoadAvailability">
                     Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
-                  </div>
+                  </UiNotice>
 
                   <div v-else>
-                    <div v-if="loadingAvail" class="card" style="padding: 12px;">
-                      <div class="skeletonLine"></div>
-                      <div class="skeletonLine"></div>
-                    </div>
+                    <UiStateCard v-if="loadingAvail" variant="loading" :lines="2" style="padding: 12px;" />
 
-                    <div v-else-if="!(availability?.slots?.length)" class="inlineNotice">
+                    <UiNotice v-else-if="!(availability?.slots?.length)">
                       No available slots for this day. Try another date or duration.
-                    </div>
+                    </UiNotice>
 
                     <div v-else class="slotsGrid" role="list">
-                      <button v-for="s in (availability?.slots || [])" :key="s.startAt"
-                        type="button"
+                      <UiButton v-for="s in (availability?.slots || [])" :key="s.startAt"
                         class="slotBtn"
                         :class="{ active: form.startAt === s.startAt }"
                         @click="pickSlot(s)"
                       >
                         {{ s.label }}
-                      </button>
+                      </UiButton>
                     </div>
 
                     <div v-if="form.startAt && form.endAt" class="pickedHint">
@@ -109,7 +105,7 @@
 
                       <div class="slotRow">
                         <div class="slotLabel">P1</div>
-                        <UiPill strong>Me</UiPill>
+                        <PlayerSearchInput :disabled="true" :value="auth.currentUser" />
                       </div>
 
                       <div class="slotRow">
@@ -142,16 +138,16 @@
               </div>
 
               <div class="modalActions">
-                <UiButton type="destructive" @click="close">Cancel</UiButton>
+                <UiButton variant="subtle" @click="close">Cancel</UiButton>
                 <UiButton variant="primary" type="submit" :disabled="saving || !canSubmit">
                   {{ saving ? 'Saving…' : 'Create reservation' }}
                 </UiButton>
               </div>
             </form>
 
-            <div v-if="successMsg" class="card" style="margin: 0 16px 16px;">
+            <UiCard v-if="successMsg" style="margin: 0 16px 16px;">
               <b>Done!</b> {{ successMsg }}
-            </div>
+            </UiCard>
   </UiModal>
 </template>
 
@@ -163,6 +159,8 @@ import UiSelect from '@/components/ui/UiSelect.vue';
 import UiInput from '@/components/ui/UiInput.vue';
 import UiPill from '@/components/ui/UiPill.vue';
 import UiNotice from '@/components/ui/UiNotice.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiCard from '@/components/ui/UiCard.vue';
 
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';

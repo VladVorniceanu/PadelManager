@@ -15,46 +15,45 @@
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Your future matches</h2>
-          <button class="btn subtle" type="button" @click="goMatches">View all</button>
+          <UiButton variant="subtle"  type="button" @click="goMatches">View all</UiButton>
         </div>
 
-        <div v-if="loadingMatches" class="card">
-          <div class="skeletonLine"></div>
-          <div class="skeletonLine"></div>
-        </div>
+        <UiStateCard v-if="loadingMatches" variant="loading" :lines="2" />
 
-        <div v-else-if="!futureMatches.length" class="card empty">
-          <div class="emptyTitle">No upcoming matches.</div>
-          <div class="emptyMsg">Create one and invite players.</div>
-        </div>
+        <UiStateCard
+          v-else-if="!futureMatches.length"
+          variant="empty"
+          title="No upcoming matches."
+          message="Create one and invite players."
+        />
 
         <div v-else class="homeMatchesGrid">
-          <button
+          <UiListCard
             v-for="m in futureMatches"
             :key="m.id"
-            type="button"
-            class="listCard listCard--match homeMatchCard"
+            as="button"
+            variant="match"
+            class="homeMatchCard"
             @click="openDetails(m)"
           >
-            <!-- LEFT -->
-            <div class="listCard__left">
+            <template #left>
               <div class="listCard__titleRow">
                 <div class="listCard__title">
                   Match at {{ locationNameById(matchLocationId(m)) }}
                 </div>
               </div>
 
-              <!-- <span class="pill">{{ matchBadge(m) }}</span> -->
+              <UiPill>{{ matchBadge(m) }}</UiPill>
 
               <div class="matchLeftMeta">
                 <div>🎾 {{ courtLabel(m) }}</div>
                 <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
               </div>
-            </div>
+            </template>
 
-            <!-- RIGHT -->
-            <div class="listCard__right matchRight">
-              <div class="scoreBox">
+            <template #right>
+              <div class="matchRight">
+                <div class="scoreBox">
                 <!-- Score (sets) -->
                 <div v-if="hasPadelScore(m)" class="scoreBox__score">
                   <div class="setsScore" aria-label="Sets score">
@@ -94,9 +93,10 @@
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
-          </button>
+            </template>
+          </UiListCard>
         </div>
       </section>
 
@@ -104,46 +104,45 @@
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Recent matches</h2>
-          <button class="btn subtle" type="button" @click="goMatches">View all</button>
+          <UiButton variant="subtle"  type="button" @click="goMatches">View all</UiButton>
         </div>
 
-        <div v-if="loadingMatches" class="card">
-          <div class="skeletonLine"></div>
-          <div class="skeletonLine"></div>
-        </div>
+        <UiStateCard v-if="loadingMatches" variant="loading" :lines="2" />
 
-        <div v-else-if="!recentMatches.length" class="card empty">
-          <div class="emptyTitle">No recent matches.</div>
-          <div class="emptyMsg">Play a match to see history here.</div>
-        </div>
+        <UiStateCard
+          v-else-if="!recentMatches.length"
+          variant="empty"
+          title="No recent matches."
+          message="Play a match to see history here."
+        />
 
         <div v-else class="homeMatchesGrid">
-          <button
+          <UiListCard
             v-for="m in recentMatches"
             :key="m.id"
-            type="button"
-            class="listCard listCard--match homeMatchCard"
+            as="button"
+            variant="match"
+            class="homeMatchCard"
             @click="openDetails(m)"
           >
-            <!-- LEFT -->
-            <div class="listCard__left">
+            <template #left>
               <div class="listCard__titleRow">
                 <div class="listCard__title">
                   Match at {{ locationNameById(matchLocationId(m)) }}
                 </div>
               </div>
 
-              <span class="pill">{{ matchBadge(m) }}</span>
+              <UiPill>{{ matchBadge(m) }}</UiPill>
 
               <div class="matchLeftMeta">
                 <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
                 <div>🎾 {{ courtLabel(m) }}</div>
               </div>
-            </div>
+            </template>
 
-            <!-- RIGHT -->
-            <div class="listCard__right matchRight">
-              <div class="scoreBox">
+            <template #right>
+              <div class="matchRight">
+                <div class="scoreBox">
                 <div v-if="hasPadelScore(m)" class="scoreBox__score">
                   <div class="setsScore" aria-label="Sets score">
                     <div
@@ -181,9 +180,10 @@
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
-          </button>
+            </template>
+          </UiListCard>
         </div>
       </section>
 
@@ -193,36 +193,33 @@
           <h2 class="homeSection__title">Locations</h2>
 
           <div class="homeSection__actions">
-            <button class="btn subtle" type="button" @click="requestGeo" :disabled="geoBusy">
+            <UiButton variant="subtle"  type="button" @click="requestGeo" :disabled="geoBusy">
               {{ geoBusy ? 'Locating…' : geoEnabled ? 'Location enabled' : 'Use my location' }}
-            </button>
-            <button class="btn subtle" type="button" @click="goLocations">View all</button>
+            </UiButton>
+            <UiButton variant="subtle"  type="button" @click="goLocations">View all</UiButton>
           </div>
         </div>
 
-        <div v-if="loadingLookups" class="card">
-          <div class="skeletonLine"></div>
-          <div class="skeletonLine"></div>
-        </div>
+        <UiStateCard v-if="loadingLookups" variant="loading" :lines="2" />
 
-        <div v-else-if="!nearbyLocations.length" class="card empty">
-          <div class="emptyTitle">No locations to show.</div>
-          <div class="emptyMsg">
-            {{ geoEnabled ? 'No locations found within 20km (or missing coordinates).' : 'Enable location to see nearby results.' }}
-          </div>
-        </div>
+        <UiStateCard
+          v-else-if="!nearbyLocations.length"
+          variant="empty"
+          title="No locations to show."
+          :message="geoEnabled ? 'No locations found within 20km (or missing coordinates).' : 'Enable location to see nearby results.'"
+        />
 
         <div v-else class="grid3">
-          <article v-for="l in nearbyLocations" :key="l.id" class="itemCard">
+          <UiCard v-for="l in nearbyLocations" :key="l.id" as="article">
             <div class="itemCard__top">
               <div class="itemCard__title">{{ l.name || '—' }}</div>
-              <span class="pill">{{ (l.courts?.length ?? 0) }} courts</span>
+              <UiPill>{{ (l.courts?.length ?? 0) }} courts</UiPill>
             </div>
             <div class="itemCard__meta">
               <div>📍 {{ [l.city, l.address].filter(Boolean).join(' — ') || '—' }}</div>
               <div v-if="l.__distanceKm != null">📏 {{ l.__distanceKm.toFixed(1) }} km</div>
             </div>
-          </article>
+          </UiCard>
         </div>
       </section>
 
@@ -230,30 +227,29 @@
       <section class="homeSection">
         <div class="homeSection__head">
           <h2 class="homeSection__title">Available tournaments</h2>
-          <button class="btn subtle" type="button" @click="goTournaments">View all</button>
+          <UiButton variant="subtle"  type="button" @click="goTournaments">View all</UiButton>
         </div>
 
-        <div v-if="loadingTournaments" class="card">
-          <div class="skeletonLine"></div>
-          <div class="skeletonLine"></div>
-        </div>
+        <UiStateCard v-if="loadingTournaments" variant="loading" :lines="2" />
 
-        <div v-else-if="!availableTournaments.length" class="card empty">
-          <div class="emptyTitle">No tournaments available.</div>
-          <div class="emptyMsg">Check back later.</div>
-        </div>
+        <UiStateCard
+          v-else-if="!availableTournaments.length"
+          variant="empty"
+          title="No tournaments available."
+          message="Check back later."
+        />
 
         <div v-else class="grid3">
-          <article v-for="t in availableTournaments" :key="t.id" class="itemCard">
+          <UiCard v-for="t in availableTournaments" :key="t.id" as="article">
             <div class="itemCard__top">
               <div class="itemCard__title">{{ t.name || '—' }}</div>
-              <span class="pill">{{ statusLabel(t.status) }}</span>
+              <UiPill>{{ statusLabel(t.status) }}</UiPill>
             </div>
             <div class="itemCard__meta">
               <div>🗓 {{ formatDate(t.startDate) }} → {{ formatDate(t.endDate) }}</div>
               <div>📍 {{ locationNameById(t.locationId) }}</div>
             </div>
-          </article>
+          </UiCard>
         </div>
       </section>
     </div>
@@ -272,6 +268,12 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiCard from '@/components/ui/UiCard.vue';
+import UiPill from '@/components/ui/UiPill.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiListCard from '@/components/ui/UiListCard.vue';
+
 import { useRouter } from 'vue-router';
 import { auth } from '@/services/firebase';
 import { httpClient } from '@/api/httpClient';
@@ -283,7 +285,7 @@ const router = useRouter();
 const {
   warmupLookups,
   locations,
-  users, // not directly used here, but kept for reactive re-render of names
+  courtNameById,
   locationNameById,
   userDisplayNameById,
 } = useLookups();
@@ -377,8 +379,7 @@ function matchLocationId(m) {
 
 function courtLabel(m) {
   const id = m?.courtId;
-  if (id) return `Court ${String(id).slice(0, 6)}`;
-  return 'Court —';
+  if (id) return courtNameById( matchLocationId(m), id) || `Court ${String(id).slice(0, 6)}`;
 }
 
 function matchParticipants(m) {
@@ -561,4 +562,16 @@ onUnmounted(() => {
 .homeSection__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .homeSection__title { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
 .homeSection__actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+/* cards in grid3 (Locations / Tournaments) */
+.itemCard__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.itemCard__title { font-weight: 950; font-size: 14px; }
+.itemCard__meta {
+  margin-top: 10px;
+  color: var(--ui-muted);
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 </style>

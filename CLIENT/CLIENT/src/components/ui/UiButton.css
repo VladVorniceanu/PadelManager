@@ -8,17 +8,27 @@
   font-weight: 800;
 }
 
-.btn.primary {
-  background: var(--ui-text);
-  color: #fff;
-  border-color: var(--ui-text);
+.btn.primary{
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+  border-color: var(--ui-primary);
+}
+.btn.primary:hover:enabled{
+  background: var(--ui-primary-700);
+  border-color: var(--ui-primary-700);
+}
+.btn.primary:active:enabled{
+  background: var(--ui-primary-600);
+  border-color: var(--ui-primary-600);
 }
 
 .btn.subtle { background: var(--ui-surface-muted); }
+.btn.subtle:hover:enabled { background: var(--ui-surface-muted-hover); }
 
 .btn.danger {
   background: var(--ui-danger-bg);
   border-color: var(--ui-danger-border);
 }
+.btn.danger:hover:enabled { background: var(--ui-danger-bg-hover); }
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }

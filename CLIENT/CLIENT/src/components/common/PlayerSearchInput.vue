@@ -1,8 +1,8 @@
 <template>
   <div class="playerSearch">
     <div class="playerSearch__row">
-      <input
-        class="input playerSearch__input"
+      <UiInput
+        class="playerSearch__input"
         type="text"
         :placeholder="placeholder"
         :disabled="disabled"
@@ -14,7 +14,7 @@
         @keydown.esc.prevent="close()"
       />
 
-      <button
+      <UiButton
         v-if="modelValue"
         type="button"
         class="playerSearch__clear"
@@ -22,14 +22,14 @@
         @click="clear"
       >
         Clear
-      </button>
+      </UiButton>
     </div>
 
     <div v-if="open" class="playerSearch__panel" @mousedown.prevent>
       <div v-if="loading" class="playerSearch__hint">Searching…</div>
 
       <template v-else>
-        <button
+        <UiButton
           v-for="(u, idx) in results"
           :key="u.id"
           type="button"
@@ -39,7 +39,7 @@
         >
           <div class="playerSearch__name">{{ userLabel(u) }}</div>
           <div class="playerSearch__meta">{{ u.email || u.id }}</div>
-        </button>
+        </UiButton>
 
         <div v-if="!results.length" class="playerSearch__hint">
           {{ query.trim().length < minChars ? `Type at least ${minChars} characters…` : 'No users found.' }}
@@ -52,6 +52,8 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useUsersStore } from '@/stores/useUsersStore';
+import UiButton from '@/components/ui/UiButton.vue';
+import UiInput from '@/components/ui/UiInput.vue';
 
 const props = defineProps({
   modelValue: { type: [Object, String, null], default: null }, // {id, displayName,email} or uid
@@ -202,7 +204,7 @@ onBeforeUnmount(() => {
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: #fff;
+  background: var(--ui-surface);
   border: 1px solid var(--ui-border);
   border-radius: 14px;
   overflow: hidden;
@@ -213,14 +215,14 @@ onBeforeUnmount(() => {
   width: 100%;
   text-align: left;
   border: none;
-  background: #fff;
+  background: var(--ui-surface);
   padding: 10px 12px;
   cursor: pointer;
   display: grid;
   gap: 2px;
 }
 .playerSearch__item:hover { background: var(--ui-surface-muted); }
-.playerSearch__item.active { background: #111827; color: #fff; }
+.playerSearch__item.active { background: var(--ui-primary); color: var(--ui-on-primary); }
 .playerSearch__item.active .playerSearch__meta { color: rgba(255,255,255,.75); }
 
 .playerSearch__name { font-weight: 900; font-size: 13px; }

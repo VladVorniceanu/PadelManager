@@ -1,34 +1,20 @@
 <template>
-  <div class="backdrop" @click.self="close">
-    <div class="modal modal--wide" role="dialog" aria-modal="true">
-      <div class="modalHeader">
-        <div>
-          <div class="modalTitle">{{ loc?.name || 'Location' }}</div>
-          <div class="modalSubtitle">
-            {{ [loc?.city, loc?.address].filter(Boolean).join(' — ') || '—' }}
-          </div>
-        </div>
+  <UiModal
+    :title="loc?.name || 'Location'"
+    :subtitle="[loc?.city, loc?.address].filter(Boolean).join(' — ') || '—'"
+    modal-class="modal--wide"
+    @close="close"
+  >
+    <UiStateCard v-if="loading" variant="loading" :lines="2" />
 
-        <button class="iconBtn" @click="close" aria-label="Close">✕</button>
-      </div>
+    <UiStateCard v-else-if="error" variant="error" title="Eroare" :message="error">
+      <template #action>
+        <UiButton @click="load">Retry</UiButton>
+      </template>
+    </UiStateCard>
 
-      <div v-if="loading" class="modalBody">
-        <div class="card">
-          <div class="skeletonLine"></div>
-          <div class="skeletonLine"></div>
-        </div>
-      </div>
-
-      <div v-else-if="error" class="modalBody">
-        <div class="card error">
-          <div class="errorTitle">Eroare</div>
-          <div class="errorMsg">{{ error }}</div>
-          <UiButton  @click="load">Retry</UiButton>
-        </div>
-      </div>
-
-      <div v-else class="modalBody">
-        <div class="detailsGrid">
+    <div v-else>
+      <div class="detailsGrid">
           <!-- Left: details -->
           <section class="detailsCol">
             <div class="detailsCard">
@@ -49,7 +35,7 @@
               <div class="detailsLabel">Courts list</div>
               <div class="courtsList">
                 <div v-for="c in loc.courts" :key="c.id" class="courtChip">
-                  {{ c.name || 'Court' }} <span class="pill">{{ c.isIndoor ? 'Indoor' : 'Outdoor' }}</span>
+                  {{ c.name || 'Court' }} <UiPill>{{ c.isIndoor ? 'Indoor' : 'Outdoor' }}</UiPill>
                 </div>
               </div>
             </div>
@@ -73,21 +59,24 @@
             </div>
 
             <div class="detailsActions">
-              <UiButton  @click="close">Close</UiButton>
-              <UiButton  @click="bookMatch">
+              <UiButton variant="subtle" @click="close">Close</UiButton>
+              <UiButton variant="primary" @click="bookMatch">
                 Book a match
               </UiButton>
             </div>
           </section>
         </div>
       </div>
-    </div>
-  </div>
+    
+  </UiModal>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import UiButton from '@/components/ui/UiButton.vue';
+import UiModal from '@/components/ui/UiModal.vue';
+import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiPill from '@/components/ui/UiPill.vue';
 
 import { useRoute, useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';
@@ -168,15 +157,15 @@ onMounted(load);
 
 .detailsCard {
   border: 1px solid #e5e7eb;
-  background: #fff;
+  background: var(--ui-surface);
   border-radius: 16px;
   padding: 14px;
 }
 
-.detailsLabel { color: #6b7280; font-size: 12px; font-weight: 800; }
+.detailsLabel { color: var(--ui-muted); font-size: 12px; font-weight: 800; }
 .detailsValue { font-size: 22px; font-weight: 950; margin-top: 6px; letter-spacing: -0.02em; }
 .detailsValue--sm { font-size: 14px; font-weight: 900; }
-.detailsMeta { margin-top: 8px; color: #6b7280; font-size: 12px; line-height: 1.4; }
+.detailsMeta { margin-top: 8px; color: var(--ui-muted); font-size: 12px; line-height: 1.4; }
 
 .mapCol { display: flex; flex-direction: column; gap: 12px; }
 
@@ -195,7 +184,7 @@ onMounted(load);
   height: 100%;
   display: grid;
   place-items: center;
-  color: #6b7280;
+  color: var(--ui-muted);
   font-size: 13px;
   padding: 14px;
   text-align: center;

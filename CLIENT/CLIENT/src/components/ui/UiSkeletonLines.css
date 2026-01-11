@@ -1,6 +1,6 @@
 .skeletonLine {
   height: 14px;
-  background: #f3f4f6;
+  background: var(--ui-surface-muted);
   border-radius: 10px;
   margin: 10px 0;
 }
