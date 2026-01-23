@@ -330,17 +330,6 @@ watch(
 <style scoped>
 .modalBody { padding: 16px; }
 
-/* layout minim local */
-.matchDetailsGrid {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 14px;
-}
-@media (max-width: 900px) {
-  .matchDetailsGrid { grid-template-columns: 1fr; }
-}
-.matchDetailsCol { display: flex; flex-direction: column; gap: 12px; }
-
 /* input small helper (poți muta în global dacă vrei) */
 .input.small { padding: 8px 10px; }
 </style>

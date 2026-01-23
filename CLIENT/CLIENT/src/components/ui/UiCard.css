@@ -1,7 +1,7 @@
 .card {
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-md);
-  padding: 14px;
+  padding: var(--space-card);
   background: var(--ui-surface);
 }
 

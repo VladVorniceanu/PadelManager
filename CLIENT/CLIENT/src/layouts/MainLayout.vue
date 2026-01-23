@@ -48,11 +48,11 @@ function openBookMatch() {
 }
 
 .content {
-  padding: 20px 24px;
+  padding: var(--space-app-content-y) var(--space-app-content-x);
 }
 @media (max-width: 720px) {
   .content {
-    padding: 16px;
+    padding: var(--space-4);
   }
 }
 </style>

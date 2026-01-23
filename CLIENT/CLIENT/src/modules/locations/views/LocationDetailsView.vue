@@ -161,11 +161,6 @@ onMounted(load);
   padding: 14px;
 }
 
-.detailsLabel { color: var(--ui-muted); font-size: 12px; font-weight: 800; }
-.detailsValue { font-size: 22px; font-weight: 950; margin-top: 6px; letter-spacing: -0.02em; }
-.detailsValue--sm { font-size: 14px; font-weight: 900; }
-.detailsMeta { margin-top: 8px; color: var(--ui-muted); font-size: 12px; line-height: 1.4; }
-
 .mapCol { display: flex; flex-direction: column; gap: 12px; }
 
 .mapFrame {
@@ -188,8 +183,6 @@ onMounted(load);
   padding: 14px;
   text-align: center;
 }
-
-.detailsActions { display: flex; justify-content: flex-end; gap: 10px; }
 
 /* make modal almost full page */
 .modal--wide {
