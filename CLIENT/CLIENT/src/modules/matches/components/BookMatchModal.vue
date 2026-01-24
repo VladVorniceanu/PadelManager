@@ -7,147 +7,143 @@
     @close="close"
   >
     <div v-if="uiError" class="inlineError">
-              <div class="inlineErrorTitle">Cannot create the reservation</div>
-              <div class="inlineErrorMsg">{{ uiError }}</div>
+      <div class="inlineErrorTitle">Cannot create the reservation</div>
+      <div class="inlineErrorMsg">{{ uiError }}</div>
+    </div>
+
+    <form class="form" @submit.prevent="submit">
+      <div class="formGrid">
+        <!-- Location -->
+        <label class="field full">
+          <div class="label">Location</div>
+          <UiSelect v-model="form.locationId" :disabled="loadingLocations">
+            <option value="" disabled>Select a location…</option>
+            <option v-for="l in locationOptions" :key="l.id" :value="l.id">
+              {{ l.name }} — {{ l.city }}
+            </option>
+          </UiSelect>
+        </label>
+
+        <!-- Court -->
+        <label class="field full">
+          <div class="label">Court</div>
+          <UiSelect
+            v-model="form.courtId"
+            :disabled="!form.locationId || !courtsForSelected.length"
+          >
+            <option value="" disabled>
+              {{ !form.locationId ? 'Pick a location first…' : 'Select a court…' }}
+            </option>
+            <option v-for="c in courtsForSelected" :key="c.id" :value="c.id">
+              {{ c.label }}
+            </option>
+          </UiSelect>
+        </label>
+
+        <!-- Duration -->
+        <div class="field full">
+          <div class="label">Duration</div>
+          <div class="durationPills" role="radiogroup" aria-label="Duration">
+            <UiButton
+              v-for="d in DURATIONS"
+              :key="d"
+              type="button"
+              class="durationPill"
+              :class="{ active: form.duration === d }"
+              @click="form.duration = d"
+            >
+              {{ d }} min
+            </UiButton>
+          </div>
+        </div>
+
+        <!-- Date -->
+        <label class="field full">
+          <div class="label">Date</div>
+          <UiInput v-model="form.dateLocal" type="date" />
+        </label>
+
+        <!-- Availability -->
+        <div class="field full">
+          <div class="label">Available times</div>
+
+          <UiNotice v-if="!canLoadAvailability">
+            Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
+          </UiNotice>
+
+          <div v-else>
+            <UiStateCard v-if="loadingAvail" variant="loading" :lines="2" style="padding: 12px;" />
+
+            <UiNotice v-else-if="!(filteredSlots.length)">
+              No available slots for this day. Try another date or duration.
+            </UiNotice>
+
+            <div v-else class="slotsGrid" role="list">
+              <UiButton v-for="s in (availability?.slots || [])" :key="s.startAt"
+                class="slotBtn"
+                :class="{ active: form.startAt === s.startAt }"
+                @click="pickSlot(s)"
+              >
+                {{ s.label }}
+              </UiButton>
             </div>
 
-            <form class="form" @submit.prevent="submit">
-              <div class="formGrid">
-                <!-- Location -->
-                <label class="field full">
-                  <div class="label">Location</div>
-                  <UiSelect v-model="form.locationId" :disabled="loadingLocations">
-                    <option value="" disabled>Select a location…</option>
-                    <option v-for="l in locationOptions" :key="l.id" :value="l.id">
-                      {{ l.name }} — {{ l.city }}
-                    </option>
-                  </UiSelect>
-                </label>
+            <div v-if="form.startAt && form.endAt" class="pickedHint">
+              Selected: <b>{{ pickedLabel }}</b> ({{ form.duration }} min)
+            </div>
+          </div>
+        </div>
 
-                <!-- Court -->
-                <label class="field full">
-                  <div class="label">Court</div>
-                  <UiSelect
-                    v-model="form.courtId"
-                    :disabled="!form.locationId || !courtsForSelected.length"
-                  >
-                    <option value="" disabled>
-                      {{ !form.locationId ? 'Pick a location first…' : 'Select a court…' }}
-                    </option>
-                    <option v-for="c in courtsForSelected" :key="c.id" :value="c.id">
-                      {{ c.label }}
-                    </option>
-                  </UiSelect>
-                </label>
+        <!-- Players -->
+        <div class="field full">
+          <div class="label">Players</div>
 
-                <!-- Duration -->
-                <div class="field full">
-                  <div class="label">Duration</div>
-                  <div class="durationPills" role="radiogroup" aria-label="Duration">
-                    <UiButton
-                      v-for="d in DURATIONS"
-                      :key="d"
-                      type="button"
-                      class="durationPill"
-                      :class="{ active: form.duration === d }"
-                      @click="form.duration = d"
-                    >
-                      {{ d }} min
-                    </UiButton>
-                  </div>
-                </div>
+          <div class="teamsEditor">
+            <div class="teamsEditor__col">
+              <div class="teamsEditor__head">Team 1</div>
 
-                <!-- Date -->
-                <label class="field full">
-                  <div class="label">Date</div>
-                  <UiInput v-model="form.dateLocal" type="date" />
-                </label>
-
-                <!-- Availability -->
-                <div class="field full">
-                  <div class="label">Available times</div>
-
-                  <UiNotice v-if="!canLoadAvailability">
-                    Select <b>Location</b>, <b>Court</b>, <b>Duration</b> and <b>Date</b> to see available slots.
-                  </UiNotice>
-
-                  <div v-else>
-                    <UiStateCard v-if="loadingAvail" variant="loading" :lines="2" style="padding: 12px;" />
-
-                    <UiNotice v-else-if="!(availability?.slots?.length)">
-                      No available slots for this day. Try another date or duration.
-                    </UiNotice>
-
-                    <div v-else class="slotsGrid" role="list">
-                      <UiButton v-for="s in (availability?.slots || [])" :key="s.startAt"
-                        class="slotBtn"
-                        :class="{ active: form.startAt === s.startAt }"
-                        @click="pickSlot(s)"
-                      >
-                        {{ s.label }}
-                      </UiButton>
-                    </div>
-
-                    <div v-if="form.startAt && form.endAt" class="pickedHint">
-                      Selected: <b>{{ pickedLabel }}</b> ({{ form.duration }} min)
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Players -->
-                <div class="field full">
-                  <div class="label">Players</div>
-
-                  <div class="teamsEditor">
-                    <div class="teamsEditor__col">
-                      <div class="teamsEditor__head">Team 1</div>
-                      <div class="teamsEditor__hint">Player 1 is always you.</div>
-
-                      <div class="slotRow">
-                        <div class="slotLabel">P1</div>
-                        <PlayerSearchInput :disabled="true" :value="auth.currentUser" />
-                      </div>
-
-                      <div class="slotRow">
-                        <div class="slotLabel">P2</div>
-                        <PlayerSearchInput v-model="team1p2" />
-                      </div>
-                    </div>
-
-                    <div class="teamsEditor__divider" aria-hidden="true"></div>
-
-                    <div class="teamsEditor__col">
-                      <div class="teamsEditor__head">Team 2</div>
-
-                      <div class="slotRow">
-                        <div class="slotLabel">P1</div>
-                        <PlayerSearchInput v-model="team2p1" />
-                      </div>
-
-                      <div class="slotRow">
-                        <div class="slotLabel">P2</div>
-                        <PlayerSearchInput v-model="team2p2" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="teamsHint">
-                    You can add/modify players later too. Empty slots are allowed.
-                  </div>
-                </div>
+              <div class="slotRow">
+                <div class="slotLabel">P1</div>
+                <PlayerSearchInput :disabled="true" :modelValue="team1p1.displayName" />
               </div>
 
-              <div class="modalActions">
-                <UiButton variant="subtle" @click="close">Cancel</UiButton>
-                <UiButton variant="primary" type="submit" :disabled="saving || !canSubmit">
-                  {{ saving ? 'Saving…' : 'Create reservation' }}
-                </UiButton>
+              <div class="slotRow">
+                <div class="slotLabel">P2</div>
+                <PlayerSearchInput v-model="team1p2" />
               </div>
-            </form>
+            </div>
 
-            <UiCard v-if="successMsg" style="margin: 0 16px 16px;">
-              <b>Done!</b> {{ successMsg }}
-            </UiCard>
+            <div class="teamsEditor__divider" aria-hidden="true"></div>
+
+            <div class="teamsEditor__col">
+              <div class="teamsEditor__head">Team 2</div>
+
+              <div class="slotRow">
+                <div class="slotLabel">P1</div>
+                <PlayerSearchInput v-model="team2p1" />
+              </div>
+
+              <div class="slotRow">
+                <div class="slotLabel">P2</div>
+                <PlayerSearchInput v-model="team2p2" />
+              </div>
+            </div>
+            <div class="teamsEditor__hint">Player 1 is always you. You can add/modify players later too. Empty slots are allowed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modalActions">
+        <UiButton variant="subtle" @click="close">Cancel</UiButton>
+        <UiButton variant="primary" type="submit" :disabled="saving || !canSubmit">
+          {{ saving ? 'Saving…' : 'Create reservation' }}
+        </UiButton>
+      </div>
+    </form>
+
+    <UiCard v-if="successMsg" style="margin: 0 16px 16px;">
+      <b>Done!</b> {{ successMsg }}
+    </UiCard>
   </UiModal>
 </template>
 
@@ -157,12 +153,12 @@ import UiModal from '@/components/ui/UiModal.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiSelect from '@/components/ui/UiSelect.vue';
 import UiInput from '@/components/ui/UiInput.vue';
-import UiPill from '@/components/ui/UiPill.vue';
 import UiNotice from '@/components/ui/UiNotice.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
 import UiCard from '@/components/ui/UiCard.vue';
+import { useAuthStore } from '@/modules/auth/store/useAuthStore';
 
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { auth } from '@/services/firebase';
 
@@ -173,8 +169,11 @@ import { createReservation, getCourtAvailability } from '@/api/reservationsApi';
 
 const router = useRouter();
 const modal = useBookMatchModalStore();
+const authStore = useAuthStore();
 
 const DURATIONS = [60, 90, 120];
+const nowMs = ref(Date.now());
+let nowTimer = null;
 
 const loadingLocations = ref(false);
 const locations = ref([]);
@@ -198,6 +197,10 @@ const form = reactive({
   endAt: '',   // ISO
 });
 
+const team1p1 = computed(() => {
+  const u = authStore.displayName? { id: auth.currentUser?.uid, displayName: authStore.displayName } : null;
+  return u;
+});
 const team1p2 = ref(null);
 const team2p1 = ref(null);
 const team2p2 = ref(null);
@@ -320,6 +323,15 @@ function pickSlot(s) {
   form.endAt = s.endAt;
 }
 
+const filteredSlots = computed(() => {
+  const list = Array.isArray(availability.value?.slots) ? availability.value.slots : [];
+  const now = nowMs.value;
+  return list.filter((s) => {
+    const t = new Date(s.startAt).getTime();
+    return Number.isFinite(t) && t >= now;
+  })
+});
+
 const pickedLabel = computed(() => {
   const s = availability.value?.slots?.find((x) => x.startAt === form.startAt);
   return s?.label || '—';
@@ -336,13 +348,35 @@ watch(
   () => modal.open,
   async (isOpen) => {
     if (!isOpen) return;
-
+    if (nowTimer) clearInterval(nowTimer);
+    nowTimer = setInterval(() => {
+      nowMs.value = Date.now();
+      if (form.startAt && !filteredSlots.value.some((s) => s.startAt === form.startAt)) {
+        clearPickedSlot();
+      }
+    }, 30_000);
     resetEphemeral();
     await loadLocationsOnce(); // warmup exists in MainLayout, but keep as fail-safe
     resetForm();
     await loadAvailability();
   }
 );
+
+// Close: cleanup timer
+watch(
+  () => modal.open,
+  (isOpen) => {
+    if (isOpen) return;
+    if (nowTimer) {
+      clearInterval(nowTimer);
+      nowTimer = null;
+    }
+  }
+);
+
+onBeforeUnmount(() => {
+  if (nowTimer) clearInterval(nowTimer);
+});
 
 // When location changes: reset dependent fields
 watch(

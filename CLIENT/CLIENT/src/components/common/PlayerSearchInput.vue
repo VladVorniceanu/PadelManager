@@ -191,7 +191,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* minim: restul mută în style.css dacă vrei */
 .playerSearch { position: relative; width: 100%; }
 .playerSearch__row { display: flex; gap: 8px; align-items: center; }
 .playerSearch__input { width: 100%; }

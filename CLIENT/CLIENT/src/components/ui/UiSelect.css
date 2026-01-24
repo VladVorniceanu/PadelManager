@@ -1,18 +1,28 @@
 .select {
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   outline: none;
   background: var(--ui-surface);
   min-height: 44px;
+
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+
+  cursor: pointer;
 }
 
 .select:focus { border-color: var(--ui-primary); }
+.select:disabled { cursor: not-allowed; opacity: 0.6; }
 .select.invalid { border-color: var(--ui-danger); }
 
-.select--sm { padding: 8px 10px; min-height: 40px; }
-.select--md { padding: 10px 12px; min-height: 44px; }
+.select--sm { padding: 8px 10px; min-height: 40px; background-size: 14px 14px;}
+.select--md { padding: 10px 12px; min-height: 44px; background-size: 18px 18px;}
 .select--lg { padding: 12px 14px; min-height: 48px; }
 
 .select--pill { border-radius: 999px; }
