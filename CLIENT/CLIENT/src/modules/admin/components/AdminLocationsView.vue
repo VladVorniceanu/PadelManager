@@ -20,14 +20,17 @@
           </UiButton>
         </div>
 
-        <UiSelect v-model="sortBy" aria-label="Sort">
+        <UiSelect 
+          v-model="sortBy" 
+          aria-label="Sort"
+          size="md">
           <option value="name">Sort: Name</option>
           <option value="city">Sort: City</option>
           <option value="courts">Sort: Courts</option>
           <option value="updatedAt">Sort: Updated</option>
         </UiSelect>
 
-        <UiButton variant="primary"  @click="openCreate">
+        <UiButton variant="primary" @click="openCreate">
           + Add location
         </UiButton>
       </div>
@@ -58,45 +61,42 @@
 
     <!-- Grid -->
     <div v-else class="grid">
-      <UiCard v-for="loc in filteredAndSorted" :key="loc.id">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">{{ loc.name || '—' }}</div>
-              <UiPill>
-                {{ (loc.courts?.length ?? 0) }} courts
-              </UiPill>
-            </div>
+      <UiCard 
+        v-for="loc in filteredAndSorted" 
+        :key="loc.id"
+        as="article"
+        :interactive="true"
+      >
+        <template #title>
+          {{ loc.name || '—' }}
+        </template>
+        <template #titleRight>
+          <UiPill>{{ (loc.courts?.length ?? 0) }} courts</UiPill>
+        </template>
 
-            <div class="locMeta">
-              <span class="metaItem">📍 {{ loc.city || '—' }}</span>
-              <span class="dot">•</span>
-              <span class="metaItem">{{ loc.address || '—' }}</span>
-            </div>
+        <template #left>
+          <span class="metaItem">📍 {{ loc.city || '—' }}</span>
+          <span class="dot"> • </span>
+          <span class="metaItem">{{ loc.address || '—' }}</span>
+
+          <div v-if="loc.createdAt">
+            Created: <span>{{ formatDate(loc.createdAt) }}</span>
           </div>
+          <div v-if="loc.updatedAt">
+            Updated: <span>{{ formatDate(loc.updatedAt) }}</span>
+          </div>
+        </template>
 
+        <template #right>
           <div class="actions">
-            <UiButton  @click="openEdit(loc)">Edit</UiButton>
-            <UiButton variant="danger"  @click="confirmDelete(loc)">Delete</UiButton>
-          </div>
-        </div>
-
-        <div class="locBody">
-          <div class="timestamps" v-if="loc.createdAt || loc.updatedAt">
-            <div v-if="loc.createdAt">
-              Created: <span>{{ formatDate(loc.createdAt) }}</span>
-            </div>
-            <div v-if="loc.updatedAt">
-              Updated: <span>{{ formatDate(loc.updatedAt) }}</span>
-            </div>
-          </div>
-
-          <div class="quickActions">
             <UiButton variant="subtle"  @click="openEdit(loc)">
-              Manage courts →
+              Manage Location →
+            </UiButton>
+            <UiButton variant="danger"  @click="confirmDelete(loc)">
+              Delete
             </UiButton>
           </div>
-        </div>
+        </template>
       </UiCard>
     </div>
 

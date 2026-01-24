@@ -27,28 +27,33 @@
     />
 
     <div v-else class="list">
-      <UiListCard
+      <UiCard
         v-for="l in items"
         :key="l.id"
+        as="button"
         type="button"
-        as="button" variant="location"
+        size="full"
+        density="lg"
+        :interactive="true"
         @click="openDetails(l)"
-      >
-        <template #left>
-          <div class="listCard__titleRow">
-            <div class="listCard__title">{{ l.name || '—' }}</div>
-          </div>
+        >
+        <template #title>
+          {{ l.name || '—' }}
+        </template>
 
+        <template #titleRight>
+          <UiPill>{{ (l.courts?.length ?? 0) }} courts</UiPill>
+        </template>
+
+        <template #left>
           <div class="listCard__city">{{ l.city || '—' }}</div>
           <div class="listCard__address">{{ l.address || '—' }}</div>
         </template>
 
         <template #right>
-          <UiPill>{{ (l.courts?.length ?? 0) }} courts</UiPill>
         </template>
-      </UiListCard>
+      </UiCard>
     </div>
-
     <router-view />
   </section>
 </template>
@@ -57,11 +62,11 @@
 import { onMounted, ref } from 'vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
-import UiListCard from '@/components/ui/UiListCard.vue';
 import UiPill from '@/components/ui/UiPill.vue';
 
 import { useRouter } from 'vue-router';
 import { fetchLocations } from '@/api/locationsApi';
+import UiCard from '@/components/ui/UiCard.vue';
 
 const router = useRouter();
 

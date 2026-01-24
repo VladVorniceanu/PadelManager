@@ -28,23 +28,26 @@
         />
 
         <div v-else class="homeMatchesGrid">
-          <UiListCard
+          <UiCard
             v-for="m in futureMatches"
             :key="m.id"
             as="button"
-            variant="match"
+            type="button"
+            size="full"
+            density="lg"
+            :interactive="true"
             class="homeMatchCard"
             @click="openDetails(m)"
           >
-            <template #left>
-              <div class="listCard__titleRow">
-                <div class="listCard__title">
-                  Match at {{ locationNameById(matchLocationId(m)) }}
-                </div>
-              </div>
+            <template #title>
+              Match at {{ locationNameById(matchLocationId(m)) }}
+            </template>
 
+            <template #titleRight>
               <UiPill>{{ matchBadge(m) }}</UiPill>
+            </template>
 
+            <template #left>
               <div class="matchLeftMeta">
                 <div>🎾 {{ courtLabel(m) }}</div>
                 <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
@@ -96,7 +99,7 @@
                 </div>
               </div>
             </template>
-          </UiListCard>
+          </UiCard>
         </div>
       </section>
 
@@ -117,23 +120,26 @@
         />
 
         <div v-else class="homeMatchesGrid">
-          <UiListCard
+          <UiCard
             v-for="m in recentMatches"
             :key="m.id"
             as="button"
-            variant="match"
+            type="button"
+            size="full"
+            density="lg"
+            :interactive="true"
             class="homeMatchCard"
             @click="openDetails(m)"
           >
-            <template #left>
-              <div class="listCard__titleRow">
-                <div class="listCard__title">
-                  Match at {{ locationNameById(matchLocationId(m)) }}
-                </div>
-              </div>
+            <template #title>
+              Match at {{ locationNameById(matchLocationId(m)) }}
+            </template>
 
+            <template #titleRight>
               <UiPill>{{ matchBadge(m) }}</UiPill>
+            </template>
 
+            <template #left>
               <div class="matchLeftMeta">
                 <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
                 <div>🎾 {{ courtLabel(m) }}</div>
@@ -183,7 +189,7 @@
                 </div>
               </div>
             </template>
-          </UiListCard>
+          </UiCard>
         </div>
       </section>
 
@@ -272,7 +278,6 @@ import UiButton from '@/components/ui/UiButton.vue';
 import UiCard from '@/components/ui/UiCard.vue';
 import UiPill from '@/components/ui/UiPill.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
-import UiListCard from '@/components/ui/UiListCard.vue';
 
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/modules/auth/store/useAuthStore';

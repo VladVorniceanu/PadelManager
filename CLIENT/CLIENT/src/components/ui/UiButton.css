@@ -8,6 +8,10 @@
   font-weight: 800;
 }
 
+.button--sm { padding: 8px 10px; min-height: 40px; }
+.button--md { padding: 10px 12px; min-height: 44px; }
+.button--lg { padding: 12px 14px; min-height: 48px; }
+
 .btn.primary{
   background: var(--ui-primary);
   color: var(--ui-on-primary);

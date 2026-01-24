@@ -1,9 +1,4 @@
-.card.error {
-  border-color: var(--ui-danger-border);
-  background: var(--ui-danger-bg);
-}
-
-.card.empty { text-align: left; }
+.uiCard--empty { text-align: left; }
 .errorTitle { font-weight: 900; margin-bottom: 6px; }
 .errorMsg { color: var(--ui-danger-text); margin-bottom: 12px; }
 .emptyTitle { font-weight: 900; }

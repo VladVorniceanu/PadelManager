@@ -17,7 +17,7 @@
 import UiButton from '@/components/ui/UiButton.vue';
 
 defineProps({
-  modelValue: { type: String, required: true },
+  modelValue: { type: [String, Number], required: true },
   options: { type: Array, default: () => [] }, // [{ value, label }]
   ariaLabel: { type: String, default: 'Options' },
 });

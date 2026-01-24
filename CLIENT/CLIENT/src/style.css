@@ -2,7 +2,8 @@
    1) DESIGN TOKENS
    ========================================================= */
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
 
   /* =======================================================
      Typography scale
@@ -110,11 +111,17 @@
    2) BASE / RESET
    ========================================================= */
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html, body { 
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
   background: var(--ui-bg);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  line-height: 1.4;
 }
 
 /* App wrapper: TOP-DOWN, no vertical centering */
@@ -543,6 +550,20 @@ body {
 
 /* =========================================================
    15) RESPONSIVE BREAKPOINTS (ALL IN ONE PLACE)
+   ========================================================= */
+   
+button, input, select, textarea {
+  font-family: inherit; /* Ensure form elements use the same font as the body */
+  color: inherit; /* Inherit text color */
+}
+
+button, input[type="button"], input[type="submit"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* =========================================================
+   16) RESPONSIVE BREAKPOINTS (ALL IN ONE PLACE)
    ========================================================= */
 
 /* --- <=1100px: Home grid becomes 2 columns --- */

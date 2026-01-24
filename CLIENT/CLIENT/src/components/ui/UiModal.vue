@@ -27,7 +27,7 @@
 import { computed, useAttrs } from 'vue';
 import UiIconButton from './UiIconButton.vue';
 
-const attrs = useAttrs
+const attrs = useAttrs();
 
 const props = defineProps({
   title: { type: String, default: '' },

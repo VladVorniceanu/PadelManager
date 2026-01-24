@@ -4,9 +4,15 @@
   padding: 10px 12px;
   outline: none;
   background: var(--ui-surface);
+  min-height: 44px;
 }
 
 .input:focus { border-color: var(--ui-primary); }
 .input.invalid { border-color: var(--ui-danger); }
 
-.input.small { padding: 8px 10px; font-weight: 900; }
+.input--sm { padding: 8px 10px; min-height: 40px; font-weight: 900; }
+.input--md { padding: 10px 12px; min-height: 44px; }
+.input--lg { padding: 12px 14px; min-height: 48px; }
+
+.input--pill { border-radius: 999px; }
+.input--rounded { border-radius: var(--ui-radius-sm); }

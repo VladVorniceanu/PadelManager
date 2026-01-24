@@ -1,17 +1,104 @@
-.card {
+.uiCard {
+  width: 100%;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-md);
-  padding: var(--space-card);
   background: var(--ui-surface);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
 }
 
-.card.error {
+.uiCard--sm { padding: 12px; gap: 10px; }
+.uiCard--md { padding: 14px; gap: 12px; }
+.uiCard--lg { padding: 16px; gap: 14px; }
+
+.uiCard:not(.uiCard--sm):not(.uiCard--md):not(.uiCard--lg) { padding: 14px; }
+
+.uiCard--error {
   border-color: var(--ui-danger-border);
   background: var(--ui-danger-bg);
 }
 
-.card.empty { 
-  flex-direction: column;
+.uiCard--empty {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+}
+
+.uiCard--interactive {
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+
+.uiCard--interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ui-shadow-soft);
+}
+
+.uiCard--interactive:active {
+  transform: translateY(0px);
+}
+
+.uiCard[data-size="full"] { width: 100%; }
+.uiCard[data-size="half"] { width: 100%; }
+.uiCard[data-size="compact"] { width: 100%; }
+
+@media (min-width: 900px) {
+  .uiCard[data-size="half"] { width: calc(50% - 8px); }
+}
+
+@media (min-width: 1100px) {
+  .uiCard[data-size="compact"] { width: calc(33.333% - 10.666px); }
+}
+
+.uiCard__top {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.uiCard__title {
+  font-weight: 950;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+.uiCard__titleRight { flex: 0 0 auto; }
+
+.uiCard__body { min-width: 0; }
+
+.uiCard__body--split {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
   gap: 12px;
- }
+}
+
+.uiCard__body--single {
+  display: block;
+}
+
+.uiCard__left,
+.uiCard__right {
+  min-width: 0;
+}
+
+.uiCard__right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+
+button.uiCard {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+}
+
+button.uiCard:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

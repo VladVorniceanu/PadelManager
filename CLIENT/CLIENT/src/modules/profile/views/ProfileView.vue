@@ -413,6 +413,32 @@ onMounted(async () => {
 
 <style scoped>
 .statsDebug { grid-column: 1 / -1; }
+.statsGrid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap:14px;
+  margin-top:20px;
+}
+.statCard{
+  padding:16px;
+}
+.statCard--wide{ grid-column: span 2; }
+.statCard__label{
+  font-size:13px;
+  color: var(--ui-muted);
+  font-weight:600;
+}
+.statCard__value{
+  font-size:32px;
+  font-weight:900;
+  margin-top:6px;
+}
+.statCard__value--sm{ font-size:18px; }
+.statCard__meta{
+  margin-top:8px;
+  font-size:12px;
+  color: var(--ui-muted);
+}
 .sectionHeader{
   display:flex;
   align-items:flex-start;
@@ -420,15 +446,9 @@ onMounted(async () => {
   gap:12px;
   margin-bottom:10px;
 }
-.sectionActions{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
 .sectionHint{ margin:6px 0 0; color: var(--ui-muted); font-size: 13px; }
 
-.personalWideCard{ padding: var(--space-card); }
+.personalWideCard{ padding: 16px; }
 .personalSplit{
   display:grid;
   grid-template-columns: 1fr 1px 1fr;

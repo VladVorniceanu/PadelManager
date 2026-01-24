@@ -31,22 +31,25 @@
     />
 
     <div v-else class="list">
-      <UiListCard
+      <UiCard
         v-for="m in filteredMatches"
         :key="m.id"
         as="button"
-        variant="match"
+        type="button"
+        size="full"
+        density="lg"
+        :interactive="true"
         @click="openDetails(m)"
       >
-        <template #left>
-          <div class="listCard__titleRow">
-            <div class="listCard__title">
-              Match at {{ locationNameById(matchLocationId(m)) }}
-            </div>
-          </div>
+        <template #title>
+          Match at {{ locationNameById(matchLocationId(m)) }}
+        </template>
 
+        <template #titleRight>
           <UiPill>{{ matchBadge(m) }}</UiPill>
+        </template>
 
+        <template #left>
           <div class="matchLeftMeta">
             <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
             <div>🎾 {{ courtLabel(m) }}</div>
@@ -95,7 +98,7 @@
           </div>
           </div>
         </template>
-      </UiListCard>
+      </UiCard>
     </div>
 
     <MatchDetailsModal
@@ -118,7 +121,7 @@ import MatchDetailsModal from './MatchDetailsModal.vue';
 import UiButton from '@/components/ui/UiButton.vue';
 import UiSegmented from '@/components/ui/UiSegmented.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
-import UiListCard from '@/components/ui/UiListCard.vue';
+import UiCard from '@/components/ui/UiCard.vue';
 import UiPill from '@/components/ui/UiPill.vue';
 
 const loading = ref(false);

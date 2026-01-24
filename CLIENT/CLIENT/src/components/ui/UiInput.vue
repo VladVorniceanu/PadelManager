@@ -1,7 +1,10 @@
 <template>
   <input
     class="input"
-    :class="{ small: size === 'small' }"
+    :class="[
+      size ? `input--${size}` : null,
+      shape ? `input--${shape}` : null,
+    ]"
     :type="type"
     :value="valueAttr"
     :placeholder="placeholder"
@@ -15,11 +18,12 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  modelValue: { type: [String, Number, null], default: '' },
+  modelValue: { type: [String, Number], default: '' },
   type: { type: String, default: 'text' },
   placeholder: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
-  size: { type: String, default: 'md' }, // md | small
+  size: { type: String, default: 'md' }, // sm | md | lg
+  shape: { type: String, default: 'rounded' }, // pill | rounded
   number: { type: Boolean, default: false },
 });
 

@@ -1,7 +1,10 @@
 <template>
   <button
     class="btn"
-    :class="variantClass"
+    :class="[
+      size ? `button--${size}` : null,
+      variantClass
+    ]"
     :type="type"
     v-bind="$attrs"
   >
@@ -15,6 +18,7 @@ import { computed } from 'vue';
 const props = defineProps({
   variant: { type: String, default: 'default' }, // default | primary | subtle | danger
   type: { type: String, default: 'button' },
+  size: { type: String, default: 'sm' }, // sm | md | lg
 });
 
 const variantClass = computed(() => {

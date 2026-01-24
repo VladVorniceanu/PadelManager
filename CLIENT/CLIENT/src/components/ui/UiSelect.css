@@ -1,10 +1,19 @@
 .select {
+  appearance: none;
   border: 1px solid var(--ui-border);
   border-radius: var(--ui-radius-sm);
   padding: 10px 12px;
   outline: none;
   background: var(--ui-surface);
+  min-height: 44px;
 }
 
 .select:focus { border-color: var(--ui-primary); }
 .select.invalid { border-color: var(--ui-danger); }
+
+.select--sm { padding: 8px 10px; min-height: 40px; }
+.select--md { padding: 10px 12px; min-height: 44px; }
+.select--lg { padding: 12px 14px; min-height: 48px; }
+
+.select--pill { border-radius: 999px; }
+.select--rounded { border-radius: var(--ui-radius-sm); }
