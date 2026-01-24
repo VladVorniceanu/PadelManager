@@ -313,6 +313,7 @@ export async function getCourtAvailability({
   if (closeMin <= openMin) closeMin += 24 * 60;
 
   const slots = [];
+  const nowMs = Date.now();
   for (let startMin = openMin; startMin + dur <= closeMin; startMin += slotStepMinutes) {
     const endMin = startMin + dur;
 
@@ -322,6 +323,7 @@ export async function getCourtAvailability({
     const startUtc = new Date(dayStartUtc.getTime() + startMin * 60 * 1000);
     const endUtc = new Date(dayStartUtc.getTime() + endMin * 60 * 1000);
 
+    if (startUtc.getTime() < nowMs) continue;
     const pad = (n) => String(n).padStart(2, '0');
     const hh = Math.floor(startMin / 60) % 24;
     const mm = startMin % 60;
