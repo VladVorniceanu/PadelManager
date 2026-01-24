@@ -10,11 +10,11 @@
       </div>
     </header>
 
-    <div class="homeSections">
+    <div class="sections">
       <!-- Future matches -->
-      <section class="homeSection">
-        <div class="homeSection__head">
-          <h2 class="homeSection__title">Your future matches</h2>
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Your future matches</h2>
           <UiButton variant="subtle"  type="button" @click="goMatches">View all</UiButton>
         </div>
 
@@ -104,9 +104,9 @@
       </section>
 
       <!-- Recent matches -->
-      <section class="homeSection">
-        <div class="homeSection__head">
-          <h2 class="homeSection__title">Recent matches</h2>
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Recent matches</h2>
           <UiButton variant="subtle"  type="button" @click="goMatches">View all</UiButton>
         </div>
 
@@ -194,11 +194,11 @@
       </section>
 
       <!-- Locations nearby -->
-      <section class="homeSection">
-        <div class="homeSection__head">
-          <h2 class="homeSection__title">Locations</h2>
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Locations</h2>
 
-          <div class="homeSection__actions">
+          <div class="section__actions">
             <UiButton variant="subtle"  type="button" @click="requestGeo" :disabled="geoBusy">
               {{ geoBusy ? 'Locating…' : geoEnabled ? 'Location enabled' : 'Use my location' }}
             </UiButton>
@@ -230,9 +230,9 @@
       </section>
 
       <!-- Available tournaments -->
-      <section class="homeSection">
-        <div class="homeSection__head">
-          <h2 class="homeSection__title">Available tournaments</h2>
+      <section class="section">
+        <div class="section__head">
+          <h2 class="section__title">Available tournaments</h2>
           <UiButton variant="subtle"  type="button" @click="goTournaments">View all</UiButton>
         </div>
 
@@ -558,13 +558,6 @@ onUnmounted(() => {
 .homeHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; }
 .homeTitle { margin: 0; font-size: 28px; font-weight: 950; letter-spacing: -0.02em; }
 .homeName { font-weight: 950; }
-
-.homeSections { display: flex; flex-direction: column; gap: 14px; }
-.homeSection { display: flex; flex-direction: column; gap: 10px; }
-
-.homeSection__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.homeSection__title { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -0.01em; }
-.homeSection__actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
 /* cards in grid3 (Locations / Tournaments) */
 .itemCard__top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }

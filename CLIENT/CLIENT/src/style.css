@@ -121,7 +121,6 @@ body {
   background: var(--ui-bg);
   font-family: var(--font-sans);
   text-rendering: optimizeLegibility;
-  line-height: 1.4;
 }
 
 /* App wrapper: TOP-DOWN, no vertical centering */
@@ -181,6 +180,48 @@ body {
   flex-wrap: wrap;
 }
 
+.sections { 
+  display: flex; 
+  flex-direction: column; 
+  gap: var(--space-6);
+}
+
+.section { 
+  display: flex; 
+  flex-direction: column; 
+  gap: var(--space-4);
+}
+
+.section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.section__title {
+  font-size: var(--font-size-title);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ui-text);
+  margin: 0;
+}
+
+.section__subtitle {
+  margin-top: 4px;
+  font-size: var(--font-size-subtitle);
+  color: var(--ui-muted);
+}
+
+.section__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+
 /* =========================================================
    4) LAYOUT PRIMITIVES (Tables / Grids / Lists)
    ========================================================= */
@@ -202,7 +243,7 @@ body {
 }
 
 .table-note {
-  margin-top: .75rem;
+  margin-top: var(--space-3);
   font-size: .75rem;
   color: var(--ui-muted);
 }
@@ -211,14 +252,14 @@ body {
 .grid3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 /* Generic list wrapper */
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 /* =========================================================
@@ -254,10 +295,10 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-.sd-userLine{ display:flex; gap:10px; align-items:center; }
+.sd-userLine{ display:flex; gap:var(--space-3); align-items:center; }
 .sd-avatar{ font-size:22px; }
 .sd-name{ font-weight:800; }
 .sd-email{ font-size:12px; color: var(--ui-muted); }
@@ -274,7 +315,7 @@ body {
   padding: 10px;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:var(--space-2);
   height:100%;
 }
 
@@ -506,6 +547,7 @@ body {
 /* =========================================================
    13) COMPONENTS: PROFILE / STATS
    ========================================================= */
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -549,7 +591,13 @@ body {
 }
 
 /* =========================================================
-   15) RESPONSIVE BREAKPOINTS (ALL IN ONE PLACE)
+   15) SECTION HEADERS (used in Profile view)
+   ========================================================= */
+
+
+
+/* =========================================================
+   16) BUTTON AND FORM ELEMENT RESET FOR CONSISTENCY IN DIFFERENT BROWSERS
    ========================================================= */
    
 button, input, select, textarea {
@@ -563,7 +611,7 @@ button, input[type="button"], input[type="submit"] {
 }
 
 /* =========================================================
-   16) RESPONSIVE BREAKPOINTS (ALL IN ONE PLACE)
+   17) RESPONSIVE BREAKPOINTS (ALL IN ONE PLACE)
    ========================================================= */
 
 /* --- <=1100px: Home grid becomes 2 columns --- */
@@ -670,5 +718,14 @@ button, input[type="button"], input[type="submit"] {
 @media (max-width: 520px){
   .homeMatchCard .scoreBox{
     flex-direction: column;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sectionActions {
+    justify-content: flex-start;
   }
 }

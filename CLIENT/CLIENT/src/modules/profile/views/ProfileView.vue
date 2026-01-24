@@ -7,14 +7,14 @@
       </div>
     </header>
 
-    <section class="personalDataSection">
-      <div class="sectionHeader">
+    <section class="section">
+      <div class="section__head">
         <div>
-          <h3 class="sectionTitle">Personal Information</h3>
-          <p class="sectionHint">Keep your preferences updated for better match suggestions.</p>
+          <h3 class="section__title">Personal Information</h3>
+          <p class="section__subtitle">Keep your preferences updated for better match suggestions.</p>
         </div>
 
-        <div class="sectionActions">
+        <div class="section__actions">
           <UiButton
             v-if="!editing"
             variant="subtle"
@@ -25,10 +25,10 @@
           </UiButton>
 
           <template v-else>
-            <UiButton variant="subtle" type="button" :disabled="savingPersonalData" @click="cancelEdit">
+            <UiButton variant="danger" type="button" :disabled="savingPersonalData" @click="cancelEdit">
               Cancel
             </UiButton>
-            <UiButton type="button" :disabled="savingPersonalData" @click="savePersonalData">
+            <UiButton variant="primary" type="button" :disabled="savingPersonalData" @click="savePersonalData">
               {{ savingPersonalData ? 'Saving…' : 'Save changes' }}
             </UiButton>
           </template>
@@ -138,97 +138,93 @@
       </UiCard>
     </section>
 
-    <div class="sectionHeader">
-      <div>
-        <h3 class="sectionTitle">Your padel stats</h3>
-        <p class="sectionHint">Take a glance at some key statistics about your padel games.</p>
+    <section class="section">
+      <div class="section__head">
+        <div>
+          <h3 class="section__title">Your padel stats</h3>
+          <p class="section__subtitle">Take a glance at some key statistics about your padel games.</p>
+        </div>
+
+        <div class="section__actions">
+          <UiButton variant="subtle"  :disabled="loading" @click="load">
+            {{ loading ? 'Refreshing…' : 'Refresh' }}
+          </UiButton>
+        </div>
       </div>
 
-      <div class="sectionActions">
-        <UiButton variant="subtle"  :disabled="loading" @click="load">
-          {{ loading ? 'Refreshing…' : 'Refresh' }}
-        </UiButton>
+      <div v-if="loading" class="statsGrid">
+        <!-- Primary stats -->
+        <UiStateCard class="statCard" variant="loading" :lines="3"/>
+        <UiStateCard class="statCard" variant="loading" :lines="3"/>
+        <UiStateCard class="statCard" variant="loading" :lines="3"/>
+        <UiStateCard class="statCard" variant="loading" :lines="3"/>
+
+        <!-- Secondary stats -->
+        <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
+        <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
+        <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
       </div>
-    </div>
 
-    <!-- <UiStateCard v-else-if="error" variant="error" title="Error" :message="error">
-      <template #action>
-        <UiButton @click="load">Retry</UiButton>
-      </template>
-    </UiStateCard> -->
+      <div v-else-if="error">
+        <UiStateCard variant="error" title="There has been an error while calculating statistics:" :message="error">
+          <template #action>
+            <UiButton @click="load">Retry</UiButton>
+          </template>
+        </UiStateCard>
+      </div>
 
-    <div v-if="loading" class="statsGrid">
-      <!-- Primary stats -->
-      <UiStateCard class="statCard" variant="loading" :lines="3"/>
-      <UiStateCard class="statCard" variant="loading" :lines="3"/>
-      <UiStateCard class="statCard" variant="loading" :lines="3"/>
-      <UiStateCard class="statCard" variant="loading" :lines="3"/>
+      <div v-else class="statsGrid">
+        <!-- Primary stats -->
+        <UiCard class="statCard">
+          <div class="statCard__label">Games played</div>
+          <div class="statCard__value">{{ stats.gamesPlayed }}</div>
+          <div class="statCard__meta">Total matches you have participated in.</div>
+        </UiCard>
 
-      <!-- Secondary stats -->
-      <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
-      <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
-      <UiStateCard class="statCard statCard--wide" variant="loading" :lines="3"/>
-    </div>
+        <UiCard class="statCard">
+          <div class="statCard__label">Wins</div>
+          <div class="statCard__value">{{ stats.wins }}</div>
+          <div class="statCard__meta">Only finalised matches.</div>
+        </UiCard>
 
-    <div v-else-if="error">
-      <UiStateCard variant="error" title="There has been an error while calculating statistics:" :message="error">
-        <template #action>
-          <UiButton @click="load">Retry</UiButton>
-        </template>
-      </UiStateCard>
-    </div>
+        <UiCard class="statCard">
+          <div class="statCard__label">Losses</div>
+          <div class="statCard__value">{{ stats.losses }}</div>
+          <div class="statCard__meta">Only finalised matches.</div>
+        </UiCard>
 
-    <div v-else class="statsGrid">
-      <!-- Primary stats -->
-      <UiCard class="statCard">
-        <div class="statCard__label">Games played</div>
-        <div class="statCard__value">{{ stats.gamesPlayed }}</div>
-        <div class="statCard__meta">Total matches you have participated in.</div>
-      </UiCard>
+        <UiCard class="statCard">
+          <div class="statCard__label">Win rate</div>
+          <div class="statCard__value">{{ winRate }}</div>
+          <div class="statCard__meta">Wins / (Wins + Losses).</div>
+        </UiCard>
 
-      <UiCard class="statCard">
-        <div class="statCard__label">Wins</div>
-        <div class="statCard__value">{{ stats.wins }}</div>
-        <div class="statCard__meta">Only finalised matches.</div>
-      </UiCard>
+        <!-- Secondary stats -->
+        <UiCard class="statCard statCard--wide">
+          <div class="statCard__label">Most frequent teammate</div>
+          <div class="statCard__value statCard__value--sm">
+            {{ formatTopUser(stats.mostFrequentTeammate) }}
+          </div>
+          <div class="statCard__meta">Based on matches where you were on the same team.</div>
+        </UiCard>
 
-      <UiCard class="statCard">
-        <div class="statCard__label">Losses</div>
-        <div class="statCard__value">{{ stats.losses }}</div>
-        <div class="statCard__meta">Only finalised matches.</div>
-      </UiCard>
+        <UiCard class="statCard statCard--wide">
+          <div class="statCard__label">Most frequent opponent</div>
+          <div class="statCard__value statCard__value--sm">
+            {{ formatTopUser(stats.mostFrequentOpponent) }}
+          </div>
+          <div class="statCard__meta">Based on matches where you were on opposing teams.</div>
+        </UiCard>
 
-      <UiCard class="statCard">
-        <div class="statCard__label">Win rate</div>
-        <div class="statCard__value">{{ winRate }}</div>
-        <div class="statCard__meta">Wins / (Wins + Losses).</div>
-      </UiCard>
-
-      <!-- Secondary stats -->
-      <UiCard class="statCard statCard--wide">
-        <div class="statCard__label">Most frequent teammate</div>
-        <div class="statCard__value statCard__value--sm">
-          {{ formatTopUser(stats.mostFrequentTeammate) }}
-        </div>
-        <div class="statCard__meta">Based on matches where you were on the same team.</div>
-      </UiCard>
-
-      <UiCard class="statCard statCard--wide">
-        <div class="statCard__label">Most frequent opponent</div>
-        <div class="statCard__value statCard__value--sm">
-          {{ formatTopUser(stats.mostFrequentOpponent) }}
-        </div>
-        <div class="statCard__meta">Based on matches where you were on opposing teams.</div>
-      </UiCard>
-
-      <UiCard class="statCard statCard--wide">
-        <div class="statCard__label">Most played location</div>
-        <div class="statCard__value statCard__value--sm">
-          {{ formatTopLocation(stats.mostPlayedLocation) }}
-        </div>
-        <div class="statCard__meta">Location where you played the most.</div>
-      </UiCard>
-    </div>
+        <UiCard class="statCard statCard--wide">
+          <div class="statCard__label">Most played location</div>
+          <div class="statCard__value statCard__value--sm">
+            {{ formatTopLocation(stats.mostPlayedLocation) }}
+          </div>
+          <div class="statCard__meta">Location where you played the most.</div>
+        </UiCard>
+      </div>
+    </section>
   </section>
 </template>
 
@@ -439,14 +435,6 @@ onMounted(async () => {
   font-size:12px;
   color: var(--ui-muted);
 }
-.sectionHeader{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:10px;
-}
-.sectionHint{ margin:6px 0 0; color: var(--ui-muted); font-size: 13px; }
 
 .personalWideCard{ padding: 16px; }
 .personalSplit{
