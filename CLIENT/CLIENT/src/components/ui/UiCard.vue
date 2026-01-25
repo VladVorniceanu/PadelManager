@@ -35,6 +35,7 @@
 
       <!-- Backward compatible: plain content. -->
       <template v-else>
+        <slot name="body"/>
         <slot />
       </template>
     </div>
