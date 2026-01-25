@@ -75,15 +75,12 @@
         </template>
 
         <template #left>
-          <span class="metaItem">📍 {{ loc.city || '—' }}</span>
-          <span class="dot"> • </span>
-          <span class="metaItem">{{ loc.address || '—' }}</span>
-
-          <div v-if="loc.createdAt">
-            Created: <span>{{ formatDate(loc.createdAt) }}</span>
-          </div>
-          <div v-if="loc.updatedAt">
-            Updated: <span>{{ formatDate(loc.updatedAt) }}</span>
+          <span class="metaItem">📍 {{ loc.city || '—' }} — {{ loc.address || '—' }}</span>
+          <div class="bottom-aligned">
+            <div class="timestamps" v-if="loc.createdAt || loc.updatedAt">
+              <div v-if="loc.createdAt">Created: <span>{{ formatDate(loc.createdAt) }}</span></div>
+              <div v-if="loc.updatedAt">Updated: <span>{{ formatDate(loc.updatedAt) }}</span></div>
+            </div>
           </div>
         </template>
 

@@ -31,38 +31,43 @@
     </UiStateCard>
 
     <div v-else class="grid">
-      <article v-for="t in store.items" :key="t.id" class="locCard">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">{{ t.name }}</div>
-                <UiPill>{{ statusLabel(t.status) }}</UiPill>
-            </div>
+      <UiCard
+        v-for="t in store.items"
+        :key="t.id"
+        as="article"
+        :interactive="true"
+      >
+        <template #title>
+          {{ t.name }}
+        </template>
 
-            <div class="locMeta">
-              <span class="metaItem">
-                📍
-                <template v-if="locationsStore.loading">Loading…</template>
-                <template v-else>{{ locationPreview(t.locationId) }}</template>
-              </span>
-              <span class="dot">•</span>
-              <span class="metaItem">🗓 {{ formatDate(t.startDate) }} → {{ formatDate(t.endDate) }}</span>
+        <template #titleRight>
+          <UiPill>{{ statusLabel(t.status) }}</UiPill>
+        </template>
+
+        <template #left>
+          <span class="metaItem">
+            📍
+            <template v-if="locationsStore.loading">Loading…</template>
+            <template v-else>{{ locationPreview(t.locationId) }}</template>
+          </span>
+          <span class="metaItem">🗓 {{ formatDate(t.startDate) }} → {{ formatDate(t.endDate) }}</span>
+
+          <div class="bottom-aligned">
+            <div class="timestamps" v-if="t.createdAt || t.updatedAt">
+              <div v-if="t.createdAt">Created: <span>{{ formatDateTime(t.createdAt) }}</span></div>
+              <div v-if="t.updatedAt">Updated: <span>{{ formatDateTime(t.updatedAt) }}</span></div>
             </div>
           </div>
+        </template>
 
+        <template #right>
           <div class="actions">
             <UiButton  @click="openEdit(t)">Edit</UiButton>
             <UiButton variant="danger"  @click="confirmDelete(t)">Delete</UiButton>
           </div>
-        </div>
-
-        <div class="locBody">
-          <div class="timestamps" v-if="t.createdAt || t.updatedAt">
-            <div v-if="t.createdAt">Created: <span>{{ formatDateTime(t.createdAt) }}</span></div>
-            <div v-if="t.updatedAt">Updated: <span>{{ formatDateTime(t.updatedAt) }}</span></div>
-          </div>
-        </div>
-      </article>
+        </template>
+      </UiCard>
     </div>
 
     <!-- Modal create/edit -->
@@ -146,6 +151,7 @@ import UiInput from '@/components/ui/UiInput.vue';
 import UiSelect from '@/components/ui/UiSelect.vue';
 import UiModal from '@/components/ui/UiModal.vue';
 import UiStateCard from '@/components/ui/UiStateCard.vue';
+import UiCard from '@/components/ui/UiCard.vue';
 
 import { useAdminTournamentsStore } from '../store/useAdminTournamentsStore';
 import { useAdminLocationsStore } from '../store/useAdminLocationsStore';

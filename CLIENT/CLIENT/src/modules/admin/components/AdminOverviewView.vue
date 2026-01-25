@@ -12,102 +12,96 @@
         </UiButton>
       </div>
     </header>
+    
+    <div v-if="loading" class="cardSection">
+      <div class="grid">
+        <UiStateCard variant="loading" :lines="4"/>
+        <UiStateCard variant="loading" :lines="4"/>
+        <UiStateCard variant="loading" :lines="3"/>
+        <UiStateCard variant="loading" :lines="3"/>
+      </div>
+      <UiStateCard variant="loading" :lines="3"/>
+      <UiStateCard variant="loading" :lines="2"/>
+    </div>
 
-    <UiStateCard v-if="loading" variant="loading" :lines="3" />
-
-    <UiStateCard v-else-if="error" variant="error" title="Eroare" :message="error">
+    <UiStateCard v-else-if="error" variant="error" title="Error" :message="error">
       <template #action>
         <UiButton @click="load">Retry</UiButton>
       </template>
     </UiStateCard>
 
-    <div v-else class="grid">
-      <article class="locCard">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">Total users</div>
-              <UiPill strong>{{ metrics.totalUsers }}</UiPill>
-            </div>
-            <div class="locMeta">
-              <span class="metaItem">👤 Admins: {{ metrics.totalAdmins }}</span>
-              <span class="dot">•</span>
-              <span class="metaItem">Players: {{ metrics.totalPlayers }}</span>
-            </div>
-          </div>
-        </div>
+    <div v-else class="cardSection">
+      <div class="grid">
+        <UiCard as="article">
+          <template #top>
+            <span>Total users</span>
+            <UiPill strong>{{ metrics.totalUsers }} Users</UiPill>
+          </template>
+          
+          <template #body>
+            <span class="metaItem">👤 Admins: {{ metrics.totalAdmins }}</span>
+            <span class="metaItem">👤 Players: {{ metrics.totalPlayers }}</span>
+          </template>
+        </UiCard>
 
-        <div class="locBody">
+        <UiCard as="article">
+          <template #top>
+            <span>Total Matches</span>
+            <UiPill>{{ metrics.totalMatches}} Matches</UiPill>
+          </template>
+          
+          <template #body>
+            <span class="metaItem">⏳ Ongoing: {{ metrics.totalOngoingMatches }} Matches</span>
+            <span class="metaItem">📅 Scheduled: {{ metrics.totalScheduledMatches }} Matches</span>
+            <span class="metaItem">✅ Completed: {{ metrics.totalCompletedMatches }} Matches</span>
+          </template>
+        </UiCard>
+        
+        <UiCard as="article">
+          <template #top>
+            <span>Total locations</span>
+            <UiPill strong>{{ metrics.totalLocations }} Locations</UiPill>
+          </template>
+          
+          <template #body>
+            <span class="metaItem">📍 Courts total: {{ metrics.totalCourts }} courts</span>
+            <span class="metaItem">🏟️ Avg / loc: {{ metrics.avgCourtsPerLocation }} courts per location</span>
+          </template>
+        </UiCard>
+
+        <UiCard as="article">
+          <template #top>
+            <span>Courts</span>
+            <UiPill>{{ metrics.totalCourts }} Courts</UiPill>
+          </template>
+          
+          <template #body>
+            <span class="metaItem">💡 Indoor courts: {{ metrics.indoorCourts }}</span>
+            <span class="metaItem">🌳 Outdoor courts: {{ metrics.outdoorCourts }}</span>
+          </template>
+        </UiCard>
+      </div>
+      <UiCard as="article">
+        <template #top>
+          <span>Matches by court type</span>
+          <UiPill>{{ metrics.totalMatches }} Matches</UiPill>
+        </template>
+        
+        <template #body>
+          <span class="metaItem">💡 Indoor matches: {{ metrics.matchesIndoor }}</span>
+          <span class="metaItem">🌳 Outdoor matches: {{ metrics.matchesOutdoor }}</span>
+        </template>
+      </UiCard>
+      <UiCard as="article">
+        <template #body>
           <div class="timestamps">
-            <div>Source: <span>Server</span></div>
+            <div>Data source: <span>Server</span></div>
           </div>
-        </div>
-      </article>
-
-      <article class="locCard">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">Total locations</div>
-              <UiPill strong>{{ metrics.totalLocations }}</UiPill>
-            </div>
-            <div class="locMeta">
-              <span class="metaItem">📍 Courts total: {{ metrics.totalCourts }}</span>
-              <span class="dot">•</span>
-              <span class="metaItem">Avg/loc: {{ metrics.avgCourtsPerLocation }}</span>
-            </div>
+          <div class="timestamps" v-if="metrics.latestUpdate">
+            <div>Last update: <span>{{ formatDate(metrics.latestUpdate) }}</span></div>
           </div>
-        </div>
-
-        <div class="locBody">
-          <div class="timestamps" v-if="metrics.latestLocationUpdate">
-            <div>Last update: <span>{{ formatDate(metrics.latestLocationUpdate) }}</span></div>
-          </div>
-          <div class="timestamps" v-else>
-            <div>Source: <span>Server</span></div>
-          </div>
-        </div>
-      </article>
-
-      <article class="locCard">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">Security</div>
-              <UiPill>{{ metrics.tokenStatus }}</UiPill>
-            </div>
-            <div class="locMeta">
-              <span class="metaItem">🔒 Auth: Bearer token via Axios interceptor</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="locBody">
-          <div class="timestamps">
-            <div>Note: <span>counts computed client-side</span></div>
-          </div>
-        </div>
-      </article>
-
-      <article class="locCard">
-        <div class="locHead">
-          <div class="locIdentity">
-            <div class="locNameRow">
-              <div class="locName">Courts distribution</div>
-              <UiPill>{{ metrics.locationsWithCourts }} / {{ metrics.totalLocations }}</UiPill>
-            </div>
-            <div class="locMeta">
-              <span class="metaItem">🏟️ Locations with ≥1 court</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="locBody">
-          <div class="timestamps">
-            <div>Empty locations: <span>{{ metrics.locationsWithoutCourts }}</span></div>
-          </div>
-        </div>
-      </article>
+        </template>
+      </UiCard>
     </div>
   </section>
 </template>
@@ -121,6 +115,8 @@ import UiStateCard from '@/components/ui/UiStateCard.vue';
 import { fetchUsers } from '@/api/usersApi';
 import { fetchLocations } from '@/api/locationsApi';
 import { auth } from '@/services/firebase';
+import { fetchNumberOfMatches, fetchNumberOfMatchesByStatus } from '@/api/matchesApi';
+import UiCard from '@/components/ui/UiCard.vue';
 
 const loading = ref(false);
 const error = ref(null);
@@ -133,12 +129,22 @@ const metrics = reactive({
   totalLocations: 0,
   totalCourts: 0,
   avgCourtsPerLocation: '0.0',
-  latestLocationUpdate: null,
+
+  totalMatches: 0,
+  totalOngoingMatches: 0,
+  totalScheduledMatches: 0,
+  totalCompletedMatches: 0,
 
   locationsWithCourts: 0,
   locationsWithoutCourts: 0,
+  
+  indoorCourts: 0,
+  outdoorCourts: 0,
+  matchesIndoor: 0,
+  matchesOutdoor: 0,
 
-  tokenStatus: 'guest',
+  latestUpdate: null,
+  tokenStatus: 'Guest',
 });
 
 function safeArray(v) {
@@ -180,21 +186,28 @@ async function load() {
     metrics.totalCourts = courtsTotal;
 
     metrics.avgCourtsPerLocation =
-      locations.length > 0 ? (courtsTotal / locations.length).toFixed(1) : '0.0';
+      locations.length > 0 ? (courtsTotal / locations.length).toFixed(0) : '0.0';
 
     metrics.locationsWithCourts = locations.filter((l) => (l?.courts?.length ?? 0) > 0).length;
     metrics.locationsWithoutCourts = metrics.totalLocations - metrics.locationsWithCourts;
 
-    // latest update timestamp from locations
-    const allDates = locations
-      .map((l) => parseDateLike(l?.updatedAt) || parseDateLike(l?.createdAt))
-      .filter(Boolean);
+    metrics.indoorCourts = locations.reduce(
+      (sum, l) => sum + (l?.courts?.filter((c) => c?.indoor).length ?? 0),
+      0,
+    );
+    metrics.outdoorCourts = courtsTotal - metrics.indoorCourts;
 
-    metrics.latestLocationUpdate = allDates.length
-      ? new Date(Math.max(...allDates.map((d) => d.getTime()))).toISOString()
-      : null;
+    metrics.totalMatches = await fetchNumberOfMatches();
+    metrics.totalOngoingMatches = await fetchNumberOfMatchesByStatus('ongoing');
+    metrics.totalScheduledMatches = await fetchNumberOfMatchesByStatus('scheduled');
+    metrics.totalCompletedMatches = await fetchNumberOfMatchesByStatus('completed');
 
-    metrics.tokenStatus = auth.currentUser ? 'authenticated' : 'guest';
+    metrics.matchesIndoor = await fetchNumberOfMatchesByStatus('indoor');
+    metrics.matchesOutdoor = metrics.totalMatches - metrics.matchesIndoor;
+
+    metrics.latestUpdate = new Date(Date.now());
+
+    metrics.tokenStatus = auth.currentUser ? 'Authenticated' : 'Guest';
   } catch (e) {
     console.error(e);
     error.value = e?.response?.data?.message || e?.message || 'Failed to load overview metrics';
