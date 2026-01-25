@@ -18,3 +18,13 @@ export async function updateMatch(id, patch) {
 export async function deleteMatch(id) {
   await httpClient.delete(`/matches/${id}`);
 }
+
+export async function fetchNumberOfMatchesByStatus(status) {
+  const res = await httpClient.get(`/matches/count/${status}`);
+  return res.data.count;
+}
+
+export async function fetchNumberOfMatches() {
+  const res = await httpClient.get(`/matches/count`);
+  return res.data.count;
+}

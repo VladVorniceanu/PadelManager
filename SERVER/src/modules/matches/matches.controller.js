@@ -38,6 +38,15 @@ export async function getMatchHandler(req, res) {
   res.json(match);
 }
 
+export async function countMatchesHandler(req, res) {
+  const status = req.params.status;
+  const count = status
+    ? await service.countMatchesByStatus(status)
+    : await service.countAllMatches();
+
+  res.json({ count });
+}
+
 export async function createMatchHandler(req, res) {
   const check = validateCreateMatchPayload(req.body);
   if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });

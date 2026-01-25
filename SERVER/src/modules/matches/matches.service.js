@@ -154,6 +154,23 @@ export async function listMatchesForUser(uid) {
   return await reconcileStatusesForMatches(userPairs);
 }
 
+export async function countMatchesByStatus(status) {
+  let query = db.collection(MATCHES_COLLECTION);
+
+  if (status) {
+    const normalized = String(status).toLowerCase();
+    query = query.where('status', '==', normalized);
+  }
+
+  const snap = await query.count().get();
+  return snap.data().count;
+}
+
+export async function countAllMatches() {
+  const snap = await db.collection(MATCHES_COLLECTION).count().get();
+  return snap.data().count;
+}
+
 export async function updateMatch(id, patch) {
   const ref = db.collection(MATCHES_COLLECTION).doc(id);
   const snap = await ref.get();
