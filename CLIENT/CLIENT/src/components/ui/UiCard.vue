@@ -12,7 +12,6 @@
     :type="as === 'button' ? (type || 'button') : undefined"
   >
     <div v-if="hasTop" class="uiCard__top">
-      <!-- Full custom row (rare). Otherwise provide title + titleRight. -->
       <template v-if="$slots.top">
         <slot name="top" />
       </template>
@@ -27,15 +26,14 @@
     </div>
 
     <div class="uiCard__body" :class="bodyClass">
-      <!-- Preferred split layout (left/right). -->
       <template v-if="hasSplit">
         <div class="uiCard__left"><slot name="left" /></div>
         <div v-if="$slots.right" class="uiCard__right"><slot name="right" /></div>
+        <div v-if="$slots.bottom" class="uiCard__bottom"><slot name="bottom" /></div>
       </template>
 
-      <!-- Backward compatible: plain content. -->
       <template v-else>
-        <slot name="body"/>
+        <slot name="body" />
         <slot />
       </template>
     </div>
@@ -65,11 +63,12 @@ const variantClass = computed(() => {
 
 const hasTop = computed(() => Boolean(slots.top || slots.title || slots.titleRight));
 const hasSplit = computed(() => Boolean(slots.left || slots.right));
+const hasBottom = computed(() => Boolean(slots.bottom));
 
 const bodyClass = computed(() => {
-  // If right slot is missing, the left side should span full width.
   if (!hasSplit.value) return null;
-  return slots.right ? 'uiCard__body--split' : 'uiCard__body--single';
+  if (!slots.right) return 'uiCard__body--single';
+  return hasBottom.value ? 'uiCard__body--split uiCard__body--withBottom' : 'uiCard__body--split';
 });
 </script>
 

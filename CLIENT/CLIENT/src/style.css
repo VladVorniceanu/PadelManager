@@ -598,23 +598,50 @@ body {
   gap: 12px;
 }
 
-/* same as MatchesListView but smaller */
 .homeMatchCard{
-  padding: 12px;
+  padding: 12px; /* ok */
 }
 
-/* Home: right side should not force huge widths */
-.homeMatchCard .scoreBox{
-  width: 100%;
+/* title a bit tighter on Home */
+.homeMatchCard .uiCard__title{
+  font-size: 13px;
+}
+
+/* RIGHT score container */
+.homeScore{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   min-width: 0;
 }
 
-.homeMatchCard .teamsBox{
-  width: 200px;
+/* optional empty score look */
+.homeScore--empty{
+  color: var(--ui-muted);
+  font-weight: 900;
+  padding: 6px 10px;
+  border: 1px dashed var(--ui-border);
+  border-radius: 12px;
 }
 
-.homeMatchCard .listCard__title{
+/* Make teams full width in bottom row */
+.teamsBox--wide{
+  width: 100%;
+}
+
+/* Home: slightly smaller sets so they don't dominate */
+.homeMatchCard .setCol{
+  min-width: 42px;
+  padding: 6px 7px;
+}
+
+.homeMatchCard .setVal{
   font-size: 13px;
+}
+
+/* Home: teams box should breathe less */
+.homeMatchCard .teamsBox{
+  padding: 10px 12px;
 }
 
 /* =========================================================

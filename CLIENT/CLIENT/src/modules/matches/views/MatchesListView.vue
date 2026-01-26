@@ -56,46 +56,51 @@
           </div>
         </template>
 
-        <!-- RIGHT -->
+        <!-- RIGHT: only score -->
         <template #right>
-          <div class="matchRight">
-          <div class="scoreBox">
-            <!-- Score (sets) -->
-            <div v-if="hasPadelScore(m)" class="scoreBox__score">
-              <div class="setsScore" aria-label="Sets score">
-                <div v-for="(s, idx) in normalizedSets(m)" :key="`${m.id}-set-${idx}`" class="setCol">
-                  <div class="setVal">{{ s.t1 }}</div>
-                  <div class="setDash">—</div>
-                  <div class="setVal">{{ s.t2 }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Teams -->
-            <div class="teamsBox" aria-label="Teams">
-              <div class="teamCol">
-                <div
-                  v-for="(uid, idx) in teamPlayers(m, 1)"
-                  :key="`t1-${m.id}-${idx}`"
-                  class="playerLine"
-                >
-                  {{ userDisplayNameById(uid, { meUid: myUid }) }}
-                </div>
-              </div>
-
-              <div class="teamsDividerV" aria-hidden="true"></div>
-
-              <div class="teamCol">
-                <div
-                  v-for="(uid, idx) in teamPlayers(m, 2)"
-                  :key="`t2-${m.id}-${idx}`"
-                  class="playerLine"
-                >
-                  {{ userDisplayNameById(uid, { meUid: myUid }) }}
-                </div>
+          <div v-if="hasPadelScore(m)" class="homeScore">
+            <div class="setsScore" aria-label="Sets score">
+              <div
+                v-for="(s, idx) in normalizedSets(m)"
+                :key="`${m.id}-set-${idx}`"
+                class="setCol"
+              >
+                <div class="setVal">{{ s.t1 }}</div>
+                <div class="setDash">—</div>
+                <div class="setVal">{{ s.t2 }}</div>
               </div>
             </div>
           </div>
+
+          <div v-else class="homeScore homeScore--empty">
+            —
+          </div>
+        </template>
+
+        <!-- BOTTOM: teams full width -->
+        <template #bottom>
+          <div class="teamsBox teamsBox--wide" aria-label="Teams">
+            <div class="teamCol">
+              <div
+                v-for="(uid, idx) in teamPlayers(m, 1)"
+                :key="`t1-${m.id}-${idx}`"
+                class="playerLine"
+              >
+                {{ userDisplayNameById(uid, { meUid: myUid }) }}
+              </div>
+            </div>
+
+            <div class="teamsDividerV" aria-hidden="true"></div>
+
+            <div class="teamCol">
+              <div
+                v-for="(uid, idx) in teamPlayers(m, 2)"
+                :key="`t2-${m.id}-${idx}`"
+                class="playerLine"
+              >
+                {{ userDisplayNameById(uid, { meUid: myUid }) }}
+              </div>
+            </div>
           </div>
         </template>
       </UiCard>
