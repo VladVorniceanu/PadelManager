@@ -36,6 +36,7 @@ const routes = [
     path: '/',
     name: 'home',
     component: HomeView,
+    meta: { requiresAuth: true },
   },
 
   // Locations (public)
@@ -51,6 +52,7 @@ const routes = [
         props: true,
       },
     ],
+    meta: { requiresAuth: true },
   },
 
   // Profile (auth)
@@ -102,7 +104,7 @@ const routes = [
     name: 'live-spectator',
     component: LiveSpectatorView,
     props: true,
-    // dacă vrei doar logați: meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
 
   // Admin (admin only)

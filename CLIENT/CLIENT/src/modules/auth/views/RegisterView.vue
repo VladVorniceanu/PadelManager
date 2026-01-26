@@ -123,7 +123,7 @@ async function onSubmit() {
   loading.value = true;
   try {
     await authStore.register(email.value, password.value, displayName.value);
-    await router.replace({ name: 'locations-list' });
+    await router.replace({ name: 'home' });
   } catch (e) {
     console.error(e);
     error.value = authStore.error || e?.message || 'Register failed.';
