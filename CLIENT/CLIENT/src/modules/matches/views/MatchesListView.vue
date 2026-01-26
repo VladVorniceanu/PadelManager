@@ -50,9 +50,9 @@
         </template>
 
         <template #left>
-          <div class="matchLeftMeta">
-            <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
-            <div>🎾 {{ courtLabel(m) }}</div>
+          <div class="timestamps">
+            <div>🗓 <span>{{ formatDateTime(matchDate(m)) }}</span></div>
+            <div>🎾 <span>{{ courtLabel(m) }}</span></div>
           </div>
         </template>
 

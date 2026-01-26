@@ -49,8 +49,10 @@
 
             <template #left>
               <div class="matchLeftMeta">
-                <div>🎾 {{ courtLabel(m) }}</div>
-                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
+                <div class="timestamps">
+                  <div>🗓 <span>{{ formatDateTime(matchDate(m)) }}</span></div>
+                  <div>🎾 <span>{{ courtLabel(m) }}</span></div>
+                </div>
               </div>
             </template>
 
@@ -140,9 +142,9 @@
             </template>
 
             <template #left>
-              <div class="matchLeftMeta">
-                <div>🗓 {{ formatDateTime(matchDate(m)) }}</div>
-                <div>🎾 {{ courtLabel(m) }}</div>
+              <div class="timestamps">
+                <div>🗓 <span>{{ formatDateTime(matchDate(m)) }}</span></div>
+                <div>🎾 <span>{{ courtLabel(m) }}</span></div>
               </div>
             </template>
 
@@ -174,7 +176,7 @@
                     </div>
                   </div>
 
-                  <div class="teamsDividerV" aria-hidden="true"></div>
+                    <div class="teamsDividerV" aria-hidden="true"></div>
 
                   <div class="teamCol">
                     <div
