@@ -44,3 +44,16 @@ firebase-debug.log
 SERVER/firebase-service-account.json
 *.service-account.json
 .vscode/settings.json
+
+# Xcode user data (machine-specific, not part of the project)
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+DerivedData/
+
+# Claude Code worktrees (internal tooling)
+.claude/worktrees/
+
+# Misc
+Archive.zip
