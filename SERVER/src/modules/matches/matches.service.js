@@ -6,12 +6,7 @@ import {
   validateCreateMatchPayload,
   validateUpdateMatchPayload,
 } from './matches.model.js';
-
-function httpError(status, message) {
-  const err = new Error(message || 'Error');
-  err.status = status || 500;
-  return err;
-}
+import { BadRequestError } from '../../core/errors.js';
 
 function isoToDateOrNull(iso) {
   if (!iso) return null;
@@ -109,7 +104,7 @@ export async function createMatch({ uid, payload }) {
   }
 
   const { ok, errors } = validateCreateMatchPayload(hydrated);
-  if (!ok) throw httpError(400, `Invalid match payload: ${JSON.stringify(errors)}`);
+  if (!ok) throw new BadRequestError( `Invalid match payload: ${JSON.stringify(errors)}`);
 
   const now = admin.firestore.Timestamp.now();
   const scheduledAt = isoToDateOrNull(hydrated.scheduledAt);
@@ -179,7 +174,7 @@ export async function updateMatch(id, patch) {
   const data = snap.data();
 
   const { ok, errors } = validateUpdateMatchPayload(patch);
-  if (!ok) throw httpError(400, Object.values(errors).join(', '));
+  if (!ok) throw new BadRequestError( Object.values(errors).join(', '));
 
   // apply patch carefully
   const next = { ...patch };
