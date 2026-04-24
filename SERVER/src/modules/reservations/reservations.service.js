@@ -1,18 +1,7 @@
 import { admin, db } from '../../config/firebase.js';
 import { RESERVATIONS_COLLECTION, mapReservation } from './reservations.model.js';
 import { MATCHES_COLLECTION } from '../matches/matches.model.js';
-
-/**
- * ---------------------------
- * Helpers (same paradigm)
- * ---------------------------
- */
-// Accept both call styles:
-export function httpError(status, message) {
-  const err = new Error(message || 'Error');
-  err.status = status || 500;
-  return err;
-}
+import { BadRequestError, ConflictError } from '../../core/errors.js';
 
 function normalizeDateParam(dateRaw) {
   const raw = Array.isArray(dateRaw) ? dateRaw[0] : dateRaw;
@@ -114,18 +103,18 @@ async function findOverlapsForCourt({ courtId, startAtDate, endAtDate }) {
  */
 export async function createReservationWithMatch({ uid, payload }) {
   const startDate = toDateOrNull(payload.startAt);
-  if (!startDate) throw httpError(400, 'Invalid startAt');
+  if (!startDate) throw new BadRequestError('Invalid startAt');
 
   // endAt can be provided, or auto-calculated from durationMinutes
   let endDate = toDateOrNull(payload.endAt);
   if (!endDate) {
     const dur = Number(payload.durationMinutes ?? payload.duration ?? 90);
-    if (!Number.isFinite(dur) || dur <= 0) throw httpError(400, 'Invalid durationMinutes');
+    if (!Number.isFinite(dur) || dur <= 0) throw new BadRequestError('Invalid durationMinutes');
     endDate = new Date(startDate.getTime() + dur * 60 * 1000);
   }
 
-  if (!endDate) throw httpError(400, 'Invalid endAt');
-  if (endDate.getTime() <= startDate.getTime()) throw httpError(400, 'endAt must be after startAt');
+  if (!endDate) throw new BadRequestError('Invalid endAt');
+  if (endDate.getTime() <= startDate.getTime()) throw new BadRequestError('endAt must be after startAt');
 
   const startTs = admin.firestore.Timestamp.fromDate(startDate);
   const endTs = admin.firestore.Timestamp.fromDate(endDate);
@@ -136,7 +125,7 @@ export async function createReservationWithMatch({ uid, payload }) {
     startAtDate: startDate,
     endAtDate: endDate,
   });
-  if (overlaps.length) throw httpError(409, 'Selected time slot is no longer available.');
+  if (overlaps.length) throw new ConflictError('Selected time slot is no longer available.');
 
   const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -259,14 +248,14 @@ export async function getCourtAvailability({
 }) {
 
   const dateStr = normalizeDateParam(date);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) throw httpError(400, 'Invalid date');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) throw new BadRequestError('Invalid date');
 
   const dayStartUtc = dayStartUtcFromDateStr(dateStr);
-  if (!dayStartUtc) throw httpError(400, 'Invalid date');
+  if (!dayStartUtc) throw new BadRequestError('Invalid date');
 
   const dur = toInt(durationMinutes);
   if (!Number.isFinite(dur) || dur <= 0) {
-    throw httpError(400, 'Invalid durationMinutes');
+    throw new BadRequestError('Invalid durationMinutes');
   }
 
   // Resolve location hours (defaults)
@@ -279,8 +268,8 @@ export async function getCourtAvailability({
   // If close is earlier than open, treat it as "next day" (e.g. open 20, close 2 => close 26)
   if (Number.isFinite(openH) && Number.isFinite(closeH) && closeH <= openH) closeH += 24;
 
-  if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw httpError(400, 'Invalid openHour');
-  if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw httpError(400, 'Invalid closeHour');
+  if (!Number.isFinite(openH) || openH < 0 || openH > 24) throw new BadRequestError('Invalid openHour');
+  if (!Number.isFinite(closeH) || closeH < 0 || closeH > 48) throw new BadRequestError('Invalid closeHour');
 
   // Query a bit wider than one day to safely catch overlaps when close hour is past midnight.
   const rangeStartUtc = new Date(dayStartUtc.getTime() - 24 * 60 * 60 * 1000);

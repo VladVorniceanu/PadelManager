@@ -1,6 +1,7 @@
 import { db, admin } from '../../config/firebase.js';
 import { LOCATIONS_COLLECTION, mapLocation } from './locations.model.js';
 import { randomUUID } from 'crypto';
+import { NotFoundError } from '../../core/errors.js';
 
 export async function listLocations() {
   const snap = await db.collection(LOCATIONS_COLLECTION).get();
@@ -55,7 +56,7 @@ export async function addCourt(locationId, courtData) {
   const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
   const snap = await ref.get();
 
-  if (!snap.exists) throw new Error('Location not found');
+  if (!snap.exists) throw new NotFoundError('Location not found');
 
   const location = snap.data();
   const courts = location.courts || [];
@@ -78,7 +79,7 @@ export async function updateCourt(locationId, courtId, data) {
   const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
   const snap = await ref.get();
 
-  if (!snap.exists) throw new Error('Location not found');
+  if (!snap.exists) throw new NotFoundError('Location not found');
 
   const courts = (snap.data().courts || []).map((court) =>
     court.id === courtId ? { ...court, ...data } : court
@@ -96,7 +97,7 @@ export async function deleteCourt(locationId, courtId) {
   const ref = db.collection(LOCATIONS_COLLECTION).doc(locationId);
   const snap = await ref.get();
 
-  if (!snap.exists) throw new Error('Location not found');
+  if (!snap.exists) throw new NotFoundError('Location not found');
 
   const courts = (snap.data().courts || []).filter(
     (court) => court.id !== courtId

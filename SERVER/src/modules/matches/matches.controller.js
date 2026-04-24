@@ -1,5 +1,7 @@
 import * as service from './matches.service.js';
 import { validateCreateMatchPayload, validateUpdateMatchPayload, extractParticipants } from './matches.model.js';
+import { asyncHandler } from '../../core/http.js';
+import { NotFoundError, ForbiddenError, ValidationError } from '../../core/errors.js';
 
 function isAdmin(req) {
   return req.user?.role === 'admin';
@@ -15,63 +17,61 @@ function canMutateMatch(req, match) {
   return parts.includes(uid);
 }
 
-export async function listMatchesHandler(req, res) {
+export const listMatchesHandler = asyncHandler(async (req, res) => {
   const uid = req.user.uid;
   const items = await service.listMatchesForUser(uid);
-
   res.json(items);
-}
+});
 
-export async function getMatchHandler(req, res) {
+export const getMatchHandler = asyncHandler(async (req, res) => {
   const match = await service.getMatchById(req.params.id);
-  if (!match) return res.status(404).json({ message: 'Match not found' });
+  if (!match) throw new NotFoundError('Match not found');
 
-  // non-admin can see only if participant/creator
   if (!isAdmin(req)) {
     const uid = req.user.uid;
     const parts = extractParticipants(match);
     if (match.createdBy !== uid && !parts.includes(uid)) {
-      return res.status(403).json({ message: 'Forbidden' });
+      throw new ForbiddenError();
     }
   }
 
   res.json(match);
-}
+});
 
-export async function countMatchesHandler(req, res) {
+export const countMatchesHandler = asyncHandler(async (req, res) => {
   const status = req.params.status;
   const count = status
     ? await service.countMatchesByStatus(status)
     : await service.countAllMatches();
 
   res.json({ count });
-}
+});
 
-export async function createMatchHandler(req, res) {
+export const createMatchHandler = asyncHandler(async (req, res) => {
   const check = validateCreateMatchPayload(req.body);
-  if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
+  if (!check.ok) throw new ValidationError(check.errors);
 
   const created = await service.createMatch({ uid: req.user.uid, payload: req.body });
   res.status(201).json(created);
-}
+});
 
-export async function updateMatchHandler(req, res) {
+export const updateMatchHandler = asyncHandler(async (req, res) => {
   const check = validateUpdateMatchPayload(req.body);
-  if (!check.ok) return res.status(400).json({ message: 'Validation error', errors: check.errors });
+  if (!check.ok) throw new ValidationError(check.errors);
 
   const match = await service.getMatchById(req.params.id);
-  if (!match) return res.status(404).json({ message: 'Match not found' });
-  if (!canMutateMatch(req, match)) return res.status(403).json({ message: 'Forbidden' });
+  if (!match) throw new NotFoundError('Match not found');
+  if (!canMutateMatch(req, match)) throw new ForbiddenError();
 
   const updated = await service.updateMatch(req.params.id, req.body);
   res.json(updated);
-}
+});
 
-export async function deleteMatchHandler(req, res) {
+export const deleteMatchHandler = asyncHandler(async (req, res) => {
   const match = await service.getMatchById(req.params.id);
-  if (!match) return res.status(404).json({ message: 'Match not found' });
-  if (!canMutateMatch(req, match)) return res.status(403).json({ message: 'Forbidden' });
+  if (!match) throw new NotFoundError('Match not found');
+  if (!canMutateMatch(req, match)) throw new ForbiddenError();
 
   await service.deleteMatch(req.params.id);
   res.status(204).end();
-}
+});
