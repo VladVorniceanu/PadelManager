@@ -6,12 +6,22 @@
 //
 
 import SwiftUI
+import FirebaseCore
 
 @main
 struct PadelManagerApp: App {
+    private let authService: AuthService
+
+    init() {
+        FirebaseApp.configure()
+        authService = AuthService()
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(authService)
+                .environment(APIClient(authService: authService))
         }
     }
 }

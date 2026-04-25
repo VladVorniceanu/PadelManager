@@ -57,3 +57,6 @@ DerivedData/
 
 # Misc
 Archive.zip
+
+# Claude working memory (private, not for version control)
+CLAUDE_PROGRESS.md
