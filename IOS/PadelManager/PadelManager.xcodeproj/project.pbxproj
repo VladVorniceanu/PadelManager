@@ -49,10 +49,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		24E3AF7CA35C94D90324DE9C /* Release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		34AEE3122F9BBC1E0012922B /* PadelManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PadelManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34AEE31F2F9BBC200012922B /* PadelManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadelManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadelManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34AEE3542F9BC5590012922B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		86D2F91C91868BFD948EC086 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Secrets.xcconfig.example; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		893160AC2B707765B505614E /* Shared.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Shared.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -76,11 +80,15 @@
 		};
 		34AEE3222F9BBC200012922B /* PadelManagerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PadelManagerTests;
 			sourceTree = "<group>";
 		};
 		34AEE32C2F9BBC200012922B /* PadelManagerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PadelManagerUITests;
 			sourceTree = "<group>";
 		};
@@ -139,6 +147,7 @@
 				34AEE32C2F9BBC200012922B /* PadelManagerUITests */,
 				34AEE3132F9BBC1E0012922B /* Products */,
 				34AEE3542F9BC5590012922B /* GoogleService-Info.plist */,
+				58678C06B55720AA0185B7BB /* Config */,
 			);
 			sourceTree = "<group>";
 		};
@@ -150,6 +159,18 @@
 				34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		58678C06B55720AA0185B7BB /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */,
+				24E3AF7CA35C94D90324DE9C /* Release.xcconfig */,
+				893160AC2B707765B505614E /* Shared.xcconfig */,
+				86D2F91C91868BFD948EC086 /* Secrets.xcconfig.example */,
+			);
+			name = Config;
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -214,8 +235,6 @@
 				34AEE3222F9BBC200012922B /* PadelManagerTests */,
 			);
 			name = PadelManagerTests;
-			packageProductDependencies = (
-			);
 			productName = PadelManagerTests;
 			productReference = 34AEE31F2F9BBC200012922B /* PadelManagerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -237,8 +256,6 @@
 				34AEE32C2F9BBC200012922B /* PadelManagerUITests */,
 			);
 			name = PadelManagerUITests;
-			packageProductDependencies = (
-			);
 			productName = PadelManagerUITests;
 			productReference = 34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -357,6 +374,7 @@
 /* Begin XCBuildConfiguration section */
 		34AEE3312F9BBC200012922B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -421,6 +439,7 @@
 		};
 		34AEE3322F9BBC200012922B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24E3AF7CA35C94D90324DE9C /* Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
