@@ -8,9 +8,11 @@
 import Foundation
 
 enum AppConfig {
-    #if DEBUG
-    static let apiBaseURL = URL(string: "http://localhost:4000/api")!
-    #else
-    static let apiBaseURL = URL(string: "https://your-production-domain.com/api")!
-    #endif
+    static let apiBaseURL: URL = {
+        guard let s = Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String,
+              let url = URL(string: s) else {
+            fatalError("API_BASE_URL missing from Info.plist — check Config/Secrets.xcconfig")
+        }
+        return url
+    }()
 }

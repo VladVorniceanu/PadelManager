@@ -13,16 +13,11 @@ struct RegisterView: View {
     @State private var vm: AuthViewModel?
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            vm = AuthViewModel(authService: authService)
-        }
-        .navigationTitle("Cont nou")
-        .navigationBarTitleDisplayMode(.inline)
+        let resolvedVM = vm ?? AuthViewModel(authService: authService)
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
+            .navigationTitle("Cont nou")
+            .navigationBarTitleDisplayMode(.inline)
     }
 
     @ViewBuilder

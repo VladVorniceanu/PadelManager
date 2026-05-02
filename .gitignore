@@ -61,5 +61,5 @@ Archive.zip
 # Claude working memory (private, not for version control)
 CLAUDE_PROGRESS.md
 
-# iOS Info.plist contains secret keys (AdMob App ID etc.) — never commit
-IOS/PadelManager/PadelManager/Info.plist
+# iOS secrets — only on disk, never committed
+IOS/PadelManager/Config/Secrets.xcconfig

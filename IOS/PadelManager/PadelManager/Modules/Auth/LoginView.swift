@@ -13,14 +13,9 @@ struct LoginView: View {
     @State private var showRegister = false
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            vm = AuthViewModel(authService: authService)
-        }
+        let resolvedVM = vm ?? AuthViewModel(authService: authService)
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
     }
 
     @ViewBuilder
