@@ -13,19 +13,12 @@ struct HomeView: View {
     @State private var vm: HomeViewModel?
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            guard let uid = authService.currentUser?.uid else { return }
-            let viewModel = HomeViewModel(api: api, currentUserUID: uid)
-            vm = viewModel
-            await viewModel.load()
-        }
-        .navigationTitle("Acasă")
-        .navigationBarTitleDisplayMode(.large)
+        let resolvedVM = vm ?? HomeViewModel(api: api, currentUserUID: authService.currentUser?.uid ?? "")
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
+            .task { await resolvedVM.load() }
+            .navigationTitle("Acasă")
+            .navigationBarTitleDisplayMode(.large)
     }
 
     @ViewBuilder
@@ -33,6 +26,25 @@ struct HomeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppSpacing.s5) {
                 greetingSection
+
+                if let error = vm.errorMessage {
+                    AppCard(variant: .error) {
+                        HStack(spacing: AppSpacing.s3) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(AppColor.danger)
+                            VStack(alignment: .leading, spacing: AppSpacing.s1) {
+                                Text("Eroare la încărcare")
+                                    .font(AppFont.cardTitle)
+                                    .foregroundStyle(AppColor.danger)
+                                Text(error)
+                                    .font(AppFont.label)
+                                    .foregroundStyle(AppColor.muted)
+                            }
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal, AppSpacing.screenH)
+                }
 
                 BannerAdView()
                     .padding(.horizontal, AppSpacing.screenH)
@@ -137,7 +149,7 @@ struct MatchRowCard: View {
                     Text(formattedDate)
                         .font(AppFont.cardTitle)
                         .foregroundStyle(AppColor.text)
-                    Text("Echipa 1 vs Echipa 2")
+                    Text(teamSummary)
                         .font(AppFont.label)
                         .foregroundStyle(AppColor.muted)
                 }
@@ -145,6 +157,14 @@ struct MatchRowCard: View {
                 AppPill.matchStatus(match.status.rawValue)
             }
         }
+    }
+
+    private var teamSummary: String {
+        let t1 = match.teams.team1.compactMap { $0 }
+        let t2 = match.teams.team2.compactMap { $0 }
+        let t1Label = t1.isEmpty ? "?" : t1.map { String($0.prefix(8)) }.joined(separator: ", ")
+        let t2Label = t2.isEmpty ? "?" : t2.map { String($0.prefix(8)) }.joined(separator: ", ")
+        return "\(t1Label) vs \(t2Label)"
     }
 
     private var formattedDate: String {

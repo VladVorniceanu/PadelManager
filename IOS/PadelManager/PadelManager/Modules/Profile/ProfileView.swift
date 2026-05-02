@@ -13,19 +13,12 @@ struct ProfileView: View {
     @State private var vm: ProfileViewModel?
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            guard let uid = authService.currentUser?.uid else { return }
-            let viewModel = ProfileViewModel(api: api, uid: uid)
-            vm = viewModel
-            await viewModel.load()
-        }
-        .navigationTitle("Profil")
-        .navigationBarTitleDisplayMode(.large)
+        let resolvedVM = vm ?? ProfileViewModel(api: api, uid: authService.currentUser?.uid ?? "")
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
+            .task { await resolvedVM.load() }
+            .navigationTitle("Profil")
+            .navigationBarTitleDisplayMode(.large)
     }
 
     @ViewBuilder
@@ -33,6 +26,19 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: AppSpacing.s4) {
                 avatarSection(user: vm.user ?? authService.currentUser)
+
+                if let error = vm.errorMessage {
+                    AppCard(variant: .error) {
+                        HStack(spacing: AppSpacing.s3) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(AppColor.danger)
+                            Text(error)
+                                .font(AppFont.label)
+                                .foregroundStyle(AppColor.muted)
+                            Spacer()
+                        }
+                    }
+                }
 
                 if vm.isLoading {
                     statsPlaceholder

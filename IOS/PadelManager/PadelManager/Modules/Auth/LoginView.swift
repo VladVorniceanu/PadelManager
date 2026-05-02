@@ -29,13 +29,15 @@ struct LoginView: View {
                         label: "Email",
                         text: Binding(get: { vm.email }, set: { vm.email = $0 }),
                         keyboardType: .emailAddress,
-                        textContentType: .emailAddress
+                        textContentType: .emailAddress,
+                        errorMessage: vm.emailError
                     )
                     AppTextField(
                         label: "Parolă",
                         text: Binding(get: { vm.password }, set: { vm.password = $0 }),
                         isSecure: true,
-                        textContentType: .password
+                        textContentType: .password,
+                        errorMessage: vm.passwordError
                     )
 
                     if let error = vm.errorMessage {

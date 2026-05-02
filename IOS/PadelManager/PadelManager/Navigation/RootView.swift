@@ -24,30 +24,52 @@ struct RootView: View {
 struct MainTabView: View {
     @Environment(AuthService.self) private var authService
     @Environment(APIClient.self) private var api
+    @State private var showBooking = false
 
     var body: some View {
-        TabView {
-            Tab("Acasă", systemImage: "house.fill") {
-                NavigationStack {
-                    HomeView()
+        ZStack(alignment: .bottomTrailing) {
+            TabView {
+                Tab("Acasă", systemImage: "house.fill") {
+                    NavigationStack {
+                        HomeView()
+                    }
+                }
+                Tab("Meciuri", systemImage: "sportscourt.fill") {
+                    NavigationStack {
+                        MatchesListView()
+                    }
+                }
+                Tab("Profil", systemImage: "person.fill") {
+                    NavigationStack {
+                        ProfileView()
+                    }
                 }
             }
-            Tab("Meciuri", systemImage: "sportscourt.fill") {
-                NavigationStack {
-                    MatchesListView()
-                }
+            .tint(AppColor.primary)
+
+            Button {
+                showBooking = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(AppColor.onPrimary)
+                    .frame(width: 56, height: 56)
+                    .background(AppColor.primary)
+                    .clipShape(Circle())
+                    .shadowSoft()
             }
-            Tab("Rezervă", systemImage: "plus.circle.fill") {
+            .padding(.trailing, AppSpacing.screenH)
+            .padding(.bottom, 90)
+            .sheet(isPresented: $showBooking) {
                 NavigationStack {
                     BookMatchView()
-                }
-            }
-            Tab("Profil", systemImage: "person.fill") {
-                NavigationStack {
-                    ProfileView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Anulează") { showBooking = false }
+                            }
+                        }
                 }
             }
         }
-        .tint(AppColor.primary)
     }
 }

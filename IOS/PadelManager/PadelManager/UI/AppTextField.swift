@@ -28,6 +28,8 @@ struct AppTextField: View {
                 } else {
                     TextField(label, text: $text)
                         .keyboardType(keyboardType)
+                        .textInputAutocapitalization(keyboardType == .emailAddress ? .never : .sentences)
+                        .autocorrectionDisabled(keyboardType == .emailAddress)
                 }
             }
             .font(AppFont.body)

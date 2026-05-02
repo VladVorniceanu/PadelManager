@@ -12,7 +12,7 @@ import Foundation
 final class MatchesViewModel {
     var allMatches: [Match] = []
     var selectedStatus: MatchStatus? = nil
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
 
     private let api: APIClient

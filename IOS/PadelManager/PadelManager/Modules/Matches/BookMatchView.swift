@@ -29,7 +29,7 @@ private final class BookMatchViewModel {
     var selectedDate: Date = .now
     var availableSlots: [AvailabilitySlot] = []
     var selectedSlot: AvailabilitySlot?
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
     var isBooked: Bool = false
 
@@ -95,19 +95,12 @@ struct BookMatchView: View {
     @State private var vm: BookMatchViewModel?
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            guard let uid = authService.currentUser?.uid else { return }
-            let viewModel = BookMatchViewModel(api: api, currentUserUID: uid)
-            vm = viewModel
-            await viewModel.loadLocations()
-        }
-        .navigationTitle("Rezervă meci")
-        .navigationBarTitleDisplayMode(.inline)
+        let resolvedVM = vm ?? BookMatchViewModel(api: api, currentUserUID: authService.currentUser?.uid ?? "")
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
+            .task { await resolvedVM.loadLocations() }
+            .navigationTitle("Rezervă meci")
+            .navigationBarTitleDisplayMode(.inline)
     }
 
     @ViewBuilder
@@ -225,44 +218,44 @@ struct BookMatchView: View {
     @ViewBuilder
     private func courtStep(vm: BookMatchViewModel) -> some View {
         if let location = vm.selectedLocation {
-        VStack(alignment: .leading, spacing: AppSpacing.s3) {
-            Text("Selectează terenul")
-                .font(AppFont.headline)
-                .foregroundStyle(AppColor.text)
-                .padding(.horizontal, AppSpacing.screenH)
+            VStack(alignment: .leading, spacing: AppSpacing.s3) {
+                Text("Selectează terenul")
+                    .font(AppFont.headline)
+                    .foregroundStyle(AppColor.text)
+                    .padding(.horizontal, AppSpacing.screenH)
 
-            ForEach(location.courts) { court in
-                Button {
-                    vm.selectedCourt = court
-                    vm.step = .slot
-                    Task { await vm.loadSlots() }
-                } label: {
-                    AppCard {
-                        HStack {
-                            VStack(alignment: .leading, spacing: AppSpacing.s1) {
-                                Text(court.name)
-                                    .font(AppFont.cardTitle)
-                                    .foregroundStyle(AppColor.text)
-                                Text(court.isIndoor ? "Interior" : "Exterior")
-                                    .font(AppFont.label)
+                ForEach(location.courts) { court in
+                    Button {
+                        vm.selectedCourt = court
+                        vm.step = .slot
+                        Task { await vm.loadSlots() }
+                    } label: {
+                        AppCard {
+                            HStack {
+                                VStack(alignment: .leading, spacing: AppSpacing.s1) {
+                                    Text(court.name)
+                                        .font(AppFont.cardTitle)
+                                        .foregroundStyle(AppColor.text)
+                                    Text(court.isIndoor ? "Interior" : "Exterior")
+                                        .font(AppFont.label)
+                                        .foregroundStyle(AppColor.muted)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
                                     .foregroundStyle(AppColor.muted)
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(AppColor.muted)
                         }
                     }
+                    .buttonStyle(AppCardButtonStyle())
+                    .padding(.horizontal, AppSpacing.screenH)
                 }
-                .buttonStyle(AppCardButtonStyle())
+
+                AppButton(title: "Înapoi", variant: .subtle, size: .medium, isFullWidth: true) {
+                    vm.step = .location
+                }
                 .padding(.horizontal, AppSpacing.screenH)
             }
-
-            AppButton(title: "Înapoi", variant: .subtle, size: .medium, isFullWidth: true) {
-                vm.step = .location
-            }
-            .padding(.horizontal, AppSpacing.screenH)
         }
-        } // end if let location
     }
 
     @ViewBuilder
@@ -326,7 +319,7 @@ struct BookMatchView: View {
             }
 
             HStack(spacing: AppSpacing.s3) {
-                AppButton(title:"Înapoi", variant: .subtle, size: .medium) {
+                AppButton(title: "Înapoi", variant: .subtle, size: .medium) {
                     vm.step = .court
                 }
                 AppButton(
@@ -355,7 +348,7 @@ struct BookMatchView: View {
             .padding(.horizontal, AppSpacing.screenH)
 
             HStack(spacing: AppSpacing.s3) {
-                AppButton(title:"Înapoi", variant: .subtle, size: .medium) {
+                AppButton(title: "Înapoi", variant: .subtle, size: .medium) {
                     vm.step = .slot
                 }
                 AppButton(
@@ -400,7 +393,7 @@ struct BookMatchView: View {
                 .font(AppFont.body)
                 .foregroundStyle(AppColor.muted)
                 .multilineTextAlignment(.center)
-            AppButton(title:"Închide", variant: .primary, size: .large, isFullWidth: true) {
+            AppButton(title: "Închide", variant: .primary, size: .large, isFullWidth: true) {
                 dismiss()
             }
             .padding(.horizontal, AppSpacing.screenH)

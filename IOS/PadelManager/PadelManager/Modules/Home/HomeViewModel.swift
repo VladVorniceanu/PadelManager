@@ -12,7 +12,7 @@ import Foundation
 final class HomeViewModel {
     var upcomingMatches: [Match] = []
     var recentMatches: [Match] = []
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
 
     private let api: APIClient

@@ -7,6 +7,12 @@
 
 import Foundation
 import Observation
+import os
+
+private let networkLog = Logger(
+    subsystem: Bundle.main.bundleIdentifier ?? "PadelManager",
+    category: "Network"
+)
 
 @Observable
 class APIClient {
@@ -37,17 +43,54 @@ class APIClient {
             req.httpBody = try JSONEncoder().encode(body)
         }
 
+        Self.logRequest(req)
+        let start = CFAbsoluteTimeGetCurrent()
+
         let (data, response) = try await session.data(for: req)
+        let elapsed = (CFAbsoluteTimeGetCurrent() - start) * 1000
 
         guard let http = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
+
+        Self.logResponse(http, data: data, elapsed: elapsed)
+
         guard (200..<300).contains(http.statusCode) else {
             let serverError = try? JSONDecoder().decode(ServerError.self, from: data)
             throw APIError.serverError(statusCode: http.statusCode, message: serverError?.message ?? "Eroare necunoscută")
         }
 
         return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    // MARK: - Logging
+
+    private static func logRequest(_ request: URLRequest) {
+        let method = request.httpMethod ?? "?"
+        let url = request.url?.absoluteString ?? "?"
+        var parts = ["--> \(method) \(url)"]
+        if let headers = request.allHTTPHeaderFields?.filter({ $0.key != "Authorization" }), !headers.isEmpty {
+            parts.append("    Headers: \(headers)")
+        }
+        if let body = request.httpBody, let str = String(data: body, encoding: .utf8) {
+            parts.append("    Body: \(str)")
+        }
+        networkLog.info("\(parts.joined(separator: "\n"))")
+    }
+
+    private static func logResponse(_ response: HTTPURLResponse, data: Data, elapsed: Double) {
+        let url = response.url?.absoluteString ?? "?"
+        let status = response.statusCode
+        var parts = ["<-- \(status) \(url) (\(String(format: "%.0f", elapsed))ms)"]
+        if let str = String(data: data, encoding: .utf8) {
+            let body = str.count > 2000 ? String(str.prefix(2000)) + "...[truncated]" : str
+            parts.append("    Body: \(body)")
+        }
+        if (200..<300).contains(status) {
+            networkLog.info("\(parts.joined(separator: "\n"))")
+        } else {
+            networkLog.error("\(parts.joined(separator: "\n"))")
+        }
     }
 
     // MARK: - Users

@@ -27,19 +27,22 @@ struct RegisterView: View {
                 AppTextField(
                     label: "Nume afișat",
                     text: Binding(get: { vm.displayName }, set: { vm.displayName = $0 }),
-                    textContentType: .name
+                    textContentType: .name,
+                    errorMessage: vm.displayNameError
                 )
                 AppTextField(
                     label: "Email",
                     text: Binding(get: { vm.email }, set: { vm.email = $0 }),
                     keyboardType: .emailAddress,
-                    textContentType: .emailAddress
+                    textContentType: .emailAddress,
+                    errorMessage: vm.emailError
                 )
                 AppTextField(
                     label: "Parolă",
                     text: Binding(get: { vm.password }, set: { vm.password = $0 }),
                     isSecure: true,
-                    textContentType: .newPassword
+                    textContentType: .newPassword,
+                    errorMessage: vm.passwordError
                 )
 
                 if let error = vm.errorMessage {

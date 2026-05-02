@@ -12,7 +12,7 @@ import Foundation
 final class ProfileViewModel {
     var user: AppUser?
     var stats: PlayerStats?
-    var isLoading: Bool = false
+    var isLoading: Bool = true
     var errorMessage: String?
 
     private let api: APIClient

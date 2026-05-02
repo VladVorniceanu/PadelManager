@@ -14,25 +14,12 @@ struct MatchesListView: View {
     private let filterOptions: [MatchStatus?] = [nil, .scheduled, .ongoing, .completed, .cancelled]
 
     var body: some View {
-        Group {
-            if let vm {
-                content(vm: vm)
-            }
-        }
-        .task {
-            let viewModel = MatchesViewModel(api: api)
-            vm = viewModel
-            await viewModel.load()
-        }
-        .navigationTitle("Meciuri")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                NavigationLink(value: AppDestination.matchBook) {
-                    Image(systemName: "plus")
-                }
-            }
-        }
+        let resolvedVM = vm ?? MatchesViewModel(api: api)
+        content(vm: resolvedVM)
+            .onAppear { if vm == nil { vm = resolvedVM } }
+            .task { await resolvedVM.load() }
+            .navigationTitle("Meciuri")
+            .navigationBarTitleDisplayMode(.large)
     }
 
     @ViewBuilder
