@@ -12,6 +12,7 @@ struct ProfileView: View {
     @Environment(APIClient.self) private var api
     @Environment(DataCache.self) private var cache
     @State private var vm: ProfileViewModel?
+    @State private var logoutError: String?
 
     var body: some View {
         let resolvedVM = vm ?? ProfileViewModel(
@@ -24,6 +25,26 @@ struct ProfileView: View {
             .task { await resolvedVM.load() }
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.large)
+            .alert(
+                "Nu te-am putut deconecta",
+                isPresented: Binding(
+                    get: { logoutError != nil },
+                    set: { if !$0 { logoutError = nil } }
+                ),
+                presenting: logoutError
+            ) { _ in
+                Button("OK", role: .cancel) {}
+            } message: { error in
+                Text(error)
+            }
+    }
+
+    private func performLogout() {
+        do {
+            try authService.logout()
+        } catch {
+            logoutError = error.localizedDescription
+        }
     }
 
     @ViewBuilder
@@ -99,7 +120,7 @@ struct ProfileView: View {
                 statTile(value: "\(stats.wins)", label: "Victorii")
                 statTile(value: "\(stats.losses)", label: "Înfrângeri")
                 statTile(
-                    value: String(format: "%.0f%%", stats.winRate * 100),
+                    value: stats.winRate.formatted(.percent.precision(.fractionLength(0))),
                     label: "Rata victorie"
                 )
             }
@@ -201,10 +222,9 @@ struct ProfileView: View {
             systemImage: "rectangle.portrait.and.arrow.right",
             variant: .danger,
             size: .medium,
-            isFullWidth: true
-        ) {
-            try? authService.logout()
-        }
+            isFullWidth: true,
+            action: performLogout
+        )
     }
 
     private func initials(for name: String?) -> String {

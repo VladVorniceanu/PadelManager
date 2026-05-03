@@ -37,11 +37,13 @@ final class ProfileViewModel {
             stats = try? await statsResult
 
             // Resolve teammate/opponent UIDs and the most-played location to human names.
+            // Await so structured concurrency doesn't cancel before they finish.
             var uidsToFetch: [String] = []
             if let key = stats?.mostFrequentTeammate?.key { uidsToFetch.append(key) }
             if let key = stats?.mostFrequentOpponent?.key { uidsToFetch.append(key) }
-            async let _: Void = cache.prefetchUsers(uids: uidsToFetch)
-            async let _: Void = cache.loadLocations()
+            async let users: Void = cache.prefetchUsers(uids: uidsToFetch)
+            async let locations: Void = cache.loadLocations()
+            _ = await (users, locations)
         } catch {
             errorMessage = error.localizedDescription
         }

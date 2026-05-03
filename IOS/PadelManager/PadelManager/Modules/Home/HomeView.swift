@@ -76,6 +76,7 @@ struct HomeView: View {
         }
         .background(AppColor.background)
         .refreshable { await vm.load() }
+        .appNavigationDestinations()
     }
 
     private var greetingSection: some View {

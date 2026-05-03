@@ -278,6 +278,7 @@ struct BookMatchView: View {
 
     @ViewBuilder
     private func slotStep(vm: BookMatchViewModel) -> some View {
+        @Bindable var bindable = vm
         VStack(alignment: .leading, spacing: AppSpacing.s4) {
             VStack(alignment: .leading, spacing: AppSpacing.s3) {
                 Text("Selectează data")
@@ -286,15 +287,15 @@ struct BookMatchView: View {
 
                 DatePicker(
                     "Data",
-                    selection: Binding(get: { vm.selectedDate }, set: {
-                        vm.selectedDate = $0
-                        Task { await vm.loadSlots() }
-                    }),
+                    selection: $bindable.selectedDate,
                     in: Date()...,
                     displayedComponents: .date
                 )
                 .datePickerStyle(.graphical)
                 .tint(AppColor.primary)
+                .onChange(of: vm.selectedDate) {
+                    Task { await vm.loadSlots() }
+                }
             }
             .padding(.horizontal, AppSpacing.screenH)
 

@@ -37,9 +37,11 @@ final class MatchesViewModel {
                 .sorted { ($0.scheduledDate ?? .distantPast) > ($1.scheduledDate ?? .distantPast) }
 
             // Warm the cache so list rows can render display names + venue names.
+            // Await the parallel prefetches so they aren't cancelled on scope exit.
             let uids = allMatches.flatMap { $0.participantUIDs }
-            async let _: Void = cache.prefetchUsers(uids: uids)
-            async let _: Void = cache.loadLocations()
+            async let users: Void = cache.prefetchUsers(uids: uids)
+            async let locations: Void = cache.loadLocations()
+            _ = await (users, locations)
         } catch {
             errorMessage = error.localizedDescription
         }

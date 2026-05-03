@@ -53,16 +53,7 @@ struct MatchesListView: View {
         }
         .background(AppColor.background)
         .refreshable { await vm.load() }
-        .navigationDestination(for: AppDestination.self) { destination in
-            switch destination {
-            case .matchDetail(let match):
-                MatchDetailView(match: match)
-            case .matchBook:
-                BookMatchView()
-            default:
-                EmptyView()
-            }
-        }
+        .appNavigationDestinations()
     }
 
     private func filterBar(vm: MatchesViewModel) -> some View {
