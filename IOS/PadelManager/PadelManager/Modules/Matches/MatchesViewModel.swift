@@ -16,9 +16,11 @@ final class MatchesViewModel {
     var errorMessage: String?
 
     private let api: APIClient
+    private let cache: DataCache
 
-    init(api: APIClient) {
+    init(api: APIClient, cache: DataCache) {
         self.api = api
+        self.cache = cache
     }
 
     var filteredMatches: [Match] {
@@ -33,6 +35,11 @@ final class MatchesViewModel {
         do {
             allMatches = try await api.getMatches()
                 .sorted { ($0.scheduledDate ?? .distantPast) > ($1.scheduledDate ?? .distantPast) }
+
+            // Warm the cache so list rows can render display names + venue names.
+            let uids = allMatches.flatMap { $0.participantUIDs }
+            async let _: Void = cache.prefetchUsers(uids: uids)
+            async let _: Void = cache.loadLocations()
         } catch {
             errorMessage = error.localizedDescription
         }

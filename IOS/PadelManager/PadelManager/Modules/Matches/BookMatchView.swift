@@ -34,20 +34,24 @@ private final class BookMatchViewModel {
     var isBooked: Bool = false
 
     private let api: APIClient
+    private let cache: DataCache
     private let currentUserUID: String
 
-    init(api: APIClient, currentUserUID: String) {
+    init(api: APIClient, cache: DataCache, currentUserUID: String) {
         self.api = api
+        self.cache = cache
         self.currentUserUID = currentUserUID
     }
 
     func loadLocations() async {
         isLoading = true
         defer { isLoading = false }
-        do {
-            locations = try await api.getLocations()
-        } catch {
-            errorMessage = error.localizedDescription
+        // Use the shared cache as the source of truth so a load here also
+        // warms the home / matches lists.
+        await cache.loadLocations()
+        locations = cache.locationsById.values.sorted { $0.name < $1.name }
+        if locations.isEmpty {
+            errorMessage = "Nu s-au putut încărca locațiile."
         }
     }
 
@@ -100,11 +104,16 @@ private final class BookMatchViewModel {
 struct BookMatchView: View {
     @Environment(AuthService.self) private var authService
     @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
     @Environment(\.dismiss) private var dismiss
     @State private var vm: BookMatchViewModel?
 
     var body: some View {
-        let resolvedVM = vm ?? BookMatchViewModel(api: api, currentUserUID: authService.currentUser?.uid ?? "")
+        let resolvedVM = vm ?? BookMatchViewModel(
+            api: api,
+            cache: cache,
+            currentUserUID: authService.currentUser?.uid ?? ""
+        )
         content(vm: resolvedVM)
             .onAppear { if vm == nil { vm = resolvedVM } }
             .task { await resolvedVM.loadLocations() }
