@@ -93,14 +93,29 @@ class APIClient {
         }
     }
 
+    // MARK: - Auth
+
+    /// Bootstrap or refresh the current user's Firestore profile from the ID token.
+    /// Mirrors `POST /auth/me` used by the web client.
+    func bootstrapMe() async throws -> AppUser {
+        try await request("auth/me", method: "POST")
+    }
+
     // MARK: - Users
 
     func getProfile(uid: String) async throws -> AppUser {
-        try await request("users/\(uid)")
+        // Server route: GET /users/profile/:id
+        try await request("users/profile/\(uid)")
     }
 
     func updateProfile(uid: String, displayName: String) async throws -> AppUser {
         try await request("users/\(uid)", method: "PATCH", body: ["displayName": displayName])
+    }
+
+    /// Search players by display name. Mirrors `GET /users/search?q=&limit=`.
+    func searchUsers(query: String, limit: Int = 10) async throws -> [AppUser] {
+        let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+        return try await request("users/search?q=\(q)&limit=\(limit)")
     }
 
     // MARK: - Matches
@@ -117,8 +132,9 @@ class APIClient {
         try await request("matches", method: "POST", body: body)
     }
 
+    /// Server uses a single `PATCH /matches/:id` with a generic patch body for all fields.
     func updateMatchScore(id: String, score: MatchScore) async throws -> Match {
-        try await request("matches/\(id)/score", method: "PATCH", body: score)
+        try await request("matches/\(id)", method: "PATCH", body: ScorePatch(score: score))
     }
 
     // MARK: - Locations
@@ -133,8 +149,12 @@ class APIClient {
 
     // MARK: - Reservations
 
-    func getAvailability(locationId: String, courtId: String, date: String) async throws -> [AvailabilitySlot] {
-        try await request("reservations/availability?locationId=\(locationId)&courtId=\(courtId)&date=\(date)")
+    /// Mirrors `GET /reservations/availability?courtId=&date=YYYY-MM-DD&durationMinutes=`.
+    /// Server does not use `locationId` — the court ID is enough.
+    func getAvailability(courtId: String, date: String, durationMinutes: Int = 90) async throws -> [AvailabilitySlot] {
+        try await request(
+            "reservations/availability?courtId=\(courtId)&date=\(date)&durationMinutes=\(durationMinutes)"
+        )
     }
 
     func createReservation(body: CreateReservationBody) async throws -> Reservation {
@@ -143,9 +163,16 @@ class APIClient {
 
     // MARK: - Stats
 
-    func getStats(uid: String) async throws -> PlayerStats {
-        try await request("stats/\(uid)")
+    /// Server route: `GET /stats/me` — caller is identified via the bearer token, no UID param.
+    func getMyStats() async throws -> PlayerStats {
+        try await request("stats/me")
     }
+}
+
+// MARK: - Internal body wrappers
+
+private struct ScorePatch: Encodable {
+    let score: MatchScore
 }
 
 // MARK: - Request bodies

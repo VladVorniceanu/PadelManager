@@ -52,20 +52,29 @@ private final class BookMatchViewModel {
     }
 
     func loadSlots() async {
-        guard let location = selectedLocation, let court = selectedCourt else { return }
+        guard let court = selectedCourt else { return }
         isLoading = true
         defer { isLoading = false }
         do {
-            let dateString = ISO8601DateFormatter().string(from: selectedDate).prefix(10).description
+            // Server expects YYYY-MM-DD in the venue's timezone — emit in the user's calendar.
+            let dateString = Self.dateFormatter.string(from: selectedDate)
             availableSlots = try await api.getAvailability(
-                locationId: location.id,
                 courtId: court.id,
-                date: dateString
+                date: dateString,
+                durationMinutes: 90
             )
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
 
     func confirmBooking() async {
         guard let location = selectedLocation,

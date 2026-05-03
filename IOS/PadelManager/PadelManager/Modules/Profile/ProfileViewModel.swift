@@ -29,7 +29,8 @@ final class ProfileViewModel {
         defer { isLoading = false }
         do {
             async let userResult = api.getProfile(uid: uid)
-            async let statsResult = api.getStats(uid: uid)
+            // Stats endpoint is /stats/me on the server — caller identified by bearer token.
+            async let statsResult = api.getMyStats()
             user = try await userResult
             stats = try? await statsResult
         } catch {
