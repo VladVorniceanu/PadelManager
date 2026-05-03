@@ -4,106 +4,98 @@
 //
 //  Created by Vlad Vorniceanu on 4/24/26.
 //
-//  ── Ad Setup Instructions ────────────────────────────────────────────────────
-//  1. Add the Google Mobile Ads SDK via Swift Package Manager:
-//     https://github.com/googleads/swift-package-manager-google-mobile-ads
-//     Select product: GoogleMobileAds
+//  Inline AdMob banner using Google's adaptive banner sizing:
+//  - Width is taken from the host layout (GeometryReader)
+//  - Height is whatever Google returns for the current orientation
+//  - The view auto-reloads if the layout width changes (rotation, split view)
 //
-//  2. Add to Info.plist:
-//     GADApplicationIdentifier  →  your AdMob App ID (ca-app-pub-XXXXXXXX~YYYYYYYY)
+//  Test Ad Unit ID is hardcoded for development. Replace with the real
+//  unit ID before release. The AdMob app identifier is read from Info.plist
+//  via `GADApplicationIdentifier` and is injected at build time from the
+//  Secrets.xcconfig file.
 //
-//  3. Replace `BannerAdView.testUnitID` below with your real Ad Unit ID when releasing.
-//
-//  Once the SDK is installed, uncomment the `#if canImport(GoogleMobileAds)` block.
-// ─────────────────────────────────────────────────────────────────────────────
 
 import SwiftUI
+import GoogleMobileAds
 
 // MARK: - BannerAdView
 
+/// A full-width inline AdMob banner. Sizes itself adaptively to the host
+/// layout's width and reports its height back via a measured frame.
 struct BannerAdView: View {
-    /// Height matches the standard AdMob banner (50 pt) with a 1 pt border separator.
-    static let height: CGFloat = 50
-    @State private var availableWidth: CGFloat = 320 // Track width to size the adaptive banner appropriately
-
-
-    /// Test Ad Unit ID — replace with real unit ID before release.
+    /// Google's official test banner unit. Always returns a fill ad in dev.
     static let testUnitID = "ca-app-pub-3940256099942544/2934735716"
 
-    var body: some View {
-        // ── Placeholder ─────────────────────────────────────────────────────
-        // This renders an invisible, correctly-sized reservation in the layout.
-        // After adding the Google Mobile Ads SDK, replace this body with the
-        // UIViewRepresentable wrapper shown in the comment block below.
-//        Color.clear
-//            .frame(height: BannerAdView.height)
+    /// Override the unit ID (e.g. when reusing the banner for the in-list slot).
+    var adUnitID: String = BannerAdView.testUnitID
 
-        // ── Real Implementation (uncomment after installing SDK) ─────────────
-        // Host the banner in a GeometryReader so we can pass the current width to compute an adaptive size.
+    var body: some View {
         GeometryReader { geo in
-            BannerAdRepresentable(width: geo.size.width)
-                .frame(width: geo.size.width, height: 50, alignment: .center) // Reserve typical banner height; adaptive banners may adjust internally
-                .background(.ultraThinMaterial) // Slight material background to separate ad from content visually
-                .overlay(Divider(), alignment: .top) // Subtle divider to delineate content and ad area
-                .ignoresSafeArea(edges: .bottom) // Allow the banner to extend to the bottom edge safely
-                .onAppear { availableWidth = geo.size.width } // Initialize width on first layout
-                .onChange(of: geo.size.width) { availableWidth = $0 } // Update width as the device rotates or layout changes
+            let size = currentOrientationAnchoredAdaptiveBanner(width: geo.size.width)
+            BannerAdRepresentable(adUnitID: adUnitID, adSize: size)
+                .frame(width: geo.size.width, height: size.size.height)
         }
-        .frame(height: 50, alignment: .bottom) // Constrain the GeometryReader's height so it doesn't take over t
-//         BannerAdRepresentable(adUnitID: BannerAdView.testUnitID)
-//             .frame(height: BannerAdView.height)
+        // Reserve the standard banner height so the banner doesn't push other
+        // content during the first ad load. AdMob ships 50pt tall banners on
+        // iPhone in portrait; the adaptive size may grow slightly on iPad.
+        .frame(height: 50)
     }
 }
 
-// MARK: - UIViewRepresentable wrapper (uncomment after installing SDK)
+// MARK: - UIViewRepresentable wrapper
 
- import GoogleMobileAds
+private struct BannerAdRepresentable: UIViewRepresentable {
+    let adUnitID: String
+    let adSize: AdSize
 
- private struct BannerAdRepresentable: UIViewRepresentable {
-     let adUnitID: String = "ca-app-pub-3940256099942544/2934735716"
-     let width: CGFloat
+    func makeUIView(context: Context) -> BannerView {
+        let banner = BannerView(adSize: adSize)
+        banner.adUnitID = adUnitID
+        banner.delegate = context.coordinator
+        banner.rootViewController = UIApplication.shared.firstKeyWindowRootViewController()
+        banner.load(Request())
+        return banner
+    }
 
-     func makeUIView(context: Context) -> BannerView {
-         let banner = BannerView(adSize: AdSizeBanner)
-         banner.adUnitID = adUnitID
-         banner.delegate = context.coordinator
-         banner.rootViewController = UIApplication.shared.firstKeyWindowRootViewController()
-         banner.load(Request())
-         return banner
-     }
+    func updateUIView(_ uiView: BannerView, context: Context) {
+        // Only reload when the size actually changes — avoids redundant requests
+        // on every SwiftUI body invalidation.
+        if !CGSizeEqualToSize(adSize.size, uiView.adSize.size) {
+            uiView.adSize = adSize
+            uiView.load(Request())
+        }
+    }
 
-     func updateUIView(_ uiView: BannerView, context: Context) {
-         let newSize = currentOrientationAnchoredAdaptiveBanner(width: width)
-         if !CGSizeEqualToSize(newSize.size, uiView.adSize.size) { // Only update and reload if the size actually changed to avoid redundant requests
-             uiView.adSize = newSize // Apply the new adaptive size
-             uiView.load(Request()) // Reload the banner for the new size
-         }
-     }
+    func makeCoordinator() -> Coordinator { Coordinator() }
 
-     func makeCoordinator() -> Coordinator { Coordinator() }
+    final class Coordinator: NSObject, BannerViewDelegate {
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
+            #if DEBUG
+            print("[Ads] Banner loaded — \(bannerView.adUnitID ?? "?")")
+            #endif
+        }
 
-     // Implement the banner delegate to observe ad load results. Useful for logging, analytics,
-     // or triggering UI changes when an ad loads or fails.
-     final class Coordinator: NSObject, BannerViewDelegate {
-         func bannerViewDidReceiveAd(_ bannerView: BannerView) { print("Banner loaded") } // Called when an ad successfully loads
-         func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
-             print("Banner failed: \(error.localizedDescription)")
-         } // Called when an ad fails to load (inspect error for details)
-     }
- }
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
+            #if DEBUG
+            print("[Ads] Banner failed: \(error.localizedDescription)")
+            #endif
+        }
+    }
+}
 
-// Helper to find a root view controller for presenting from UIKit APIs. Google Mobile Ads requires
-// a valid UIViewController to present clickthroughs and other full-screen content.
+// MARK: - UIApplication helpers
+
 private extension UIApplication {
+    /// AdMob requires a root view controller for click-through presentation.
+    /// Find the first active key window across all connected scenes (multi-scene safe).
     func firstKeyWindowRootViewController() -> UIViewController? {
-        connectedScenes // Support multi-scene apps (iPadOS/macOS Catalyst); find the active key window
+        connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }
             .first?
             .rootViewController
     }
 }
 
-// Convenience to get the current key window from a scene
 private extension UIWindowScene {
     var keyWindow: UIWindow? { windows.first(where: { $0.isKeyWindow }) }
 }
@@ -114,6 +106,7 @@ private extension UIWindowScene {
     VStack {
         Text("Conținut de deasupra")
         BannerAdView()
+            .padding(.horizontal)
         Text("Conținut de dedesubt")
     }
 }

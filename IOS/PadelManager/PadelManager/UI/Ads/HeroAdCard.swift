@@ -4,49 +4,34 @@
 //
 //  Created by Vlad Vorniceanu on 4/24/26.
 //
-//  ── Ad Setup Instructions ────────────────────────────────────────────────────
-//  See BannerAdView.swift for SDK installation steps.
-//  This component shows a native ad styled as an AppCard inside a list.
-//  Replace the placeholder body with the GADNativeAdView wrapper once the SDK
-//  is installed.
+//  Card-styled AdMob banner used as an in-list interstitial inside the
+//  matches list. Renders the same adaptive AdMob banner as `BannerAdView`,
+//  wrapped in our `AppCard` chrome and topped with a small "Publicitate"
+//  label so it reads as sponsored content in line with App Store
+//  disclosure expectations.
 //
-//  Native Ad Unit Test ID: ca-app-pub-3940256099942544/3986624511
-// ─────────────────────────────────────────────────────────────────────────────
+//  The `BannerAdView` reads the Ad Unit ID and Info.plist
+//  `GADApplicationIdentifier` injected at build time from Secrets.xcconfig.
+//
 
 import SwiftUI
 
 // MARK: - HeroAdCard
 
-/// A card-sized native ad slot that blends naturally inside match / location lists.
 struct HeroAdCard: View {
-    /// Test Ad Unit ID — replace before release.
-    static let testUnitID = "ca-app-pub-3940256099942544/3986624511"
+    /// Test Ad Unit ID — replace before release. Reuses the banner test unit
+    /// because the matches list slot is the same standard adaptive banner
+    /// shape; switch to a native ad unit if the design moves to copy/icon.
+    static let testUnitID = "ca-app-pub-3940256099942544/2934735716"
 
     var body: some View {
-        // ── Placeholder ─────────────────────────────────────────────────────
-        // Renders a labeled empty card so layout is preserved during development.
-        // After installing the SDK, replace this with the real native ad view.
         AppCard(variant: .muted) {
-            HStack(spacing: AppSpacing.s3) {
-                Image(systemName: "rectangle.fill")
-                    .font(.system(size: 36))
-                    .foregroundStyle(AppColor.border)
-                    .frame(width: 56, height: 56)
-                    .background(AppColor.surface)
-                    .clipShape(.rect(cornerRadius: AppRadius.small))
+            VStack(alignment: .leading, spacing: AppSpacing.s2) {
+                Text("Publicitate")
+                    .font(AppFont.labelBold)
+                    .foregroundStyle(AppColor.muted)
 
-                VStack(alignment: .leading, spacing: AppSpacing.s1) {
-                    Text("Publicitate")
-                        .font(AppFont.labelBold)
-                        .foregroundStyle(AppColor.muted)
-                    Text("Titlu reclamă")
-                        .font(AppFont.cardTitle)
-                        .foregroundStyle(AppColor.text)
-                    Text("Descriere reclamă sponsor")
-                        .font(AppFont.label)
-                        .foregroundStyle(AppColor.muted)
-                }
-                Spacer()
+                BannerAdView(adUnitID: Self.testUnitID)
             }
         }
     }
