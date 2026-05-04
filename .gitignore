@@ -52,8 +52,9 @@ xcuserdata/
 *.moved-aside
 DerivedData/
 
-# Claude Code worktrees (internal tooling)
+# Claude Code
 .claude/worktrees/
+.claude/settings.local.json
 
 # Misc
 Archive.zip
