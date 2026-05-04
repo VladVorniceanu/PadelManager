@@ -6,6 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		34AEE3552F9BC5590012922B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 34AEE3542F9BC5590012922B /* GoogleService-Info.plist */; };
+		34AEE3562F9BC5590012922B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 34AEE3542F9BC5590012922B /* GoogleService-Info.plist */; };
+		34AEE3672F9BC67B0012922B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE3662F9BC67B0012922B /* FirebaseAuth */; };
+		34AEE3692F9BC67B0012922B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE3682F9BC67B0012922B /* FirebaseCore */; };
+		34AEE36D2F9BC67B0012922B /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE36C2F9BC67B0012922B /* FirebaseDatabase */; };
+		34AEE36F2F9BC67B0012922B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE36E2F9BC67B0012922B /* FirebaseFirestore */; };
+		34AEE37B2F9BC67B0012922B /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE37A2F9BC67B0012922B /* FirebaseRemoteConfig */; };
+		34AEE3D12F9D0A560012922B /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 34AEE3D02F9D0A560012922B /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		34AEE3202F9BBC200012922B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +35,33 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		24E3AF7CA35C94D90324DE9C /* Release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		345CC63D2FA642B5007E5CE3 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		34AEE3122F9BBC1E0012922B /* PadelManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PadelManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34AEE31F2F9BBC200012922B /* PadelManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadelManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadelManagerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		34AEE3542F9BC5590012922B /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		86D2F91C91868BFD948EC086 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		893160AC2B707765B505614E /* Shared.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3471C8122F9D2719000A9541 /* Exceptions for "PadelManager" folder in "PadelManager" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 34AEE3112F9BBC1E0012922B /* PadelManager */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		34AEE3142F9BBC1E0012922B /* PadelManager */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3471C8122F9D2719000A9541 /* Exceptions for "PadelManager" folder in "PadelManager" target */,
+			);
 			path = PadelManager;
 			sourceTree = "<group>";
 		};
@@ -52,6 +82,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34AEE36F2F9BC67B0012922B /* FirebaseFirestore in Frameworks */,
+				34AEE37B2F9BC67B0012922B /* FirebaseRemoteConfig in Frameworks */,
+				34AEE3D12F9D0A560012922B /* GoogleMobileAds in Frameworks */,
+				34AEE36D2F9BC67B0012922B /* FirebaseDatabase in Frameworks */,
+				34AEE3692F9BC67B0012922B /* FirebaseCore in Frameworks */,
+				34AEE3672F9BC67B0012922B /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +115,8 @@
 				34AEE3222F9BBC200012922B /* PadelManagerTests */,
 				34AEE32C2F9BBC200012922B /* PadelManagerUITests */,
 				34AEE3132F9BBC1E0012922B /* Products */,
+				34AEE3542F9BC5590012922B /* GoogleService-Info.plist */,
+				58678C06B55720AA0185B7BB /* Config */,
 			);
 			sourceTree = "<group>";
 		};
@@ -90,6 +128,18 @@
 				34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		58678C06B55720AA0185B7BB /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				345CC63D2FA642B5007E5CE3 /* Secrets.xcconfig */,
+				9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */,
+				24E3AF7CA35C94D90324DE9C /* Release.xcconfig */,
+				893160AC2B707765B505614E /* Shared.xcconfig */,
+				86D2F91C91868BFD948EC086 /* Secrets.xcconfig.example */,
+			);
+			path = Config;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +162,12 @@
 			);
 			name = PadelManager;
 			packageProductDependencies = (
+				34AEE3662F9BC67B0012922B /* FirebaseAuth */,
+				34AEE3682F9BC67B0012922B /* FirebaseCore */,
+				34AEE36C2F9BC67B0012922B /* FirebaseDatabase */,
+				34AEE36E2F9BC67B0012922B /* FirebaseFirestore */,
+				34AEE37A2F9BC67B0012922B /* FirebaseRemoteConfig */,
+				34AEE3D02F9D0A560012922B /* GoogleMobileAds */,
 			);
 			productName = PadelManager;
 			productReference = 34AEE3122F9BBC1E0012922B /* PadelManager.app */;
@@ -134,8 +190,6 @@
 				34AEE3222F9BBC200012922B /* PadelManagerTests */,
 			);
 			name = PadelManagerTests;
-			packageProductDependencies = (
-			);
 			productName = PadelManagerTests;
 			productReference = 34AEE31F2F9BBC200012922B /* PadelManagerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,8 +211,6 @@
 				34AEE32C2F9BBC200012922B /* PadelManagerUITests */,
 			);
 			name = PadelManagerUITests;
-			packageProductDependencies = (
-			);
 			productName = PadelManagerUITests;
 			productReference = 34AEE3292F9BBC200012922B /* PadelManagerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -195,6 +247,10 @@
 			);
 			mainGroup = 34AEE3092F9BBC1E0012922B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				34AEE3CF2F9D0A560012922B /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 34AEE3132F9BBC1E0012922B /* Products */;
 			projectDirPath = "";
@@ -212,6 +268,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34AEE3562F9BC5590012922B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +276,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34AEE3552F9BC5590012922B /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -271,6 +329,7 @@
 /* Begin XCBuildConfiguration section */
 		34AEE3312F9BBC200012922B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9183EAF8F82F2570F8E5BDC7 /* Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -335,6 +394,7 @@
 		};
 		34AEE3322F9BBC200012922B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 24E3AF7CA35C94D90324DE9C /* Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -400,6 +460,8 @@
 				DEVELOPMENT_TEAM = KK4TXUS6YX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PadelManager/Info.plist;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app wants to track you so it delivers personalised ads.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -413,6 +475,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.VladVorniceanu.PadelManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -432,6 +497,8 @@
 				DEVELOPMENT_TEAM = KK4TXUS6YX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PadelManager/Info.plist;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app wants to track you so it delivers personalised ads.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -445,6 +512,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.VladVorniceanu.PadelManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -578,6 +648,58 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.12.1;
+			};
+		};
+		34AEE3CF2F9D0A560012922B /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		34AEE3662F9BC67B0012922B /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		34AEE3682F9BC67B0012922B /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		34AEE36C2F9BC67B0012922B /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		34AEE36E2F9BC67B0012922B /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		34AEE37A2F9BC67B0012922B /* FirebaseRemoteConfig */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3572F9BC67B0012922B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseRemoteConfig;
+		};
+		34AEE3D02F9D0A560012922B /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34AEE3CF2F9D0A560012922B /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 34AEE30A2F9BBC1E0012922B /* Project object */;
 }
