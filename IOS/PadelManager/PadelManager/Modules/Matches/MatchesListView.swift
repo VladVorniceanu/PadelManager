@@ -9,12 +9,13 @@ import SwiftUI
 
 struct MatchesListView: View {
     @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
     @State private var vm: MatchesViewModel?
 
     private let filterOptions: [MatchStatus?] = [nil, .scheduled, .ongoing, .completed, .cancelled]
 
     var body: some View {
-        let resolvedVM = vm ?? MatchesViewModel(api: api)
+        let resolvedVM = vm ?? MatchesViewModel(api: api, cache: cache)
         content(vm: resolvedVM)
             .onAppear { if vm == nil { vm = resolvedVM } }
             .task { await resolvedVM.load() }
@@ -52,16 +53,7 @@ struct MatchesListView: View {
         }
         .background(AppColor.background)
         .refreshable { await vm.load() }
-        .navigationDestination(for: AppDestination.self) { destination in
-            switch destination {
-            case .matchDetail(let match):
-                MatchDetailView(match: match)
-            case .matchBook:
-                BookMatchView()
-            default:
-                EmptyView()
-            }
-        }
+        .appNavigationDestinations()
     }
 
     private func filterBar(vm: MatchesViewModel) -> some View {

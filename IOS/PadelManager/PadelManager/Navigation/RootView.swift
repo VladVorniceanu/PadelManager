@@ -9,14 +9,36 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AuthService.self) private var authService
+    @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
 
     var body: some View {
-        if authService.isAuthenticated {
-            MainTabView()
-        } else {
-            NavigationStack {
-                LoginView()
+        Group {
+            if authService.isAuthenticated {
+                MainTabView()
+            } else {
+                NavigationStack {
+                    LoginView()
+                }
             }
+        }
+        // Bootstrap once we know the user is signed in: sync the Firestore
+        // profile (POST /auth/me) and warm the locations cache. Both are
+        // idempotent — re-running on every appear is cheap because DataCache
+        // short-circuits a second locations load.
+        .task(id: authService.currentUser?.uid) {
+            guard authService.isAuthenticated else {
+                cache.clear()
+                return
+            }
+            // Fire bootstrap and locations in parallel; locations don't depend on bootstrap.
+            async let bootstrap: Void = {
+                if let user = try? await api.bootstrapMe() {
+                    authService.currentUser = user
+                }
+            }()
+            async let locations: Void = cache.loadLocations()
+            _ = await (bootstrap, locations)
         }
     }
 }

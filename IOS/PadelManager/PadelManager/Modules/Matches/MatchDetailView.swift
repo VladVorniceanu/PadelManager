@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MatchDetailView: View {
     let match: Match
+    @Environment(DataCache.self) private var cache
 
     var body: some View {
         ScrollView {
@@ -25,24 +26,41 @@ struct MatchDetailView: View {
         .background(AppColor.background)
         .navigationTitle("Detalii meci")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            // Open from a deep link or push and the cache may be cold — warm it.
+            await cache.prefetchUsers(uids: match.participantUIDs)
+            await cache.loadLocations()
+        }
     }
 
     private var statusCard: some View {
         AppCard {
-            HStack {
-                VStack(alignment: .leading, spacing: AppSpacing.s1) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: AppSpacing.s2) {
                     Text(formattedDate)
                         .font(AppFont.headline)
                         .foregroundStyle(AppColor.text)
-                    if let locationId = match.locationId {
-                        Text("Locație: \(locationId)")
+                    if let venue = venueLabel {
+                        Label(venue, systemImage: "mappin.and.ellipse")
                             .font(AppFont.label)
                             .foregroundStyle(AppColor.muted)
                     }
                 }
-                Spacer()
+                Spacer(minLength: 0)
                 AppPill.matchStatus(match.status.rawValue)
             }
+        }
+    }
+
+    /// Combines location and court names — falls back gracefully if one is missing.
+    private var venueLabel: String? {
+        let location = cache.locationName(for: match.locationId)
+        let court = cache.courtName(locationId: match.locationId, courtId: match.courtId)
+        switch (location, court) {
+        case let (loc?, ct?): return "\(loc) · \(ct)"
+        case let (loc?, nil): return loc
+        case let (nil, ct?): return ct
+        default:               return nil
         }
     }
 
@@ -79,14 +97,25 @@ struct MatchDetailView: View {
             Text(title)
                 .font(AppFont.bodyBold)
                 .foregroundStyle(AppColor.text)
-            ForEach(Array(players.compactMap { $0 }.enumerated()), id: \.offset) { _, uid in
+            let uids = players.compactMap { $0 }.filter { !$0.isEmpty }
+            if uids.isEmpty {
                 HStack(spacing: AppSpacing.s2) {
-                    Image(systemName: "person.circle.fill")
-                        .foregroundStyle(AppColor.primary)
-                    Text(uid)
+                    Image(systemName: "person.crop.circle.dashed")
+                        .foregroundStyle(AppColor.muted)
+                    Text("Loc liber")
                         .font(AppFont.label)
                         .foregroundStyle(AppColor.muted)
-                        .lineLimit(1)
+                }
+            } else {
+                ForEach(uids, id: \.self) { uid in
+                    HStack(spacing: AppSpacing.s2) {
+                        Image(systemName: "person.circle.fill")
+                            .foregroundStyle(AppColor.primary)
+                        Text(cache.displayName(for: uid))
+                            .font(AppFont.label)
+                            .foregroundStyle(AppColor.text)
+                            .lineLimit(1)
+                    }
                 }
             }
         }

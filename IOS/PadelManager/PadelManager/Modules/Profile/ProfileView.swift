@@ -10,15 +10,41 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AuthService.self) private var authService
     @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
     @State private var vm: ProfileViewModel?
+    @State private var logoutError: String?
 
     var body: some View {
-        let resolvedVM = vm ?? ProfileViewModel(api: api, uid: authService.currentUser?.uid ?? "")
+        let resolvedVM = vm ?? ProfileViewModel(
+            api: api,
+            cache: cache,
+            uid: authService.currentUser?.uid ?? ""
+        )
         content(vm: resolvedVM)
             .onAppear { if vm == nil { vm = resolvedVM } }
             .task { await resolvedVM.load() }
             .navigationTitle("Profil")
             .navigationBarTitleDisplayMode(.large)
+            .alert(
+                "Nu te-am putut deconecta",
+                isPresented: Binding(
+                    get: { logoutError != nil },
+                    set: { if !$0 { logoutError = nil } }
+                ),
+                presenting: logoutError
+            ) { _ in
+                Button("OK", role: .cancel) {}
+            } message: { error in
+                Text(error)
+            }
+    }
+
+    private func performLogout() {
+        do {
+            try authService.logout()
+        } catch {
+            logoutError = error.localizedDescription
+        }
     }
 
     @ViewBuilder
@@ -94,9 +120,67 @@ struct ProfileView: View {
                 statTile(value: "\(stats.wins)", label: "Victorii")
                 statTile(value: "\(stats.losses)", label: "Înfrângeri")
                 statTile(
-                    value: String(format: "%.0f%%", stats.winRate * 100),
+                    value: stats.winRate.formatted(.percent.precision(.fractionLength(0))),
                     label: "Rata victorie"
                 )
+            }
+
+            highlightsCard(stats: stats)
+        }
+    }
+
+    @ViewBuilder
+    private func highlightsCard(stats: PlayerStats) -> some View {
+        let rows: [(icon: String, label: String, value: String?)] = [
+            (
+                "person.2.fill",
+                "Coechipier frecvent",
+                stats.mostFrequentTeammate.map {
+                    "\(cache.displayName(for: $0.key)) · \($0.count)"
+                }
+            ),
+            (
+                "person.crop.rectangle",
+                "Adversar frecvent",
+                stats.mostFrequentOpponent.map {
+                    "\(cache.displayName(for: $0.key)) · \($0.count)"
+                }
+            ),
+            (
+                "mappin.and.ellipse",
+                "Locație preferată",
+                stats.mostPlayedLocation.map { entry in
+                    let name = cache.locationName(for: entry.key) ?? "Locație necunoscută"
+                    return "\(name) · \(entry.count)"
+                }
+            ),
+        ]
+
+        let visibleRows = rows.filter { $0.value != nil }
+        if !visibleRows.isEmpty {
+            AppCard {
+                VStack(spacing: AppSpacing.s3) {
+                    ForEach(Array(visibleRows.enumerated()), id: \.offset) { idx, row in
+                        HStack(spacing: AppSpacing.s3) {
+                            Image(systemName: row.icon)
+                                .foregroundStyle(AppColor.primary)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(row.label)
+                                    .font(AppFont.label)
+                                    .foregroundStyle(AppColor.muted)
+                                Text(row.value ?? "—")
+                                    .font(AppFont.bodyBold)
+                                    .foregroundStyle(AppColor.text)
+                                    .lineLimit(1)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                        if idx < visibleRows.count - 1 {
+                            Divider()
+                        }
+                    }
+                }
             }
         }
     }
@@ -138,10 +222,9 @@ struct ProfileView: View {
             systemImage: "rectangle.portrait.and.arrow.right",
             variant: .danger,
             size: .medium,
-            isFullWidth: true
-        ) {
-            try? authService.logout()
-        }
+            isFullWidth: true,
+            action: performLogout
+        )
     }
 
     private func initials(for name: String?) -> String {

@@ -34,38 +34,51 @@ private final class BookMatchViewModel {
     var isBooked: Bool = false
 
     private let api: APIClient
+    private let cache: DataCache
     private let currentUserUID: String
 
-    init(api: APIClient, currentUserUID: String) {
+    init(api: APIClient, cache: DataCache, currentUserUID: String) {
         self.api = api
+        self.cache = cache
         self.currentUserUID = currentUserUID
     }
 
     func loadLocations() async {
         isLoading = true
         defer { isLoading = false }
-        do {
-            locations = try await api.getLocations()
-        } catch {
-            errorMessage = error.localizedDescription
+        // Use the shared cache as the source of truth so a load here also
+        // warms the home / matches lists.
+        await cache.loadLocations()
+        locations = cache.locationsById.values.sorted { $0.name < $1.name }
+        if locations.isEmpty {
+            errorMessage = "Nu s-au putut încărca locațiile."
         }
     }
 
     func loadSlots() async {
-        guard let location = selectedLocation, let court = selectedCourt else { return }
+        guard let court = selectedCourt else { return }
         isLoading = true
         defer { isLoading = false }
         do {
-            let dateString = ISO8601DateFormatter().string(from: selectedDate).prefix(10).description
+            // Server expects YYYY-MM-DD in the venue's timezone — emit in the user's calendar.
+            let dateString = Self.dateFormatter.string(from: selectedDate)
             availableSlots = try await api.getAvailability(
-                locationId: location.id,
                 courtId: court.id,
-                date: dateString
+                date: dateString,
+                durationMinutes: 90
             )
         } catch {
             errorMessage = error.localizedDescription
         }
     }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.calendar = Calendar(identifier: .gregorian)
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
 
     func confirmBooking() async {
         guard let location = selectedLocation,
@@ -79,7 +92,8 @@ private final class BookMatchViewModel {
                 courtId: court.id,
                 startAt: slot.startAt,
                 endAt: slot.endAt,
-                matchId: nil
+                durationMinutes: nil,
+                teams: nil
             ))
             isBooked = true
         } catch {
@@ -91,11 +105,16 @@ private final class BookMatchViewModel {
 struct BookMatchView: View {
     @Environment(AuthService.self) private var authService
     @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
     @Environment(\.dismiss) private var dismiss
     @State private var vm: BookMatchViewModel?
 
     var body: some View {
-        let resolvedVM = vm ?? BookMatchViewModel(api: api, currentUserUID: authService.currentUser?.uid ?? "")
+        let resolvedVM = vm ?? BookMatchViewModel(
+            api: api,
+            cache: cache,
+            currentUserUID: authService.currentUser?.uid ?? ""
+        )
         content(vm: resolvedVM)
             .onAppear { if vm == nil { vm = resolvedVM } }
             .task { await resolvedVM.loadLocations() }
@@ -260,6 +279,7 @@ struct BookMatchView: View {
 
     @ViewBuilder
     private func slotStep(vm: BookMatchViewModel) -> some View {
+        @Bindable var bindable = vm
         VStack(alignment: .leading, spacing: AppSpacing.s4) {
             VStack(alignment: .leading, spacing: AppSpacing.s3) {
                 Text("Selectează data")
@@ -268,15 +288,15 @@ struct BookMatchView: View {
 
                 DatePicker(
                     "Data",
-                    selection: Binding(get: { vm.selectedDate }, set: {
-                        vm.selectedDate = $0
-                        Task { await vm.loadSlots() }
-                    }),
+                    selection: $bindable.selectedDate,
                     in: Date()...,
                     displayedComponents: .date
                 )
                 .datePickerStyle(.graphical)
                 .tint(AppColor.primary)
+                .onChange(of: vm.selectedDate) {
+                    Task { await vm.loadSlots() }
+                }
             }
             .padding(.horizontal, AppSpacing.screenH)
 

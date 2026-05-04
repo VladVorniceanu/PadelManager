@@ -10,10 +10,15 @@ import SwiftUI
 struct HomeView: View {
     @Environment(AuthService.self) private var authService
     @Environment(APIClient.self) private var api
+    @Environment(DataCache.self) private var cache
     @State private var vm: HomeViewModel?
 
     var body: some View {
-        let resolvedVM = vm ?? HomeViewModel(api: api, currentUserUID: authService.currentUser?.uid ?? "")
+        let resolvedVM = vm ?? HomeViewModel(
+            api: api,
+            cache: cache,
+            currentUserUID: authService.currentUser?.uid ?? ""
+        )
         content(vm: resolvedVM)
             .onAppear { if vm == nil { vm = resolvedVM } }
             .task { await resolvedVM.load() }
@@ -71,6 +76,7 @@ struct HomeView: View {
         }
         .background(AppColor.background)
         .refreshable { await vm.load() }
+        .appNavigationDestinations()
     }
 
     private var greetingSection: some View {
@@ -141,40 +147,90 @@ struct HomeView: View {
 
 struct MatchRowCard: View {
     let match: Match
+    @Environment(DataCache.self) private var cache
 
     var body: some View {
         AppCard {
-            HStack {
+            HStack(spacing: AppSpacing.s3) {
                 VStack(alignment: .leading, spacing: AppSpacing.s1) {
                     Text(formattedDate)
                         .font(AppFont.cardTitle)
                         .foregroundStyle(AppColor.text)
+                        .lineLimit(1)
                     Text(teamSummary)
                         .font(AppFont.label)
                         .foregroundStyle(AppColor.muted)
+                        .lineLimit(2)
+                    if let venue = venueLabel {
+                        HStack(spacing: AppSpacing.s1) {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(AppColor.muted)
+                            Text(venue)
+                                .font(AppFont.label)
+                                .foregroundStyle(AppColor.muted)
+                                .lineLimit(1)
+                        }
+                    }
+                    if !setScores.isEmpty {
+                        scoreRow
+                    }
                 }
-                Spacer()
+                Spacer(minLength: 0)
                 AppPill.matchStatus(match.status.rawValue)
             }
         }
     }
 
     private var teamSummary: String {
-        let t1 = match.teams.team1.compactMap { $0 }
-        let t2 = match.teams.team2.compactMap { $0 }
-        let t1Label = t1.isEmpty ? "?" : t1.map { String($0.prefix(8)) }.joined(separator: ", ")
-        let t2Label = t2.isEmpty ? "?" : t2.map { String($0.prefix(8)) }.joined(separator: ", ")
-        return "\(t1Label) vs \(t2Label)"
+        let t1 = cache.teamLabel(uids: match.teams.team1)
+        let t2 = cache.teamLabel(uids: match.teams.team2)
+        return "\(t1) vs \(t2)"
+    }
+
+    /// "Locație · Teren" if both resolve, else whichever is known. Nil if neither.
+    private var venueLabel: String? {
+        let location = cache.locationName(for: match.locationId)
+        let court = cache.courtName(locationId: match.locationId, courtId: match.courtId)
+        switch (location, court) {
+        case let (loc?, ct?): return "\(loc) · \(ct)"
+        case let (loc?, nil): return loc
+        case let (nil, ct?): return ct
+        default:               return nil
+        }
+    }
+
+    /// Compact set scores for the card. Mirrors the web client's row layout
+    /// in MatchesListView: each set is "t1 — t2", spaced horizontally.
+    private var setScores: [SetScore] { match.score?.sets ?? [] }
+
+    private var scoreRow: some View {
+        HStack(spacing: AppSpacing.s2) {
+            ForEach(Array(setScores.enumerated()), id: \.offset) { _, set in
+                Text("\(set.t1)–\(set.t2)")
+                    .font(AppFont.bodyBold)
+                    .foregroundStyle(AppColor.text)
+                    .padding(.horizontal, AppSpacing.s2)
+                    .padding(.vertical, 2)
+                    .background(AppColor.surfaceMuted)
+                    .clipShape(.capsule)
+            }
+        }
+        .padding(.top, 2)
     }
 
     private var formattedDate: String {
         guard let date = match.scheduledDate else { return "Dată necunoscută" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ro_RO")
-        return formatter.string(from: date)
+        return Self.dateFormatter.string(from: date)
     }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        f.locale = Locale(identifier: "ro_RO")
+        return f
+    }()
 }
 
 #Preview {

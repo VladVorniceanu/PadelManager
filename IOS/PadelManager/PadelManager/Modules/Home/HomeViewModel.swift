@@ -16,10 +16,12 @@ final class HomeViewModel {
     var errorMessage: String?
 
     private let api: APIClient
+    private let cache: DataCache
     private let currentUserUID: String
 
-    init(api: APIClient, currentUserUID: String) {
+    init(api: APIClient, cache: DataCache, currentUserUID: String) {
         self.api = api
+        self.cache = cache
         self.currentUserUID = currentUserUID
     }
 
@@ -41,6 +43,15 @@ final class HomeViewModel {
                 .sorted { ($0.scheduledDate ?? .distantPast) > ($1.scheduledDate ?? .distantPast) }
                 .prefix(5)
                 .map { $0 }
+
+            // Resolve all participant UIDs (both lists) and ensure locations are warm.
+            // Names mutate `cache.usersById`, which is @Observable — views will re-render.
+            // Run in parallel and await both so structured concurrency doesn't
+            // implicitly cancel them when `load()` exits.
+            let uids = (upcomingMatches + recentMatches).flatMap { $0.participantUIDs }
+            async let users: Void = cache.prefetchUsers(uids: uids)
+            async let locations: Void = cache.loadLocations()
+            _ = await (users, locations)
         } catch {
             errorMessage = error.localizedDescription
         }

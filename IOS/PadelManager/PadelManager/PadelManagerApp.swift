@@ -26,12 +26,15 @@ struct PadelManagerApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     private let authService: AuthService
     private let apiClient: APIClient
+    private let dataCache: DataCache
 
     init() {
         AppDelegate.configureFirebaseIfNeeded()
         let auth = AuthService()
+        let api = APIClient(authService: auth)
         authService = auth
-        apiClient = APIClient(authService: auth)
+        apiClient = api
+        dataCache = DataCache(api: api)
     }
 
     var body: some Scene {
@@ -39,6 +42,7 @@ struct PadelManagerApp: App {
             RootView()
                 .environment(authService)
                 .environment(apiClient)
+                .environment(dataCache)
         }
     }
 }
