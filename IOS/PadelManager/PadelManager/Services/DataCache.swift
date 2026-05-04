@@ -15,6 +15,12 @@
 
 import Foundation
 import Observation
+import os
+
+private let cacheLog = Logger(
+    subsystem: Bundle.main.bundleIdentifier ?? "PadelManager",
+    category: "DataCache"
+)
 
 @Observable
 @MainActor
@@ -48,6 +54,7 @@ final class DataCache {
             locationsLoaded = true
         } catch {
             // Soft failure: views fall back to IDs. The next caller can retry.
+            cacheLog.error("loadLocations failed: \(String(describing: error))")
         }
     }
 
@@ -92,6 +99,7 @@ final class DataCache {
             do {
                 return try await api.getProfile(uid: uid)
             } catch {
+                cacheLog.error("fetchUser(\(uid, privacy: .public)) failed: \(String(describing: error))")
                 return nil
             }
         }

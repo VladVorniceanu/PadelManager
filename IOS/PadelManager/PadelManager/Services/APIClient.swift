@@ -31,7 +31,12 @@ class APIClient {
         method: String = "GET",
         body: (any Encodable)? = nil
     ) async throws -> T {
-        let url = AppConfig.apiBaseURL.appendingPathComponent(path)
+        // appendingPathComponent percent-encodes '?' and '&', breaking query strings.
+        // Build the URL by appending the path string to the base URL string directly.
+        let baseString = AppConfig.apiBaseURL.absoluteString.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        guard let url = URL(string: "\(baseString)/\(path)") else {
+            throw APIError.invalidResponse
+        }
         var req = URLRequest(url: url)
         req.httpMethod = method
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -151,10 +156,12 @@ class APIClient {
 
     /// Mirrors `GET /reservations/availability?courtId=&date=YYYY-MM-DD&durationMinutes=`.
     /// Server does not use `locationId` — the court ID is enough.
+    /// Server returns a wrapper object `{ slots: [...], ... }`; this unwraps to just the slots.
     func getAvailability(courtId: String, date: String, durationMinutes: Int = 90) async throws -> [AvailabilitySlot] {
-        try await request(
+        let response: AvailabilityResponse = try await request(
             "reservations/availability?courtId=\(courtId)&date=\(date)&durationMinutes=\(durationMinutes)"
         )
+        return response.slots
     }
 
     func createReservation(body: CreateReservationBody) async throws -> Reservation {
@@ -181,16 +188,16 @@ struct CreateMatchBody: Encodable {
     let locationId: String
     let courtId: String
     let scheduledAt: String
-    let team1: [String?]
-    let team2: [String?]
+    let teams: MatchTeams
 }
 
 struct CreateReservationBody: Encodable {
     let locationId: String
     let courtId: String
     let startAt: String
-    let endAt: String
-    let matchId: String?
+    let endAt: String?
+    let durationMinutes: Int?
+    let teams: MatchTeams?
 }
 
 // MARK: - Errors

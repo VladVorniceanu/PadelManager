@@ -172,6 +172,9 @@ struct MatchRowCard: View {
                                 .lineLimit(1)
                         }
                     }
+                    if !setScores.isEmpty {
+                        scoreRow
+                    }
                 }
                 Spacer(minLength: 0)
                 AppPill.matchStatus(match.status.rawValue)
@@ -195,6 +198,25 @@ struct MatchRowCard: View {
         case let (nil, ct?): return ct
         default:               return nil
         }
+    }
+
+    /// Compact set scores for the card. Mirrors the web client's row layout
+    /// in MatchesListView: each set is "t1 — t2", spaced horizontally.
+    private var setScores: [SetScore] { match.score?.sets ?? [] }
+
+    private var scoreRow: some View {
+        HStack(spacing: AppSpacing.s2) {
+            ForEach(Array(setScores.enumerated()), id: \.offset) { _, set in
+                Text("\(set.t1)–\(set.t2)")
+                    .font(AppFont.bodyBold)
+                    .foregroundStyle(AppColor.text)
+                    .padding(.horizontal, AppSpacing.s2)
+                    .padding(.vertical, 2)
+                    .background(AppColor.surfaceMuted)
+                    .clipShape(.capsule)
+            }
+        }
+        .padding(.top, 2)
     }
 
     private var formattedDate: String {

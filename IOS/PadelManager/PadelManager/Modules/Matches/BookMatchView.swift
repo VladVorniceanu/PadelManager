@@ -92,7 +92,8 @@ private final class BookMatchViewModel {
                 courtId: court.id,
                 startAt: slot.startAt,
                 endAt: slot.endAt,
-                matchId: nil
+                durationMinutes: nil,
+                teams: nil
             ))
             isBooked = true
         } catch {

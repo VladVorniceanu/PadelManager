@@ -34,3 +34,8 @@ struct AvailabilitySlot: Codable, Identifiable, Hashable {
 
     var startDate: Date? { try? Date(startAt, strategy: .iso8601) }
 }
+
+// Server returns a wrapper object; `slots` contains the actual array.
+struct AvailabilityResponse: Decodable {
+    let slots: [AvailabilitySlot]
+}
